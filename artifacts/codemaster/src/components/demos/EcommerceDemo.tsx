@@ -71,6 +71,10 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setPage("home")}><Search className="w-4 h-4" style={{ color: C.dark + "80" }} /></button>
+            <button onClick={() => setPage("home")} className="relative">
+              <Heart className="w-4 h-4" style={{ color: C.dark + "80" }} />
+              {wishlist.size > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.white }}>{wishlist.size}</span>}
+            </button>
             <button onClick={() => setCartOpen(true)} className="relative">
               <ShoppingBag className="w-4 h-4" style={{ color: C.dark + "80" }} />
               {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.white }}>{cartCount}</span>}
