@@ -77,7 +77,7 @@ export function DemoPreview({ project }: DemoPreviewProps) {
     return <MentoringDemo name={project.name} features={project.features} />;
 
   if (cat.includes("e-learning") || ind.includes("education") || nm.includes("szkoła") || nm.includes("kurs"))
-    return <ElearningDemo name={project.name} features={project.features} industry={project.industry} />;
+    return <ElearningDemo name={project.name} features={project.features} />;
 
   if (cat.includes("ai") || nm.includes("ai") || nm.includes("chatbot") || nm.includes("assistant"))
     return <AiDemo name={project.name} features={project.features} />;
