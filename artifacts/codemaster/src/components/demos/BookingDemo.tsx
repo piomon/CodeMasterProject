@@ -1,416 +1,452 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import {
-  Monitor, Cpu, HardDrive, Wrench, Clock, CheckCircle2, AlertTriangle,
-  Package, Truck, MessageSquare, Phone, Search, Plus, ChevronDown,
-  BarChart3, Users, Settings, FileText, Shield, Zap
-} from "lucide-react";
+import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { Wrench, Clock, CheckCircle2, AlertTriangle, Monitor, Cpu, HardDrive, Smartphone, ChevronRight, Plus, Search, Package, BarChart3 } from "lucide-react";
 
-const C = { blue: "#0EA5E9", dark: "#0C1222", navy: "#162032", slate: "#1E293B", gray: "#94A3B8", light: "#F1F5F9", white: "#FFFFFF", green: "#22C55E", orange: "#F59E0B", red: "#EF4444" };
+const C = { charcoal: "#1C1C1E", dark: "#2C2C2E", accent: "#0A84FF", green: "#30D158", orange: "#FF9F0A", red: "#FF453A", white: "#F2F2F7", gray: "#8E8E93", surface: "#3A3A3C", text: "#E5E5EA", muted: "#636366" };
+
+type BookingPage = "dashboard" | "tickets" | "new" | "timeline" | "parts";
 
 const tickets = [
-  { id: "RQ-2847", device: "MacBook Pro 16\"", client: "Firma TechStar Sp. z o.o.", issue: "Wymiana matrycy + baterii", status: "in-progress", priority: "high", tech: "Michał K.", created: "2 godz. temu", eta: "Dziś 17:00" },
-  { id: "RQ-2846", device: "Dell Latitude 5540", client: "Kancelaria Prawo i Finanse", issue: "Reinstalacja systemu, odzysk danych", status: "diagnostics", priority: "medium", tech: "Paweł W.", created: "4 godz. temu", eta: "Jutro 12:00" },
-  { id: "RQ-2845", device: "HP ProDesk 600 G6", client: "Biuro Rachunkowe Sigma", issue: "Awaria zasilacza, upgrade RAM 32GB", status: "waiting-parts", priority: "low", tech: "Anna M.", created: "Wczoraj", eta: "Śr 28 mar" },
-  { id: "RQ-2844", device: "iPhone 15 Pro", client: "Jan Kowalski", issue: "Wymiana wyświetlacza OLED", status: "ready", priority: "medium", tech: "Michał K.", created: "Wczoraj", eta: "Gotowe" },
-  { id: "RQ-2843", device: "Serwer Rack 2U", client: "Logistex Sp. z o.o.", issue: "Wymiana dysków RAID, konfiguracja backup", status: "completed", priority: "high", tech: "Paweł W.", created: "2 dni temu", eta: "Zakończone" },
+  { id: "TK-2026-0421", client: "Jan Kowalski", device: "MacBook Pro 16\" M3", issue: "Nie uruchamia się po aktualizacji", status: "repair" as const, priority: "high" as const, stage: 3, assigned: "Mateusz K.", created: "28 mar", cost: 890 },
+  { id: "TK-2026-0418", client: "Anna Nowak", device: "iPhone 15 Pro Max", issue: "Pęknięty ekran OLED", status: "parts" as const, priority: "medium" as const, stage: 2, assigned: "Paweł B.", created: "27 mar", cost: 1250 },
+  { id: "TK-2026-0415", client: "Firma ABC Sp. z o.o.", device: "Dell PowerEdge R740", issue: "Awaria kontrolera RAID", status: "diagnosis" as const, priority: "critical" as const, stage: 1, assigned: "Mateusz K.", created: "26 mar", cost: 0 },
+  { id: "TK-2026-0412", client: "Piotr Wiśniewski", device: "Samsung Galaxy S24", issue: "Wymiana baterii", status: "ready" as const, priority: "low" as const, stage: 5, assigned: "Ewa S.", created: "25 mar", cost: 320 },
+  { id: "TK-2026-0408", client: "Kancelaria Lex", device: "HP ProBook 450", issue: "Przegrzewanie się, throttling CPU", status: "repair" as const, priority: "medium" as const, stage: 4, assigned: "Ewa S.", created: "24 mar", cost: 450 },
+  { id: "TK-2026-0405", client: "Maria Zielińska", device: "iPad Pro 12.9\"", issue: "Nie ładuje się przez USB-C", status: "done" as const, priority: "low" as const, stage: 5, assigned: "Paweł B.", created: "22 mar", cost: 280 },
 ];
 
-const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-  "diagnostics": { label: "Diagnostyka", color: C.orange, bg: C.orange + "20" },
-  "in-progress": { label: "W naprawie", color: C.blue, bg: C.blue + "20" },
-  "waiting-parts": { label: "Czeka na części", color: C.gray, bg: C.gray + "20" },
-  "ready": { label: "Gotowe do odbioru", color: C.green, bg: C.green + "20" },
-  "completed": { label: "Zakończone", color: C.gray, bg: C.slate },
+const statusConfig: Record<string, { bg: string; fg: string; label: string }> = {
+  diagnosis: { bg: C.orange + "25", fg: C.orange, label: "Diagnoza" },
+  parts: { bg: C.accent + "25", fg: C.accent, label: "Czeka na części" },
+  repair: { bg: "#BF5AF2" + "25", fg: "#BF5AF2", label: "W naprawie" },
+  ready: { bg: C.green + "25", fg: C.green, label: "Gotowe" },
+  done: { bg: C.gray + "25", fg: C.gray, label: "Zakończone" },
 };
 
-const priorityMap: Record<string, { label: string; color: string }> = {
-  high: { label: "Pilne", color: C.red },
-  medium: { label: "Normalny", color: C.orange },
-  low: { label: "Niski", color: C.gray },
+const priorityConfig: Record<string, { fg: string; label: string }> = {
+  critical: { fg: C.red, label: "Krytyczny" },
+  high: { fg: C.orange, label: "Wysoki" },
+  medium: { fg: C.accent, label: "Średni" },
+  low: { fg: C.green, label: "Niski" },
 };
 
-const pricing = [
-  { name: "Diagnostyka komputera", price: "99 zł", time: "do 24h", icon: "🔍" },
-  { name: "Reinstalacja systemu", price: "149 zł", time: "1-2 dni", icon: "💻" },
-  { name: "Wymiana dysku SSD", price: "od 199 zł", time: "1 dzień", icon: "💾" },
-  { name: "Odzysk danych", price: "od 299 zł", time: "2-5 dni", icon: "🔐" },
-  { name: "Naprawa płyty głównej", price: "od 349 zł", time: "3-7 dni", icon: "🔧" },
-  { name: "Serwis sieci / serwera", price: "od 199 zł/h", time: "umownie", icon: "🌐" },
+const repairStages = ["Przyjęcie", "Diagnoza", "Wycena", "Naprawa", "Gotowe"];
+
+const partsInventory = [
+  { name: "Ekran OLED iPhone 15 Pro Max", stock: 3, min: 2, price: 890, cat: "Ekrany" },
+  { name: "Bateria MacBook Pro 16\" M3", stock: 5, min: 3, price: 450, cat: "Baterie" },
+  { name: "Kontroler RAID Dell PERC H740P", stock: 1, min: 2, price: 1800, cat: "Serwery" },
+  { name: "Klawiatura MacBook Air M2", stock: 0, min: 2, price: 320, cat: "Klawiatury" },
+  { name: "Złącze USB-C iPad Pro", stock: 8, min: 3, price: 120, cat: "Złącza" },
+  { name: "Pasta termoprzewodząca Thermal Grizzly", stock: 12, min: 5, price: 45, cat: "Materiały" },
+  { name: "SSD Samsung 980 Pro 1TB", stock: 4, min: 3, price: 380, cat: "Dyski" },
+];
+
+const sidebarItems: { id: BookingPage; label: string; icon: ReactNode; badge?: number }[] = [
+  { id: "dashboard", label: "Przegląd", icon: <BarChart3 className="w-4 h-4" /> },
+  { id: "tickets", label: "Zlecenia", icon: <Wrench className="w-4 h-4" />, badge: tickets.filter(t => t.status !== "done").length },
+  { id: "new", label: "Nowe zlecenie", icon: <Plus className="w-4 h-4" /> },
+  { id: "timeline", label: "Postęp naprawy", icon: <Clock className="w-4 h-4" /> },
+  { id: "parts", label: "Magazyn części", icon: <Package className="w-4 h-4" /> },
 ];
 
 export function BookingDemo({ name }: { name: string; features: string[] }) {
-  const [page, setPage] = useState("dashboard");
-
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: <BarChart3 className="w-4 h-4" /> },
-    { id: "tickets", label: "Zgłoszenia", icon: <FileText className="w-4 h-4" /> },
-    { id: "new-ticket", label: "Nowe", icon: <Plus className="w-4 h-4" /> },
-    { id: "pricing", label: "Cennik", icon: <Package className="w-4 h-4" /> },
-    { id: "tracking", label: "Śledź naprawę", icon: <Search className="w-4 h-4" /> },
-  ];
+  const [page, setPage] = useState<BookingPage>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <PreviewShell title={name}>
-      <div style={{ background: C.dark, minHeight: 500 }}>
-        <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: C.navy, background: C.slate }}>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: C.blue }}>
-              <Wrench className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-sm" style={{ color: C.white }}>Repair<span style={{ color: C.blue }}>Q</span></span>
+      <div className="flex" style={{ minHeight: 560, background: C.charcoal }}>
+        <motion.aside animate={{ width: sidebarOpen ? 180 : 48 }} transition={{ duration: 0.2 }}
+          className="shrink-0 flex flex-col py-3 overflow-hidden" style={{ background: C.dark, borderRight: `1px solid ${C.surface}` }}>
+          <div className="px-3 mb-4 flex items-center gap-2">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="shrink-0">
+              <Monitor className="w-5 h-5" style={{ color: C.accent }} />
+            </button>
+            {sidebarOpen && <span className="font-bold text-sm whitespace-nowrap" style={{ color: C.text }}>FixIt<span style={{ color: C.accent }}>Pro</span></span>}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <MessageSquare className="w-4 h-4" style={{ color: C.gray }} />
-              <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ background: C.red }} />
-            </div>
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: C.blue, color: C.white }}>MK</div>
-          </div>
-        </div>
-
-        <div className="flex">
-          <div className="w-[52px] shrink-0 border-r py-2 flex flex-col items-center gap-1" style={{ borderColor: C.navy, background: C.slate + "80" }}>
-            {navItems.map(n => (
-              <button key={n.id} onClick={() => setPage(n.id)}
-                className="w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all"
-                style={page === n.id ? { background: C.blue + "20", color: C.blue } : { color: C.gray }}>
-                {n.icon}
-                <span className="text-[7px] font-medium leading-none">{n.label}</span>
+          <nav className="flex-1 space-y-0.5 px-1.5">
+            {sidebarItems.map(item => (
+              <button key={item.id} onClick={() => setPage(item.id)}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left"
+                style={page === item.id ? { background: C.accent + "20", color: C.accent } : { color: C.muted }}>
+                <span className="shrink-0">{item.icon}</span>
+                {sidebarOpen && <span className="text-[11px] font-medium flex-1 truncate">{item.label}</span>}
+                {sidebarOpen && item.badge !== undefined && <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: C.accent, color: C.white }}>{item.badge}</span>}
               </button>
             ))}
-          </div>
+          </nav>
+          {sidebarOpen && (
+            <div className="mx-3 mt-3 p-2.5 rounded-lg" style={{ background: C.surface }}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: C.accent, color: C.white }}>MK</div>
+                <div>
+                  <span className="text-[10px] font-medium block" style={{ color: C.text }}>Mateusz K.</span>
+                  <span className="text-[8px]" style={{ color: C.muted }}>Technik serwisu</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.aside>
 
-          <div className="flex-1 min-w-0">
-            <AnimatePresence mode="wait">
-              <motion.div key={page} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
-                {page === "dashboard" && <DashboardPage onNav={setPage} />}
-                {page === "tickets" && <TicketsPage />}
-                {page === "new-ticket" && <NewTicketPage onNav={setPage} />}
-                {page === "pricing" && <PricingPage />}
-                {page === "tracking" && <TrackingPage />}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+        <main className="flex-1 overflow-y-auto p-4">
+          <AnimatePresence mode="wait">
+            <motion.div key={page} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              {page === "dashboard" && <DashboardView onNav={setPage} />}
+              {page === "tickets" && <TicketsView onNav={setPage} />}
+              {page === "new" && <NewTicketView />}
+              {page === "timeline" && <TimelineView />}
+              {page === "parts" && <PartsView />}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
-      <DemoBenefits accentColor={C.blue} bgColor={C.slate} textColor={C.white} benefits={[
-        { icon: "📋", title: "Porządek w zleceniach", desc: "Koniec z kartkami i Excelem" },
-        { icon: "📱", title: "Klient śledzi online", desc: "Status naprawy w czasie rzeczywistym" },
-        { icon: "💰", title: "Szybsze rozliczenia", desc: "Automatyczne wyceny i faktury" },
-        { icon: "📊", title: "Analityka serwisu", desc: "Raporty wydajności i przychodów" },
+
+      <DemoBenefits accentColor={C.accent} bgColor={C.dark} textColor={C.text} benefits={[
+        { icon: "🔧", title: "System zleceń", desc: "Pełny workflow od przyjęcia do wydania" },
+        { icon: "📋", title: "Timeline napraw", desc: "5-etapowy proces z powiadomieniami" },
+        { icon: "📦", title: "Magazyn części", desc: "Stan magazynowy z alertami" },
+        { icon: "📊", title: "Panel technika", desc: "Kolejka, priorytety, statystyki" },
       ]} />
-      <DemoFooterCTA accentColor={C.blue} bgColor={C.dark} />
+      <DemoFooterCTA accentColor={C.accent} bgColor={C.charcoal} />
     </PreviewShell>
   );
 }
 
-function DashboardPage({ onNav }: { onNav: (p: string) => void }) {
-  const stats = [
-    { label: "Aktywne", value: "12", icon: <Wrench className="w-3.5 h-3.5" />, color: C.blue },
-    { label: "Oczekujące", value: "4", icon: <Clock className="w-3.5 h-3.5" />, color: C.orange },
-    { label: "Gotowe", value: "3", icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: C.green },
-    { label: "Przychód/tydz", value: "8.4K", icon: <BarChart3 className="w-3.5 h-3.5" />, color: "#A78BFA" },
-  ];
-
+function DashboardView({ onNav }: { onNav: (p: BookingPage) => void }) {
+  const active = tickets.filter(t => t.status !== "done");
   return (
-    <div className="p-3 space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-sm" style={{ color: C.white }}>Dashboard serwisu</h2>
-        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: C.green + "20", color: C.green }}>● Online</span>
-      </div>
-
-      <div className="grid grid-cols-4 gap-2">
-        {stats.map((s, i) => (
-          <div key={i} className="p-2.5 rounded-xl" style={{ background: C.navy }}>
-            <div className="flex items-center gap-1 mb-1" style={{ color: s.color }}>{s.icon}</div>
-            <span className="font-bold text-lg block" style={{ color: C.white }}>{s.value}</span>
-            <span className="text-[9px]" style={{ color: C.gray }}>{s.label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-xl overflow-hidden" style={{ background: C.navy }}>
-        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: C.slate }}>
-          <span className="text-xs font-bold" style={{ color: C.white }}>Ostatnie zgłoszenia</span>
-          <button onClick={() => onNav("tickets")} className="text-[10px] font-medium" style={{ color: C.blue }}>Zobacz wszystkie →</button>
+        <div>
+          <h2 className="font-bold text-base" style={{ color: C.text }}>Przegląd serwisu</h2>
+          <p className="text-[10px]" style={{ color: C.muted }}>Panel zarządzania · 31 mar 2026</p>
         </div>
-        {tickets.slice(0, 4).map((t, i) => {
-          const st = statusMap[t.status];
-          const pr = priorityMap[t.priority];
-          return (
-            <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 border-b" style={{ borderColor: C.slate + "60" }}>
-              <div className="w-1 h-8 rounded-full" style={{ background: pr.color }} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold" style={{ color: C.blue }}>{t.id}</span>
-                  <span className="text-[10px] truncate" style={{ color: C.white }}>{t.device}</span>
-                </div>
-                <span className="text-[9px] truncate block" style={{ color: C.gray }}>{t.issue}</span>
-              </div>
-              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold shrink-0" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div className="p-3 rounded-xl" style={{ background: C.navy }}>
-          <span className="text-[10px] font-medium" style={{ color: C.gray }}>Technicy na zmianie</span>
-          <div className="flex items-center gap-1 mt-2">
-            {["MK", "PW", "AM"].map((a, i) => (
-              <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border-2" style={{ background: C.slate, color: C.white, borderColor: C.navy, marginLeft: i > 0 ? -6 : 0 }}>{a}</div>
-            ))}
-            <span className="text-[10px] ml-2" style={{ color: C.green }}>3 online</span>
-          </div>
-        </div>
-        <div className="p-3 rounded-xl" style={{ background: C.navy }}>
-          <span className="text-[10px] font-medium" style={{ color: C.gray }}>Części zamówione</span>
-          <div className="flex items-center gap-2 mt-2">
-            <Truck className="w-4 h-4" style={{ color: C.orange }} />
-            <span className="font-bold text-sm" style={{ color: C.white }}>5 paczek</span>
-          </div>
-          <span className="text-[9px]" style={{ color: C.orange }}>2 dziś dotrą</span>
-        </div>
-      </div>
-
-      <div className="p-3 rounded-xl" style={{ background: C.navy }}>
-        <span className="text-[10px] font-medium" style={{ color: C.gray }}>Wydajność tygodnia</span>
-        <div className="flex items-end gap-1 mt-2 h-12">
-          {[65, 80, 45, 90, 70, 85, 55].map((v, i) => (
-            <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: i === 3 ? C.blue : C.slate }} />
-          ))}
-        </div>
-        <div className="flex justify-between mt-1">
-          {["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((d, i) => (
-            <span key={i} className="text-[7px] flex-1 text-center" style={{ color: C.gray }}>{d}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TicketsPage() {
-  const [filter, setFilter] = useState("all");
-  const filtered = filter === "all" ? tickets : tickets.filter(t => t.status === filter);
-
-  return (
-    <div className="p-3 space-y-3">
-      <h2 className="font-bold text-sm" style={{ color: C.white }}>Zgłoszenia serwisowe</h2>
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {[{ id: "all", label: "Wszystkie" }, { id: "in-progress", label: "W naprawie" }, { id: "diagnostics", label: "Diagnostyka" }, { id: "waiting-parts", label: "Oczekuje" }, { id: "ready", label: "Gotowe" }].map(f => (
-          <button key={f.id} onClick={() => setFilter(f.id)} className="px-2.5 py-1 rounded-lg text-[10px] font-medium whitespace-nowrap"
-            style={filter === f.id ? { background: C.blue, color: C.white } : { background: C.navy, color: C.gray }}>{f.label}</button>
-        ))}
-      </div>
-      <div className="space-y-2">
-        {filtered.map((t, i) => {
-          const st = statusMap[t.status];
-          const pr = priorityMap[t.priority];
-          return (
-            <motion.div key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              className="p-3 rounded-xl" style={{ background: C.navy }}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-xs" style={{ color: C.blue }}>{t.id}</span>
-                  <span className="px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ color: pr.color, background: pr.color + "15" }}>● {pr.label}</span>
-                </div>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-              </div>
-              <h4 className="text-xs font-semibold" style={{ color: C.white }}>{t.device}</h4>
-              <p className="text-[10px] mt-0.5" style={{ color: C.gray }}>{t.issue}</p>
-              <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: C.slate }}>
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px]" style={{ color: C.gray }}>👤 {t.client}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px]" style={{ color: C.gray }}>🔧 {t.tech}</span>
-                  <span className="text-[9px] font-medium" style={{ color: C.blue }}>ETA: {t.eta}</span>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function NewTicketPage({ onNav }: { onNav: (p: string) => void }) {
-  const [step, setStep] = useState(0);
-  const [deviceType, setDeviceType] = useState("");
-  const deviceTypes = [
-    { id: "laptop", label: "Laptop", icon: "💻" },
-    { id: "desktop", label: "Komputer stacjonarny", icon: "🖥️" },
-    { id: "phone", label: "Telefon / Tablet", icon: "📱" },
-    { id: "server", label: "Serwer / Sieć", icon: "🌐" },
-    { id: "printer", label: "Drukarka", icon: "🖨️" },
-    { id: "other", label: "Inne urządzenie", icon: "⚡" },
-  ];
-
-  return (
-    <div className="p-3 space-y-3">
-      <h2 className="font-bold text-sm" style={{ color: C.white }}>Nowe zgłoszenie</h2>
-      <div className="flex items-center gap-2 mb-2">
-        {["Urządzenie", "Problem", "Dane", "Gotowe"].map((s, i) => (
-          <div key={s} className="flex items-center gap-1.5 flex-1">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
-              style={step >= i ? { background: C.blue, color: C.white } : { background: C.navy, color: C.gray }}>{step > i ? "✓" : i + 1}</div>
-            <span className="text-[9px] hidden sm:block" style={{ color: step >= i ? C.white : C.gray }}>{s}</span>
-            {i < 3 && <div className="flex-1 h-px" style={{ background: step > i ? C.blue : C.navy }} />}
-          </div>
-        ))}
-      </div>
-
-      {step === 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {deviceTypes.map(d => (
-            <motion.button key={d.id} whileHover={{ scale: 1.03 }} onClick={() => { setDeviceType(d.id); setStep(1); }}
-              className="p-3 rounded-xl text-center" style={{ background: deviceType === d.id ? C.blue + "20" : C.navy, border: `1px solid ${deviceType === d.id ? C.blue : C.slate}` }}>
-              <span className="text-2xl block mb-1">{d.icon}</span>
-              <span className="text-[10px] font-medium" style={{ color: C.white }}>{d.label}</span>
-            </motion.button>
-          ))}
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="space-y-2">
-          <input placeholder="Marka i model urządzenia" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-          <textarea placeholder="Opisz problem szczegółowo..." rows={3} className="w-full px-3 py-2.5 rounded-lg text-sm resize-none" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-          <div className="flex gap-2">
-            {["Nie włącza się", "Wolno działa", "Uszkodzony ekran", "Problem z siecią", "Wirusy/malware"].map(q => (
-              <button key={q} className="px-2 py-1 rounded-lg text-[9px] font-medium whitespace-nowrap" style={{ background: C.slate, color: C.gray }}>{q}</button>
-            ))}
-          </div>
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => setStep(0)} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.navy, color: C.gray }}>Wstecz</button>
-            <button onClick={() => setStep(2)} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Dalej</button>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-2">
-          <input placeholder="Imię i nazwisko / Firma" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-          <input placeholder="Telefon kontaktowy" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-          <input placeholder="E-mail" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-          <label className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer" style={{ background: C.navy }}>
-            <input type="checkbox" className="accent-sky-500 w-3.5 h-3.5" />
-            <span className="text-[10px]" style={{ color: C.gray }}>Zgadzam się na przetwarzanie danych</span>
-          </label>
-          <div className="flex gap-2">
-            <button onClick={() => setStep(1)} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.navy, color: C.gray }}>Wstecz</button>
-            <button onClick={() => setStep(3)} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Wyślij zgłoszenie</button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
-          <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.green + "20" }}>
-            <CheckCircle2 className="w-7 h-7" style={{ color: C.green }} />
-          </div>
-          <h3 className="font-bold text-base" style={{ color: C.white }}>Zgłoszenie przyjęte!</h3>
-          <p className="text-xs mt-1" style={{ color: C.gray }}>Nr zgłoszenia:</p>
-          <p className="font-mono font-bold text-lg mt-0.5" style={{ color: C.blue }}>RQ-{Math.floor(Math.random() * 9000 + 1000)}</p>
-          <p className="text-[10px] mt-2 max-w-[200px] mx-auto" style={{ color: C.gray }}>Skontaktujemy się w ciągu 1h. Możesz śledzić status naprawy online.</p>
-          <button onClick={() => onNav("tracking")} className="mt-4 px-5 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Śledź naprawę</button>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-function PricingPage() {
-  return (
-    <div className="p-3 space-y-3">
-      <h2 className="font-bold text-sm" style={{ color: C.white }}>Cennik usług</h2>
-      <div className="space-y-2">
-        {pricing.map((p, i) => (
-          <motion.div key={i} initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-            className="flex items-center gap-3 p-3 rounded-xl" style={{ background: C.navy }}>
-            <span className="text-xl">{p.icon}</span>
-            <div className="flex-1">
-              <h4 className="text-xs font-semibold" style={{ color: C.white }}>{p.name}</h4>
-              <span className="text-[10px]" style={{ color: C.gray }}>{p.time}</span>
-            </div>
-            <span className="font-bold text-sm" style={{ color: C.blue }}>{p.price}</span>
-          </motion.div>
-        ))}
-      </div>
-      <div className="p-3 rounded-xl" style={{ background: C.blue + "10", border: `1px solid ${C.blue}30` }}>
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4" style={{ color: C.blue }} />
-          <span className="text-xs font-bold" style={{ color: C.white }}>Gwarancja na naprawę</span>
-        </div>
-        <p className="text-[10px] mt-1" style={{ color: C.gray }}>Wszystkie naprawy objęte 6-miesięczną gwarancją. Darmowa rediagnostyka w razie powrotu usterki.</p>
-      </div>
-      <div className="p-3 rounded-xl" style={{ background: C.navy }}>
-        <span className="text-[10px] font-bold" style={{ color: C.white }}>Obsługujemy firmy B2B</span>
-        <p className="text-[9px] mt-1" style={{ color: C.gray }}>Stałe umowy serwisowe, SLA, faktura z odroczonym terminem. Zadzwoń: +48 793 020 820</p>
-      </div>
-    </div>
-  );
-}
-
-function TrackingPage() {
-  const [code, setCode] = useState("RQ-2847");
-  const [tracked, setTracked] = useState(true);
-
-  const timeline = [
-    { label: "Przyjęcie urządzenia", time: "22 mar, 09:15", done: true, desc: "MacBook Pro 16\" — diagnostyka" },
-    { label: "Diagnostyka zakończona", time: "22 mar, 11:30", done: true, desc: "Ustalono: wymiana matrycy + baterii" },
-    { label: "Wycena zaakceptowana", time: "22 mar, 12:00", done: true, desc: "Klient zatwierdził: 1 890 zł" },
-    { label: "Naprawa w toku", time: "22 mar, 14:00", done: true, desc: "Technik: Michał K." },
-    { label: "Testowanie", time: "~22 mar, 16:00", done: false, desc: "Sprawdzanie komponentów" },
-    { label: "Gotowe do odbioru", time: "~22 mar, 17:00", done: false, desc: "Powiadomienie SMS" },
-  ];
-
-  return (
-    <div className="p-3 space-y-3">
-      <h2 className="font-bold text-sm" style={{ color: C.white }}>Śledź naprawę</h2>
-      <div className="flex gap-2">
-        <input value={code} onChange={e => setCode(e.target.value)} placeholder="Nr zgłoszenia (np. RQ-2847)"
-          className="flex-1 px-3 py-2 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
-        <button onClick={() => setTracked(true)} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>
-          <Search className="w-4 h-4" />
+        <button onClick={() => onNav("new")} className="px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1" style={{ background: C.accent, color: C.white }}>
+          <Plus className="w-3 h-3" /> Nowe zlecenie
         </button>
       </div>
 
-      {tracked && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="p-3 rounded-xl mb-3" style={{ background: C.blue + "10", border: `1px solid ${C.blue}30` }}>
-            <div className="flex items-center justify-between">
-              <span className="font-mono font-bold text-sm" style={{ color: C.blue }}>{code}</span>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.blue + "20", color: C.blue }}>W naprawie</span>
-            </div>
-            <p className="text-xs mt-1" style={{ color: C.white }}>MacBook Pro 16\" — Wymiana matrycy + baterii</p>
-            <p className="text-[10px]" style={{ color: C.gray }}>Szacowane zakończenie: dziś ~17:00</p>
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          { v: `${active.length}`, l: "Aktywne", c: C.accent },
+          { v: `${tickets.filter(t => t.status === "ready").length}`, l: "Gotowe", c: C.green },
+          { v: `${tickets.filter(t => t.priority === "critical").length}`, l: "Krytyczne", c: C.red },
+          { v: `${tickets.filter(t => t.status === "parts").length}`, l: "Czeka na części", c: C.orange },
+        ].map((s, i) => (
+          <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.dark }}>
+            <span className="font-bold text-lg block" style={{ color: s.c }}>{s.v}</span>
+            <span className="text-[8px]" style={{ color: C.muted }}>{s.l}</span>
           </div>
+        ))}
+      </div>
 
-          <div className="space-y-0 pl-2">
-            {timeline.map((t, i) => (
-              <div key={i} className="flex gap-3 relative">
-                <div className="flex flex-col items-center">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 z-10"
-                    style={t.done ? { background: C.blue, borderColor: C.blue } : { background: C.dark, borderColor: C.slate }}>
-                    {t.done && <CheckCircle2 className="w-3 h-3 text-white" />}
-                  </div>
-                  {i < timeline.length - 1 && <div className="w-0.5 flex-1 min-h-[20px]" style={{ background: t.done ? C.blue + "40" : C.slate }} />}
-                </div>
-                <div className="pb-4 flex-1">
-                  <span className="text-xs font-semibold" style={{ color: t.done ? C.white : C.gray }}>{t.label}</span>
-                  <span className="text-[10px] ml-2" style={{ color: C.gray }}>{t.time}</span>
-                  <p className="text-[10px]" style={{ color: C.gray }}>{t.desc}</p>
-                </div>
-              </div>
-            ))}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.muted }}>Ostatnie zlecenia</span>
+        <button onClick={() => onNav("tickets")} className="text-[9px] font-medium flex items-center gap-0.5" style={{ color: C.accent }}>Wszystkie <ChevronRight className="w-3 h-3" /></button>
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ background: C.dark }}>
+        <table className="w-full text-[10px]">
+          <thead>
+            <tr style={{ background: C.surface }}>
+              {["Nr", "Klient", "Urządzenie", "Status", "Priorytet", "Etap"].map(h => (
+                <th key={h} className="px-2 py-2 text-left font-medium" style={{ color: C.muted }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {active.slice(0, 4).map((t, i) => {
+              const st = statusConfig[t.status];
+              const pr = priorityConfig[t.priority];
+              return (
+                <tr key={i} className="cursor-pointer" style={{ borderBottom: `1px solid ${C.surface}` }}
+                  onClick={() => onNav("timeline")}>
+                  <td className="px-2 py-2 font-mono font-bold" style={{ color: C.accent }}>{t.id}</td>
+                  <td className="px-2 py-2" style={{ color: C.text }}>{t.client}</td>
+                  <td className="px-2 py-2" style={{ color: C.text }}>{t.device}</td>
+                  <td className="px-2 py-2"><span className="px-1.5 py-0.5 rounded-full text-[8px] font-bold" style={{ background: st.bg, color: st.fg }}>{st.label}</span></td>
+                  <td className="px-2 py-2"><span className="text-[8px] font-bold" style={{ color: pr.fg }}>● {pr.label}</span></td>
+                  <td className="px-2 py-2">
+                    <div className="w-16 h-1.5 rounded-full" style={{ background: C.surface }}>
+                      <div className="h-full rounded-full" style={{ width: `${(t.stage / 5) * 100}%`, background: st.fg }} />
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: C.red + "15", border: `1px solid ${C.red}30` }}>
+        <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: C.red }} />
+        <div>
+          <span className="text-[10px] font-bold block" style={{ color: C.red }}>Alert magazynowy</span>
+          <span className="text-[9px]" style={{ color: C.text }}>Klawiatura MacBook Air M2 — stan: 0 szt. (min. 2)</span>
+        </div>
+        <button onClick={() => onNav("parts")} className="ml-auto px-2 py-1 rounded text-[8px] font-bold" style={{ background: C.red, color: C.white }}>Zamów</button>
+      </div>
+    </div>
+  );
+}
+
+function TicketsView({ onNav }: { onNav: (p: BookingPage) => void }) {
+  const [filter, setFilter] = useState("all");
+  const filtered = filter === "all" ? tickets : tickets.filter(t => t.status === filter);
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-base" style={{ color: C.text }}>Zlecenia serwisowe</h2>
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: C.dark }}>
+          <Search className="w-3 h-3" style={{ color: C.muted }} />
+          <input placeholder="Szukaj..." className="bg-transparent text-[10px] outline-none w-24" style={{ color: C.text }} />
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        {[{ id: "all", l: "Wszystkie" }, { id: "diagnosis", l: "Diagnoza" }, { id: "parts", l: "Części" }, { id: "repair", l: "Naprawa" }, { id: "ready", l: "Gotowe" }].map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)} className="px-2.5 py-1 rounded-lg text-[9px] font-medium"
+            style={filter === f.id ? { background: C.accent, color: C.white } : { background: C.dark, color: C.muted }}>{f.l}</button>
+        ))}
+      </div>
+      <div className="rounded-xl overflow-hidden" style={{ background: C.dark }}>
+        <table className="w-full text-[10px]">
+          <thead>
+            <tr style={{ background: C.surface }}>
+              {["Nr zlecenia", "Klient", "Urządzenie", "Problem", "Status", "Koszt"].map(h => (
+                <th key={h} className="px-2.5 py-2 text-left font-medium" style={{ color: C.muted }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((t, i) => {
+              const st = statusConfig[t.status];
+              return (
+                <motion.tr key={t.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+                  className="cursor-pointer hover:bg-white/[0.02]" style={{ borderBottom: `1px solid ${C.surface}` }}
+                  onClick={() => onNav("timeline")}>
+                  <td className="px-2.5 py-2.5 font-mono font-bold" style={{ color: C.accent }}>{t.id}</td>
+                  <td className="px-2.5 py-2.5" style={{ color: C.text }}>{t.client}</td>
+                  <td className="px-2.5 py-2.5" style={{ color: C.text }}>{t.device}</td>
+                  <td className="px-2.5 py-2.5 max-w-[140px] truncate" style={{ color: C.muted }}>{t.issue}</td>
+                  <td className="px-2.5 py-2.5"><span className="px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ background: st.bg, color: st.fg }}>{st.label}</span></td>
+                  <td className="px-2.5 py-2.5 font-bold" style={{ color: t.cost > 0 ? C.green : C.muted }}>{t.cost > 0 ? `${t.cost} zł` : "—"}</td>
+                </motion.tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function NewTicketView() {
+  type WizardStep = "device" | "issue" | "client" | "confirm";
+  const [step, setStep] = useState<WizardStep>("device");
+  const [done, setDone] = useState(false);
+  const steps: { id: WizardStep; label: string }[] = [
+    { id: "device", label: "Urządzenie" }, { id: "issue", label: "Problem" }, { id: "client", label: "Klient" }, { id: "confirm", label: "Potwierdź" },
+  ];
+  const currentIdx = steps.findIndex(s => s.id === step);
+
+  if (done) return (
+    <div className="text-center py-12">
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+        <CheckCircle2 className="w-14 h-14 mx-auto" style={{ color: C.green }} />
+      </motion.div>
+      <h3 className="font-bold text-lg mt-3" style={{ color: C.text }}>Zlecenie utworzone!</h3>
+      <p className="font-mono text-sm mt-1" style={{ color: C.accent }}>TK-2026-{Math.floor(Math.random() * 9000 + 1000)}</p>
+      <p className="text-[10px] mt-2" style={{ color: C.muted }}>Klient otrzyma SMS z potwierdzeniem przyjęcia sprzętu.</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <h2 className="font-bold text-base" style={{ color: C.text }}>Nowe zlecenie serwisowe</h2>
+      <div className="flex items-center gap-1">
+        {steps.map((s, i) => (
+          <div key={s.id} className="flex items-center gap-1 flex-1">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold"
+              style={currentIdx >= i ? { background: C.accent, color: C.white } : { background: C.surface, color: C.muted }}>{i + 1}</div>
+            <span className="text-[9px]" style={{ color: currentIdx >= i ? C.text : C.muted }}>{s.label}</span>
+            {i < 3 && <div className="flex-1 h-0.5 rounded" style={{ background: currentIdx > i ? C.accent : C.surface }} />}
           </div>
-        </motion.div>
-      )}
+        ))}
+      </div>
+
+      <div className="p-4 rounded-xl space-y-2" style={{ background: C.dark }}>
+        {step === "device" && (
+          <>
+            <span className="text-[10px] font-bold" style={{ color: C.muted }}>Typ urządzenia</span>
+            <div className="grid grid-cols-4 gap-2">
+              {[{ icon: <Monitor className="w-5 h-5" />, l: "Laptop" }, { icon: <Smartphone className="w-5 h-5" />, l: "Telefon" }, { icon: <Cpu className="w-5 h-5" />, l: "Serwer" }, { icon: <HardDrive className="w-5 h-5" />, l: "Inne" }].map((d, i) => (
+                <button key={i} className="p-3 rounded-xl text-center" style={{ background: i === 0 ? C.accent + "20" : C.surface, color: i === 0 ? C.accent : C.muted }}>
+                  {d.icon}
+                  <span className="text-[9px] block mt-1">{d.l}</span>
+                </button>
+              ))}
+            </div>
+            <input placeholder="Marka i model urządzenia" className="w-full px-3 py-2.5 rounded-lg text-xs outline-none" style={{ background: C.surface, color: C.text, border: `1px solid ${C.surface}` }} />
+            <input placeholder="Numer seryjny (opcjonalnie)" className="w-full px-3 py-2.5 rounded-lg text-xs outline-none" style={{ background: C.surface, color: C.text, border: `1px solid ${C.surface}` }} />
+            <button onClick={() => setStep("issue")} className="w-full py-2.5 rounded-lg text-[10px] font-bold" style={{ background: C.accent, color: C.white }}>Dalej</button>
+          </>
+        )}
+        {step === "issue" && (
+          <>
+            <span className="text-[10px] font-bold" style={{ color: C.muted }}>Opis problemu</span>
+            <textarea placeholder="Opisz usterkę…" rows={4} className="w-full px-3 py-2.5 rounded-lg text-xs outline-none resize-none" style={{ background: C.surface, color: C.text }} />
+            <select className="w-full px-3 py-2.5 rounded-lg text-xs" style={{ background: C.surface, color: C.text }}>
+              <option>Priorytet...</option><option>Krytyczny (+100%)</option><option>Wysoki (+50%)</option><option>Średni</option><option>Niski</option>
+            </select>
+            <div className="flex gap-2">
+              <button onClick={() => setStep("device")} className="px-4 py-2 rounded-lg text-[10px]" style={{ background: C.surface, color: C.text }}>Wstecz</button>
+              <button onClick={() => setStep("client")} className="flex-1 py-2 rounded-lg text-[10px] font-bold" style={{ background: C.accent, color: C.white }}>Dalej</button>
+            </div>
+          </>
+        )}
+        {step === "client" && (
+          <>
+            <span className="text-[10px] font-bold" style={{ color: C.muted }}>Dane klienta</span>
+            <input placeholder="Imię i nazwisko / Firma" className="w-full px-3 py-2.5 rounded-lg text-xs outline-none" style={{ background: C.surface, color: C.text }} />
+            <input placeholder="Telefon" className="w-full px-3 py-2.5 rounded-lg text-xs outline-none" style={{ background: C.surface, color: C.text }} />
+            <input placeholder="Email" className="w-full px-3 py-2.5 rounded-lg text-xs outline-none" style={{ background: C.surface, color: C.text }} />
+            <div className="flex gap-2">
+              <button onClick={() => setStep("issue")} className="px-4 py-2 rounded-lg text-[10px]" style={{ background: C.surface, color: C.text }}>Wstecz</button>
+              <button onClick={() => setStep("confirm")} className="flex-1 py-2 rounded-lg text-[10px] font-bold" style={{ background: C.accent, color: C.white }}>Dalej</button>
+            </div>
+          </>
+        )}
+        {step === "confirm" && (
+          <>
+            <span className="text-[10px] font-bold" style={{ color: C.muted }}>Potwierdzenie zlecenia</span>
+            <div className="space-y-1.5 text-[10px]">
+              {[{ l: "Urządzenie", v: "MacBook Pro 16\"" }, { l: "Problem", v: "Nie uruchamia się po aktualizacji" }, { l: "Priorytet", v: "Wysoki" }, { l: "Klient", v: "Jan Kowalski" }].map((r, i) => (
+                <div key={i} className="flex justify-between p-2 rounded-lg" style={{ background: C.surface }}>
+                  <span style={{ color: C.muted }}>{r.l}</span><span className="font-medium" style={{ color: C.text }}>{r.v}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setStep("client")} className="px-4 py-2 rounded-lg text-[10px]" style={{ background: C.surface, color: C.text }}>Wstecz</button>
+              <motion.button whileHover={{ scale: 1.02 }} onClick={() => setDone(true)}
+                className="flex-1 py-2.5 rounded-lg text-[10px] font-bold" style={{ background: C.green, color: C.charcoal }}>Utwórz zlecenie</motion.button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TimelineView() {
+  const ticket = tickets[0];
+  const st = statusConfig[ticket.status];
+  return (
+    <div className="space-y-3">
+      <h2 className="font-bold text-base" style={{ color: C.text }}>Postęp naprawy</h2>
+      <div className="p-3 rounded-xl" style={{ background: C.dark }}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-mono text-[10px] font-bold" style={{ color: C.accent }}>{ticket.id}</span>
+          <span className="px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
+        </div>
+        <h4 className="text-xs font-bold" style={{ color: C.text }}>{ticket.device}</h4>
+        <p className="text-[10px]" style={{ color: C.muted }}>{ticket.issue}</p>
+        <p className="text-[10px] mt-1" style={{ color: C.muted }}>Technik: <span style={{ color: C.accent }}>{ticket.assigned}</span></p>
+      </div>
+
+      <div className="space-y-0 pl-2">
+        {repairStages.map((stage, i) => {
+          const isDone = i < ticket.stage;
+          const isCurrent = i === ticket.stage - 1;
+          return (
+            <div key={i} className="flex gap-3">
+              <div className="flex flex-col items-center">
+                <motion.div initial={isCurrent ? { scale: 0.8 } : {}} animate={isCurrent ? { scale: [0.8, 1.15, 1] } : {}}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={isDone ? { background: C.green } : isCurrent ? { background: C.accent + "30", border: `2px solid ${C.accent}` } : { background: C.surface }}>
+                  {isDone ? <CheckCircle2 className="w-4 h-4 text-white" /> : <span className="text-[10px] font-bold" style={{ color: isCurrent ? C.accent : C.muted }}>{i + 1}</span>}
+                </motion.div>
+                {i < repairStages.length - 1 && <div className="w-0.5 h-10" style={{ background: isDone ? C.green : C.surface }} />}
+              </div>
+              <div className="pb-4 flex-1">
+                <span className="text-xs font-bold" style={{ color: isDone || isCurrent ? C.text : C.muted }}>{stage}</span>
+                {isDone && <p className="text-[9px] mt-0.5" style={{ color: C.green }}>✓ Zakończone</p>}
+                {isCurrent && (
+                  <div className="mt-1 p-2 rounded-lg" style={{ background: C.accent + "10" }}>
+                    <p className="text-[9px]" style={{ color: C.accent }}>W trakcie — szacowany czas: 2-3h</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PartsView() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const filtered = searchTerm ? partsInventory.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())) : partsInventory;
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-base" style={{ color: C.text }}>Magazyn części</h2>
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: C.dark }}>
+          <Search className="w-3 h-3" style={{ color: C.muted }} />
+          <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Szukaj części..." className="bg-transparent text-[10px] outline-none w-28" style={{ color: C.text }} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="p-3 rounded-xl text-center" style={{ background: C.dark }}>
+          <span className="font-bold text-sm block" style={{ color: C.accent }}>{partsInventory.length}</span>
+          <span className="text-[8px]" style={{ color: C.muted }}>Pozycji</span>
+        </div>
+        <div className="p-3 rounded-xl text-center" style={{ background: C.dark }}>
+          <span className="font-bold text-sm block" style={{ color: C.green }}>{partsInventory.filter(p => p.stock >= p.min).length}</span>
+          <span className="text-[8px]" style={{ color: C.muted }}>OK</span>
+        </div>
+        <div className="p-3 rounded-xl text-center" style={{ background: C.dark }}>
+          <span className="font-bold text-sm block" style={{ color: C.red }}>{partsInventory.filter(p => p.stock < p.min).length}</span>
+          <span className="text-[8px]" style={{ color: C.muted }}>Niski stan</span>
+        </div>
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ background: C.dark }}>
+        <table className="w-full text-[10px]">
+          <thead>
+            <tr style={{ background: C.surface }}>
+              {["Część", "Kategoria", "Stan", "Min.", "Cena", "Status"].map(h => (
+                <th key={h} className="px-2 py-2 text-left font-medium" style={{ color: C.muted }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((p, i) => {
+              const low = p.stock < p.min;
+              const out = p.stock === 0;
+              return (
+                <motion.tr key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                  style={{ borderBottom: `1px solid ${C.surface}` }}>
+                  <td className="px-2 py-2 font-medium max-w-[140px] truncate" style={{ color: C.text }}>{p.name}</td>
+                  <td className="px-2 py-2" style={{ color: C.muted }}>{p.cat}</td>
+                  <td className="px-2 py-2 font-bold" style={{ color: out ? C.red : low ? C.orange : C.green }}>{p.stock} szt.</td>
+                  <td className="px-2 py-2" style={{ color: C.muted }}>{p.min}</td>
+                  <td className="px-2 py-2" style={{ color: C.text }}>{p.price} zł</td>
+                  <td className="px-2 py-2">
+                    {out ? <span className="px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ background: C.red + "20", color: C.red }}>Brak!</span> :
+                     low ? <span className="px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ background: C.orange + "20", color: C.orange }}>Zamów</span> :
+                     <span className="px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ background: C.green + "20", color: C.green }}>OK</span>}
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

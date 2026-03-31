@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { ShoppingBag, Star, Heart, CreditCard, Truck, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Search, Filter, User, ArrowLeft, Package } from "lucide-react";
+import { ShoppingBag, Star, Heart, CreditCard, Truck, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Search, ArrowLeft } from "lucide-react";
 
 const C = { black: "#0A0A0A", cream: "#FAF5EE", gold: "#B8860B", taupe: "#8B7D6B", white: "#FFFFFF", warm: "#F5EDE3", rose: "#9E6B6B", dark: "#1C1917" };
 
@@ -15,27 +15,44 @@ const categories = [
 ];
 
 const products = [
-  { name: "Płaszcz Kaszmirowy Oversize", cat: "coats", price: 1890, oldPrice: 2490, sizes: ["S", "M", "L"], color: "Camel", badge: "BESTSELLER", rating: 4.9, reviews: 89 },
+  { name: "Płaszcz Kaszmirowy Oversize", cat: "coats", price: 1890, oldPrice: 2490, sizes: ["S", "M", "L"], color: "Karmelowy", badge: "BESTSELLER", rating: 4.9, reviews: 89 },
   { name: "Sukienka Midi Jedwabna", cat: "dresses", price: 890, sizes: ["XS", "S", "M", "L"], color: "Czarny", badge: "NOWOŚĆ", rating: 5.0, reviews: 34 },
   { name: "Torebka Skórzana Baguette", cat: "bags", price: 690, oldPrice: 890, sizes: [], color: "Nude", badge: "-23%", rating: 4.8, reviews: 156 },
   { name: "Botki Chelsea Skóra", cat: "shoes", price: 590, sizes: ["36", "37", "38", "39", "40"], color: "Czarny", badge: "", rating: 4.7, reviews: 67 },
-  { name: "Szal Wełniany Premium", cat: "accessories", price: 290, sizes: [], color: "Grey Melange", badge: "NOWOŚĆ", rating: 4.9, reviews: 45 },
+  { name: "Szal Wełniany Premium", cat: "accessories", price: 290, sizes: [], color: "Szary melanż", badge: "NOWOŚĆ", rating: 4.9, reviews: 45 },
   { name: "Marynarka Oversize Lniana", cat: "coats", price: 1190, sizes: ["S", "M", "L", "XL"], color: "Ecru", badge: "", rating: 4.8, reviews: 78 },
-  { name: "Spódnica Plisowana Maxi", cat: "dresses", price: 490, sizes: ["XS", "S", "M"], color: "Champagne", badge: "", rating: 4.6, reviews: 52 },
-  { name: "Kopertówka Wieczorowa", cat: "bags", price: 390, sizes: [], color: "Gold", badge: "LUX", rating: 5.0, reviews: 28 },
+  { name: "Spódnica Plisowana Maxi", cat: "dresses", price: 490, sizes: ["XS", "S", "M"], color: "Szampański", badge: "", rating: 4.6, reviews: 52 },
+  { name: "Kopertówka Wieczorowa", cat: "bags", price: 390, sizes: [], color: "Złoty", badge: "LUX", rating: 5.0, reviews: 28 },
 ];
 
-type CartItem = { product: typeof products[0]; qty: number; size: string };
+type Product = typeof products[0];
+type CartItem = { product: Product; qty: number; size: string };
+type EcommPage = "home" | "shop" | "product" | "cart" | "checkout" | "wishlist";
+
+interface ShopPageProps {
+  addToCart: (p: Product, s: string) => void;
+  setProduct: (i: number) => void;
+  onNav: (p: EcommPage) => void;
+  toggleWish: (i: number) => void;
+  wishlist: Set<number>;
+}
+
+interface WishlistPageProps {
+  wishlist: Set<number>;
+  toggleWish: (i: number) => void;
+  setProduct: (i: number) => void;
+  onNav: (p: EcommPage) => void;
+}
 
 export function EcommerceDemo({ name }: { name: string; features: string[] }) {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState<EcommPage>("home");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selProduct, setSelProduct] = useState(-1);
   const [wishlist, setWishlist] = useState<Set<number>>(new Set());
   const cartCount = cart.reduce((a, c) => a + c.qty, 0);
   const cartTotal = cart.reduce((a, c) => a + c.product.price * c.qty, 0);
 
-  const addToCart = (product: typeof products[0], size: string) => {
+  const addToCart = (product: Product, size: string) => {
     setCart(prev => {
       const ex = prev.find(c => c.product.name === product.name && c.size === size);
       if (ex) return prev.map(c => c.product.name === product.name && c.size === size ? { ...c, qty: c.qty + 1 } : c);
@@ -50,7 +67,7 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
   return (
     <PreviewShell title={name}>
       <div style={{ background: C.cream, minHeight: 500 }}>
-        <div className="flex items-center justify-between px-4 py-3" style={{ background: C.black }}>
+        <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-20" style={{ background: C.black }}>
           <div>
             <h1 className="font-display font-bold text-sm tracking-[0.2em]" style={{ color: C.cream }}>MAISON</h1>
             <p className="text-[7px] tracking-[0.3em]" style={{ color: C.gold }}>BOUTIQUE</p>
@@ -83,7 +100,7 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
       </div>
       <DemoBenefits accentColor={C.gold} bgColor={C.cream} textColor={C.black} benefits={[
         { icon: "🛍️", title: "Profesjonalny e-commerce", desc: "Sklep klasy premium z konwersją" },
-        { icon: "📱", title: "Mobile-first", desc: "Responsywny design na każde urządzenie" },
+        { icon: "📱", title: "Wersja mobilna", desc: "Responsywny design na każde urządzenie" },
         { icon: "💳", title: "Szybka płatność", desc: "Integracja z bramkami płatności" },
         { icon: "📦", title: "Zarządzanie magazynem", desc: "Stany magazynowe w czasie rzeczywistym" },
       ]} />
@@ -92,7 +109,7 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
   );
 }
 
-function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: string) => void; setProduct: (i: number) => void; toggleWish: (i: number) => void; wishlist: Set<number> }) {
+function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: EcommPage) => void; setProduct: (i: number) => void; toggleWish: (i: number) => void; wishlist: Set<number> }) {
   return (
     <div>
       <div className="relative py-10 px-5 text-center" style={{ background: `linear-gradient(180deg, ${C.black}, ${C.dark})` }}>
@@ -122,7 +139,7 @@ function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: stri
             <button onClick={() => onNav("shop")} className="text-[10px] font-semibold" style={{ color: C.gold }}>Wszystkie →</button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {products.filter(p => p.badge).slice(0, 4).map((p, i) => {
+            {products.filter(p => p.badge).slice(0, 4).map((p) => {
               const idx = products.indexOf(p);
               return (
                 <motion.div key={idx} whileHover={{ y: -3 }} onClick={() => { setProduct(idx); onNav("product"); }}
@@ -168,7 +185,7 @@ function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: stri
   );
 }
 
-function ShopPage({ addToCart, setProduct, onNav, toggleWish, wishlist }: any) {
+function ShopPage({ addToCart, setProduct, onNav, toggleWish, wishlist }: ShopPageProps) {
   const [selCat, setSelCat] = useState("all");
   const filtered = selCat === "all" ? products : products.filter(p => p.cat === selCat);
 
@@ -214,7 +231,7 @@ function ShopPage({ addToCart, setProduct, onNav, toggleWish, wishlist }: any) {
   );
 }
 
-function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { product: typeof products[0]; addToCart: (p: typeof products[0], s: string) => void; onNav: (p: string) => void; toggleWish: () => void; isWished: boolean }) {
+function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { product: Product; addToCart: (p: Product, s: string) => void; onNav: (p: EcommPage) => void; toggleWish: () => void; isWished: boolean }) {
   const [selSize, setSelSize] = useState("");
   return (
     <div>
@@ -262,7 +279,7 @@ function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { prod
   );
 }
 
-function CartPage({ cart, setCart, total, onNav }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; total: number; onNav: (p: string) => void }) {
+function CartPage({ cart, setCart, total, onNav }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; total: number; onNav: (p: EcommPage) => void }) {
   if (cart.length === 0) {
     return (
       <div className="text-center py-16 px-4">
@@ -311,7 +328,7 @@ function CartPage({ cart, setCart, total, onNav }: { cart: CartItem[]; setCart: 
   );
 }
 
-function CheckoutPage({ total, onNav }: { total: number; onNav: (p: string) => void }) {
+function CheckoutPage({ total, onNav }: { total: number; onNav: (p: EcommPage) => void }) {
   const [confirmed, setConfirmed] = useState(false);
   if (confirmed) {
     return (
@@ -350,7 +367,7 @@ function CheckoutPage({ total, onNav }: { total: number; onNav: (p: string) => v
   );
 }
 
-function WishlistPage({ wishlist, toggleWish, setProduct, onNav }: any) {
+function WishlistPage({ wishlist, toggleWish, setProduct, onNav }: WishlistPageProps) {
   const wished = products.filter((_, i) => wishlist.has(i));
   if (wished.length === 0) {
     return (
@@ -364,7 +381,7 @@ function WishlistPage({ wishlist, toggleWish, setProduct, onNav }: any) {
   return (
     <div className="px-4 py-3 space-y-3">
       <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Lista życzeń ({wished.length})</h2>
-      {wished.map((p, i) => {
+      {wished.map((p) => {
         const idx = products.indexOf(p);
         return (
           <div key={idx} className="flex gap-3 p-3" style={{ background: C.white }}>

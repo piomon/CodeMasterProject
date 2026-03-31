@@ -1,326 +1,430 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
-import { Car, Calendar, MapPin, Fuel, Settings, Star, CheckCircle2, ChevronRight, Home, Search, CreditCard, Users, Clock, Shield, Gauge, Filter } from "lucide-react";
+import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { Car, Calendar, MapPin, Fuel, Star, CheckCircle2, ChevronRight, Search, Users, Clock, Shield, Settings } from "lucide-react";
 
-const C = { navy: "#0C1222", dark: "#151D2E", steel: "#2A3A4E", white: "#F8FAFC", gray: "#6B7280", green: "#10B981", blue: "#3B82F6", red: "#EF4444", amber: "#F59E0B", light: "#F1F5F9", accent: "#E63946", silver: "#C0C0C0" };
+const C = { blue: "#1E40AF", orange: "#F97316", white: "#FFFFFF", light: "#F1F5F9", gray: "#6B7280", green: "#10B981", navy: "#0F172A", amber: "#F59E0B", text: "#1E293B", red: "#EF4444" };
+
+type RentalPage = "home" | "fleet" | "detail" | "booking" | "reservations";
 
 const cars = [
-  { id: 1, name: "BMW Seria 3", category: "Sedan Premium", year: 2025, fuel: "Benzyna", transmission: "Automat", seats: 5, price: 320, image: "🚗", rating: 4.9, available: true, features: ["GPS", "Klimatyzacja", "Kamera cofania", "Apple CarPlay"] },
-  { id: 2, name: "Mercedes-Benz GLC", category: "SUV Premium", year: 2025, fuel: "Diesel", transmission: "Automat", seats: 5, price: 420, image: "🚙", rating: 4.8, available: true, features: ["GPS", "Skóra", "Panorama", "LED Matrix"] },
-  { id: 3, name: "Audi A4 Avant", category: "Kombi Premium", year: 2024, fuel: "Benzyna", transmission: "Automat", seats: 5, price: 350, image: "🚘", rating: 4.7, available: true, features: ["GPS", "Klimatyzacja 3-stref.", "Virtual Cockpit"] },
-  { id: 4, name: "Volkswagen T-Roc", category: "SUV Kompakt", year: 2024, fuel: "Benzyna", transmission: "Manual", seats: 5, price: 220, image: "🚐", rating: 4.6, available: false, features: ["GPS", "Klimatyzacja", "Tempomat"] },
+  { id: 1, name: "BMW Seria 3", category: "Sedan", year: 2025, fuel: "Benzyna", transmission: "Automat", seats: 5, price: 320, image: "🚗", rating: 4.9, available: true, features: ["GPS", "Klimatyzacja", "Kamera cofania", "Apple CarPlay"] },
+  { id: 2, name: "Mercedes-Benz GLC", category: "SUV", year: 2025, fuel: "Diesel", transmission: "Automat", seats: 5, price: 420, image: "🚙", rating: 4.8, available: true, features: ["GPS", "Skóra", "Panorama", "LED Matrix"] },
+  { id: 3, name: "Audi A4 Avant", category: "Kombi", year: 2024, fuel: "Benzyna", transmission: "Automat", seats: 5, price: 350, image: "🚘", rating: 4.7, available: true, features: ["GPS", "Klimatyzacja 3-stref.", "Virtual Cockpit"] },
+  { id: 4, name: "VW T-Roc", category: "SUV", year: 2024, fuel: "Benzyna", transmission: "Manualna", seats: 5, price: 220, image: "🚐", rating: 4.6, available: false, features: ["GPS", "Klimatyzacja", "Tempomat"] },
   { id: 5, name: "Tesla Model 3", category: "Elektryczny", year: 2025, fuel: "Elektryk", transmission: "Automat", seats: 5, price: 380, image: "⚡", rating: 4.9, available: true, features: ["Autopilot", "Supercharger", "OTA Updates"] },
+  { id: 6, name: "Volvo XC60", category: "SUV", year: 2025, fuel: "Hybryda", transmission: "Automat", seats: 5, price: 390, image: "🚙", rating: 4.8, available: true, features: ["Pilot Assist", "Harman Kardon", "Panorama"] },
 ];
 
-const categories = ["Wszystkie", "Sedan", "SUV", "Kombi", "Elektryczny", "Van"];
+type CarCategory = "all" | "Sedan" | "SUV" | "Kombi" | "Elektryczny";
+
+const extras = [
+  { name: "Nawigacja GPS", price: 15, checked: false },
+  { name: "Fotelik dziecięcy", price: 25, checked: false },
+  { name: "Dodatkowy kierowca", price: 30, checked: false },
+  { name: "Pełne ubezpieczenie AC", price: 45, checked: false },
+];
+
+const reservations = [
+  { car: "BMW Seria 3", from: "2 kwi", to: "5 kwi", status: "confirmed" as const, code: "AR-2026-4821" },
+  { car: "Tesla Model 3", from: "15 kwi", to: "18 kwi", status: "pending" as const, code: "AR-2026-4835" },
+  { car: "Mercedes GLC", from: "10 mar", to: "14 mar", status: "returned" as const, code: "AR-2026-4790" },
+];
+
+const navItems: { id: RentalPage; label: string; icon: ReactNode }[] = [
+  { id: "home", label: "Start", icon: <Car className="w-3.5 h-3.5" /> },
+  { id: "fleet", label: "Flota", icon: <Search className="w-3.5 h-3.5" /> },
+  { id: "booking", label: "Rezerwacja", icon: <Calendar className="w-3.5 h-3.5" /> },
+  { id: "reservations", label: "Moje rezerwacje", icon: <Clock className="w-3.5 h-3.5" /> },
+];
 
 export function CarRentalDemo({ name }: { name: string; features: string[] }) {
-  const [page, setPage] = useState("home");
-  const tabs = [
-    { id: "home", label: "Start", icon: <Home className="w-3 h-3" /> },
-    { id: "fleet", label: "Flota", icon: <Car className="w-3 h-3" /> },
-    { id: "booking", label: "Rezerwacja", icon: <Calendar className="w-3 h-3" /> },
-    { id: "compare", label: "Porównaj", icon: <Gauge className="w-3 h-3" /> },
-    { id: "panel", label: "Panel", icon: <Settings className="w-3 h-3" /> },
-  ];
+  const [page, setPage] = useState<RentalPage>("home");
+  const [detailCar, setDetailCar] = useState(0);
+
+  const goDetail = (idx: number) => { setDetailCar(idx); setPage("detail"); };
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="AutoPremium" />
-      <AnimatePresence mode="wait">
-        <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-          {page === "home" && <HomePage onNav={setPage} />}
-          {page === "fleet" && <FleetPage />}
-          {page === "booking" && <BookingPage />}
-          {page === "compare" && <ComparePage />}
-          {page === "panel" && <PanelPage />}
-        </motion.div>
-      </AnimatePresence>
-    </PreviewShell>
-  );
-}
-
-function HomePage({ onNav }: { onNav: (p: string) => void }) {
-  return (
-    <div>
-      <div className="p-8 pb-10" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.dark})` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.accent }}>Premium Car Rental</p>
-        <h1 className="font-display font-bold text-3xl mt-1 text-white">Auto<span style={{ color: C.accent }}>Premium</span></h1>
-        <p className="text-xs mt-2 text-white/70 max-w-[280px] leading-relaxed">Wypożyczalnia samochodów premium. BMW, Mercedes, Audi, Tesla — znajdź auto na każdą okazję.</p>
-        <div className="flex gap-3 mt-5">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("fleet")}
-            className="px-6 py-3 rounded-lg font-bold text-sm shadow-lg text-white" style={{ background: C.accent }}>Przeglądaj flotę</motion.button>
-          <button onClick={() => onNav("booking")} className="px-6 py-3 rounded-lg font-semibold text-sm border border-white/20 text-white">Zarezerwuj auto</button>
-        </div>
-
-        <div className="p-4 rounded-xl mt-6" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <p className="text-[9px] font-bold uppercase text-white/40 mb-2">Szybka rezerwacja</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <span className="text-[8px] text-white/40 block">Odbiór</span>
-              <span className="text-xs text-white font-medium">Warszawa Centrum</span>
-            </div>
-            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <span className="text-[8px] text-white/40 block">Zwrot</span>
-              <span className="text-xs text-white font-medium">Warszawa Lotnisko</span>
-            </div>
-            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <span className="text-[8px] text-white/40 block">Od</span>
-              <span className="text-xs text-white font-medium">2 kwi 2026, 10:00</span>
-            </div>
-            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <span className="text-[8px] text-white/40 block">Do</span>
-              <span className="text-xs text-white font-medium">5 kwi 2026, 10:00</span>
-            </div>
+      <div style={{ background: C.light, minHeight: 540 }}>
+        <div className="flex items-center justify-between px-5 py-3" style={{ background: C.white, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center gap-2">
+            <Car className="w-5 h-5" style={{ color: C.blue }} />
+            <h1 className="font-bold text-sm" style={{ color: C.navy }}>Auto<span style={{ color: C.orange }}>Rent</span></h1>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }} onClick={() => onNav("fleet")}
-            className="w-full mt-3 py-2.5 rounded-lg text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: C.accent }}>
-            <Search className="w-3.5 h-3.5" /> Szukaj dostępnych aut
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {navItems.map(n => (
+              <button key={n.id} onClick={() => setPage(n.id)} className="px-2.5 py-1 rounded-lg text-[9px] font-semibold whitespace-nowrap transition-all"
+                style={(page === n.id || (page === "detail" && n.id === "fleet")) ? { background: C.blue, color: C.white } : { color: C.gray }}>
+                {n.label}
+              </button>
+            ))}
+            <button className="px-3 py-1.5 rounded-lg text-[9px] font-bold text-white" style={{ background: C.orange }}>Szybka Rezerwacja</button>
+          </div>
         </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={page} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {page === "home" && <HomePage onNav={setPage} onDetail={goDetail} />}
+            {page === "fleet" && <FleetPage onDetail={goDetail} />}
+            {page === "detail" && <DetailPage car={cars[detailCar]} onBack={() => setPage("fleet")} onBook={() => setPage("booking")} />}
+            {page === "booking" && <BookingPage />}
+            {page === "reservations" && <ReservationsPage />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <DemoSection>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-sm" style={{ color: C.navy }}>Popularne modele</h3>
-          <button onClick={() => onNav("fleet")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.accent }}>Cała flota <ChevronRight className="w-3 h-3" /></button>
-        </div>
-        {cars.slice(0, 3).map((car, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            className="flex gap-3 p-3 rounded-xl border hover:shadow-sm transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0" style={{ background: C.navy + "08" }}>{car.image}</div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-bold" style={{ color: C.navy }}>{car.name}</h4>
-              <p className="text-[10px]" style={{ color: C.gray }}>{car.category} · {car.year} · {car.fuel}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="flex items-center gap-0.5 text-[10px]" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{car.rating}</span>
-                <span className="text-[10px]" style={{ color: C.gray }}>{car.transmission} · {car.seats} os.</span>
-                <span className="ml-auto font-bold text-xs" style={{ color: C.accent }}>{car.price} zł/dzień</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-
-        <div className="grid grid-cols-4 gap-2 mt-2">
-          {[{ icon: "🚗", label: "Sedany", count: "12" }, { icon: "🚙", label: "SUV", count: "8" }, { icon: "⚡", label: "Elektryk", count: "5" }, { icon: "🚐", label: "Vany", count: "4" }].map((cat, i) => (
-            <div key={i} className="p-2.5 rounded-xl text-center cursor-pointer hover:shadow-sm transition-all" style={{ background: C.light }}>
-              <span className="text-lg block">{cat.icon}</span>
-              <span className="text-[8px] font-bold block mt-0.5" style={{ color: C.navy }}>{cat.label}</span>
-              <span className="text-[7px]" style={{ color: C.gray }}>{cat.count} aut</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 mt-2">
-          {[{ v: "30+", l: "Aut w flocie" }, { v: "24/7", l: "Wsparcie" }, { v: "4.8", l: "Ocena klientów" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${C.accent}08` }}>
-              <span className="font-bold text-sm block" style={{ color: C.accent }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
-            </div>
-          ))}
-        </div>
-      </DemoSection>
-
-      <DemoBenefits accentColor={C.accent} bgColor={C.light} textColor={C.navy} benefits={[
+      <DemoBenefits accentColor={C.orange} bgColor={C.light} textColor={C.navy} benefits={[
         { icon: "🚗", title: "Flota premium", desc: "BMW, Mercedes, Audi, Tesla" },
         { icon: "📱", title: "Rezerwacja online", desc: "Szybka rezerwacja w 2 minuty" },
         { icon: "🛡️", title: "Pełne ubezpieczenie", desc: "OC, AC, NNW w cenie" },
         { icon: "📍", title: "Dostawa auta", desc: "Pod wskazany adres lub lotnisko" },
       ]} />
-      <DemoFooterCTA accentColor={C.accent} bgColor={C.navy} />
+      <DemoFooterCTA accentColor={C.orange} bgColor={C.navy} />
+    </PreviewShell>
+  );
+}
+
+function HomePage({ onNav, onDetail }: { onNav: (p: RentalPage) => void; onDetail: (i: number) => void }) {
+  return (
+    <div>
+      <div className="p-6 pb-8" style={{ background: `linear-gradient(160deg, ${C.blue}, ${C.navy})` }}>
+        <p className="text-[10px] tracking-widest uppercase text-white/50">Wypożyczalnia samochodów premium</p>
+        <h2 className="font-bold text-2xl mt-1 text-white">Znajdź idealne <span style={{ color: C.orange }}>auto</span></h2>
+
+        <div className="p-4 mt-4 rounded-xl" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="text-[8px] text-white/40 block"><MapPin className="w-2.5 h-2.5 inline mr-0.5" />Odbiór</span>
+              <select className="bg-transparent text-xs text-white w-full outline-none mt-0.5">
+                <option>Warszawa Centrum</option><option>Warszawa Lotnisko</option><option>Kraków Centrum</option>
+              </select>
+            </div>
+            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="text-[8px] text-white/40 block"><MapPin className="w-2.5 h-2.5 inline mr-0.5" />Zwrot</span>
+              <select className="bg-transparent text-xs text-white w-full outline-none mt-0.5">
+                <option>Warszawa Lotnisko</option><option>Warszawa Centrum</option><option>Kraków Centrum</option>
+              </select>
+            </div>
+            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="text-[8px] text-white/40 block"><Calendar className="w-2.5 h-2.5 inline mr-0.5" />Od</span>
+              <span className="text-xs text-white block mt-0.5">2 kwi 2026, 10:00</span>
+            </div>
+            <div className="p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="text-[8px] text-white/40 block"><Calendar className="w-2.5 h-2.5 inline mr-0.5" />Do</span>
+              <span className="text-xs text-white block mt-0.5">5 kwi 2026, 10:00</span>
+            </div>
+          </div>
+          <div className="mt-2">
+            <select className="w-full px-3 py-2 rounded-lg text-xs text-white/80" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <option>Typ pojazdu: Wszystkie</option><option>Sedan</option><option>SUV</option><option>Kombi</option><option>Elektryczny</option>
+            </select>
+          </div>
+          <motion.button whileHover={{ scale: 1.02 }} onClick={() => onNav("fleet")}
+            className="w-full mt-3 py-2.5 rounded-lg text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: C.orange }}>
+            <Search className="w-3.5 h-3.5" /> Szukaj dostępnych aut
+          </motion.button>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold" style={{ color: C.navy }}>Popularne modele</span>
+          <button onClick={() => onNav("fleet")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.blue }}>Cała flota <ChevronRight className="w-3 h-3" /></button>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {cars.filter(c => c.available).slice(0, 3).map((car, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+              onClick={() => onDetail(cars.indexOf(car))} className="p-3 rounded-xl hover:shadow-md transition-all cursor-pointer" style={{ background: C.white }}>
+              <div className="w-full h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: C.light }}>{car.image}</div>
+              <h4 className="font-bold text-[10px] mt-2" style={{ color: C.navy }}>{car.name}</h4>
+              <p className="text-[8px]" style={{ color: C.gray }}>{car.category} · {car.fuel}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Star className="w-2.5 h-2.5 fill-current" style={{ color: C.amber }} />
+                <span className="text-[9px]" style={{ color: C.amber }}>{car.rating}</span>
+              </div>
+              <span className="font-bold text-xs block mt-1" style={{ color: C.orange }}>{car.price} zł/dzień</span>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {[{ icon: "🚗", l: "Sedany", c: "5" }, { icon: "🚙", l: "SUV", c: "4" }, { icon: "⚡", l: "Elektryk", c: "3" }, { icon: "🚐", l: "Kombi", c: "2" }].map((cat, i) => (
+            <div key={i} className="p-2.5 rounded-xl text-center cursor-pointer hover:shadow-sm transition-all" style={{ background: C.white }}>
+              <span className="text-lg block">{cat.icon}</span>
+              <span className="text-[8px] font-bold block mt-0.5" style={{ color: C.navy }}>{cat.l}</span>
+              <span className="text-[7px]" style={{ color: C.gray }}>{cat.c} aut</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {[{ v: "30+", l: "Aut w flocie" }, { v: "24/7", l: "Wsparcie" }, { v: "4.8★", l: "Ocena klientów" }].map((s, i) => (
+            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.blue + "08" }}>
+              <span className="font-bold text-sm block" style={{ color: C.blue }}>{s.v}</span>
+              <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function FleetPage() {
-  const [cat, setCat] = useState("Wszystkie");
-  const filtered = cat === "Wszystkie" ? cars : cars.filter(c => c.category.includes(cat));
+function FleetPage({ onDetail }: { onDetail: (i: number) => void }) {
+  const [cat, setCat] = useState<CarCategory>("all");
+  const filtered = cat === "all" ? cars : cars.filter(c => c.category === cat);
   return (
-    <DemoSection>
+    <div className="p-4 space-y-3">
       <h3 className="font-bold text-sm" style={{ color: C.navy }}>Nasza flota</h3>
       <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {categories.map(c => (
-          <button key={c} onClick={() => setCat(c)} className="px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all"
-            style={cat === c ? { background: C.accent, color: "white" } : { background: C.light, color: C.gray }}>{c}</button>
+        {(["all", "Sedan", "SUV", "Kombi", "Elektryczny"] as CarCategory[]).map(c => (
+          <button key={c} onClick={() => setCat(c)} className="px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap"
+            style={cat === c ? { background: C.blue, color: C.white } : { background: C.white, color: C.gray }}>{c === "all" ? "Wszystkie" : c}</button>
         ))}
       </div>
-      <div className="space-y-3">
-        {filtered.map((car, i) => (
-          <motion.div key={car.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            className="p-4 rounded-xl border hover:shadow-md transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
-            <div className="flex gap-3 items-start">
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shrink-0" style={{ background: C.navy + "08" }}>{car.image}</div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-sm" style={{ color: C.navy }}>{car.name}</h4>
-                  {car.available ? <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.green + "15", color: C.green }}>Dostępny</span> :
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.red + "15", color: C.red }}>Wypożyczony</span>}
-                </div>
-                <p className="text-[10px]" style={{ color: C.gray }}>{car.category} · {car.year}</p>
-                <div className="flex gap-3 mt-1 text-[10px]" style={{ color: C.gray }}>
-                  <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{car.fuel}</span>
-                  <span>{car.transmission}</span>
-                  <span>{car.seats} os.</span>
-                </div>
+      {filtered.map((car, i) => (
+        <motion.div key={car.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+          onClick={() => onDetail(cars.indexOf(car))} className="p-4 rounded-xl hover:shadow-md transition-all cursor-pointer" style={{ background: C.white }}>
+          <div className="flex gap-3 items-start">
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shrink-0" style={{ background: C.light }}>{car.image}</div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm" style={{ color: C.navy }}>{car.name}</h4>
+                {car.available ? <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.green + "15", color: C.green }}>Dostępny</span> :
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.red + "15", color: C.red }}>Wypożyczony</span>}
+              </div>
+              <p className="text-[10px]" style={{ color: C.gray }}>{car.category} · {car.year}</p>
+              <div className="flex gap-3 mt-1 text-[10px]" style={{ color: C.gray }}>
+                <span className="flex items-center gap-1"><Fuel className="w-3 h-3" />{car.fuel}</span>
+                <span><Settings className="w-3 h-3 inline" /> {car.transmission}</span>
+                <span><Users className="w-3 h-3 inline" /> {car.seats} os.</span>
               </div>
             </div>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {car.features.map((f, j) => (
-                <span key={j} className="px-2 py-0.5 rounded text-[8px] font-medium" style={{ background: C.light, color: C.navy }}>{f}</span>
-              ))}
+          </div>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {car.features.map((f, j) => (
+              <span key={j} className="px-2 py-0.5 rounded text-[8px] font-medium" style={{ background: C.light, color: C.navy }}>{f}</span>
+            ))}
+          </div>
+          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${C.light}` }}>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 fill-current" style={{ color: C.amber }} />
+              <span className="text-[10px] font-medium" style={{ color: C.navy }}>{car.rating}</span>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${C.light}` }}>
-              <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-current" style={{ color: C.amber }} />
-                <span className="text-[10px] font-medium" style={{ color: C.navy }}>{car.rating}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm" style={{ color: C.accent }}>{car.price} zł/dzień</span>
-                {car.available && <motion.button whileHover={{ scale: 1.02 }} className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.accent }}>Zarezerwuj</motion.button>}
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm" style={{ color: C.orange }}>{car.price} zł/dzień</span>
+              {car.available && <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.orange }}>Rezerwuj</button>}
             </div>
-          </motion.div>
-        ))}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function DetailPage({ car, onBack, onBook }: { car: typeof cars[0]; onBack: () => void; onBook: () => void }) {
+  const [selectedExtras, setSelectedExtras] = useState<boolean[]>(extras.map(() => false));
+  const days = 3;
+  const extrasTotal = extras.reduce((s, e, i) => s + (selectedExtras[i] ? e.price * days : 0), 0);
+  const total = car.price * days + extrasTotal;
+
+  return (
+    <div className="p-4 space-y-3">
+      <button onClick={onBack} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: C.blue }}>← Powrót do floty</button>
+      <div className="w-full h-32 rounded-xl flex items-center justify-center text-5xl" style={{ background: C.light }}>{car.image}</div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-lg" style={{ color: C.navy }}>{car.name}</h3>
+          <p className="text-xs" style={{ color: C.gray }}>{car.category} · {car.year} · {car.fuel} · {car.transmission}</p>
+        </div>
+        <span className="font-bold text-xl" style={{ color: C.orange }}>{car.price} zł<span className="text-xs font-normal">/dzień</span></span>
       </div>
-    </DemoSection>
+
+      <div className="p-3 rounded-xl" style={{ background: C.white }}>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Specyfikacja</span>
+        <div className="grid grid-cols-4 gap-2 mt-2 text-center">
+          {[{ l: "Silnik", v: car.fuel }, { l: "Skrzynia", v: car.transmission }, { l: "Miejsca", v: `${car.seats}` }, { l: "Ocena", v: `${car.rating}★` }].map((s, i) => (
+            <div key={i} className="p-2 rounded-lg" style={{ background: C.light }}>
+              <span className="text-[8px] block" style={{ color: C.gray }}>{s.l}</span>
+              <span className="text-[10px] font-bold block" style={{ color: C.navy }}>{s.v}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {car.features.map((f, j) => (
+            <span key={j} className="px-2 py-0.5 rounded text-[8px] font-medium" style={{ background: C.blue + "10", color: C.blue }}>{f}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-3 rounded-xl" style={{ background: C.white }}>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Dodatki ({days} dni)</span>
+        <div className="space-y-1.5 mt-2">
+          {extras.map((e, i) => (
+            <label key={i} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: selectedExtras[i] ? C.blue + "08" : C.light }}>
+              <input type="checkbox" checked={selectedExtras[i]} onChange={() => setSelectedExtras(prev => prev.map((v, j) => j === i ? !v : v))} className="accent-blue-700 w-3.5 h-3.5" />
+              <span className="text-[10px] flex-1" style={{ color: C.text }}>{e.name}</span>
+              <span className="text-[10px] font-bold" style={{ color: C.orange }}>+{e.price} zł/dzień</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl" style={{ background: C.navy }}>
+        <div className="space-y-1 text-[10px]">
+          <div className="flex justify-between text-white/60"><span>Wynajem ({days} dni × {car.price} zł)</span><span className="text-white">{car.price * days} zł</span></div>
+          {extras.map((e, i) => selectedExtras[i] && (
+            <div key={i} className="flex justify-between text-white/60"><span>{e.name} ({days} dni)</span><span className="text-white">{e.price * days} zł</span></div>
+          ))}
+          <div className="flex justify-between pt-2 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            <span className="font-bold text-white">Łącznie</span><span className="font-bold text-lg" style={{ color: C.orange }}>{total} zł</span>
+          </div>
+        </div>
+        <motion.button whileHover={{ scale: 1.02 }} onClick={onBook}
+          className="w-full mt-3 py-2.5 rounded-lg text-xs font-bold text-white" style={{ background: C.orange }}>Zarezerwuj teraz</motion.button>
+      </div>
+    </div>
   );
 }
 
 function BookingPage() {
-  const [step, setStep] = useState(0);
+  type BookStep = "car" | "dates" | "extras" | "summary";
+  const [step, setStep] = useState<BookStep>("car");
+  const steps: { id: BookStep; label: string }[] = [
+    { id: "car", label: "Auto" }, { id: "dates", label: "Termin" }, { id: "extras", label: "Dodatki" }, { id: "summary", label: "Podsumowanie" },
+  ];
+  const currentIdx = steps.findIndex(s => s.id === step);
+
   return (
-    <DemoSection>
+    <div className="p-4 space-y-3">
       <h3 className="font-bold text-sm" style={{ color: C.navy }}>Rezerwacja</h3>
-      <div className="flex gap-2 mb-2">
-        {["Auto", "Termin", "Dodatki", "Podsumowanie"].map((s, i) => (
-          <div key={i} className="flex items-center gap-1 flex-1">
+      <div className="flex items-center gap-1">
+        {steps.map((s, i) => (
+          <div key={s.id} className="flex items-center gap-1 flex-1">
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold"
-              style={i <= step ? { background: C.accent, color: "white" } : { background: C.light, color: C.gray }}>{i + 1}</div>
-            <span className="text-[9px]" style={{ color: i <= step ? C.navy : C.gray }}>{s}</span>
+              style={currentIdx >= i ? { background: C.blue, color: C.white } : { background: C.light, color: C.gray }}>{i + 1}</div>
+            <span className="text-[9px]" style={{ color: currentIdx >= i ? C.navy : C.gray }}>{s.label}</span>
+            {i < 3 && <div className="flex-1 h-0.5 rounded" style={{ background: currentIdx > i ? C.blue : C.light }} />}
           </div>
         ))}
       </div>
 
-      {step === 0 && (
+      {step === "car" && (
         <div className="space-y-2">
           {cars.filter(c => c.available).slice(0, 3).map((car, i) => (
-            <motion.div key={i} onClick={() => setStep(1)}
-              className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:shadow-sm transition-all" style={{ borderColor: C.light, background: C.white }}>
+            <div key={i} onClick={() => setStep("dates")} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:shadow-sm" style={{ background: C.white }}>
               <span className="text-2xl">{car.image}</span>
               <div className="flex-1">
                 <h4 className="text-xs font-bold" style={{ color: C.navy }}>{car.name}</h4>
                 <p className="text-[10px]" style={{ color: C.gray }}>{car.category} · {car.fuel}</p>
               </div>
-              <span className="font-bold text-sm" style={{ color: C.accent }}>{car.price} zł/d</span>
-            </motion.div>
+              <span className="font-bold text-sm" style={{ color: C.orange }}>{car.price} zł/d</span>
+            </div>
           ))}
         </div>
       )}
 
-      {step === 1 && (
-        <div className="space-y-3">
-          <div className="p-3 rounded-xl" style={{ background: C.accent + "08" }}>
-            <span className="text-[10px] font-bold" style={{ color: C.accent }}>Wybrano: BMW Seria 3 · 320 zł/dzień</span>
+      {step === "dates" && (
+        <div className="space-y-2">
+          <div className="p-3 rounded-xl" style={{ background: C.orange + "10" }}>
+            <span className="text-[10px] font-bold" style={{ color: C.orange }}>Wybrano: BMW Seria 3 · 320 zł/dzień</span>
           </div>
-          <input type="date" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
-          <input type="date" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
-          <select className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }}>
-            <option>Miejsce odbioru...</option><option>Warszawa Centrum</option><option>Warszawa Lotnisko Okęcie</option><option>Kraków Centrum</option>
+          <select className="w-full px-3 py-2.5 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }}>
+            <option>Miejsce odbioru...</option><option>Warszawa Centrum</option><option>Warszawa Lotnisko</option><option>Kraków Centrum</option>
           </select>
+          <input type="date" className="w-full px-3 py-2.5 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
+          <input type="date" className="w-full px-3 py-2.5 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
           <div className="flex gap-2">
-            <button onClick={() => setStep(0)} className="px-4 py-2.5 rounded-lg text-xs font-medium" style={{ background: C.light, color: C.navy }}>Wstecz</button>
-            <motion.button whileHover={{ scale: 1.02 }} onClick={() => setStep(2)}
-              className="flex-1 py-2.5 rounded-lg text-xs font-bold text-white" style={{ background: C.accent }}>Dalej →</motion.button>
+            <button onClick={() => setStep("car")} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.light, color: C.navy }}>Wstecz</button>
+            <button onClick={() => setStep("extras")} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Dalej</button>
           </div>
         </div>
       )}
 
-      {step >= 2 && (
-        <div className="space-y-3">
-          <div className="p-4 rounded-xl" style={{ background: C.light }}>
-            <h4 className="font-bold text-sm mb-3" style={{ color: C.navy }}>Podsumowanie</h4>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between"><span style={{ color: C.gray }}>Auto</span><span className="font-medium" style={{ color: C.navy }}>BMW Seria 3</span></div>
-              <div className="flex justify-between"><span style={{ color: C.gray }}>Termin</span><span className="font-medium" style={{ color: C.navy }}>2-5 kwi 2026 (3 dni)</span></div>
-              <div className="flex justify-between"><span style={{ color: C.gray }}>Stawka</span><span className="font-medium" style={{ color: C.navy }}>320 zł × 3 dni</span></div>
-              <div className="flex justify-between pt-2" style={{ borderTop: `1px solid ${C.navy}10` }}><span className="font-bold" style={{ color: C.navy }}>Łącznie</span><span className="font-bold text-sm" style={{ color: C.accent }}>960 zł</span></div>
+      {step === "extras" && (
+        <div className="space-y-2">
+          {extras.map((e, i) => (
+            <label key={i} className="flex items-center gap-2 p-3 rounded-xl cursor-pointer" style={{ background: C.white }}>
+              <input type="checkbox" className="accent-blue-700 w-3.5 h-3.5" />
+              <span className="text-[10px] flex-1" style={{ color: C.text }}>{e.name}</span>
+              <span className="text-[10px] font-bold" style={{ color: C.orange }}>+{e.price} zł/dzień</span>
+            </label>
+          ))}
+          <div className="flex gap-2">
+            <button onClick={() => setStep("dates")} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.light, color: C.navy }}>Wstecz</button>
+            <button onClick={() => setStep("summary")} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Dalej</button>
+          </div>
+        </div>
+      )}
+
+      {step === "summary" && (
+        <div className="space-y-2">
+          <div className="p-4 rounded-xl" style={{ background: C.white }}>
+            <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Podsumowanie</span>
+            <div className="space-y-1.5 mt-2 text-[10px]">
+              <div className="flex justify-between"><span style={{ color: C.gray }}>Auto</span><span className="font-semibold" style={{ color: C.navy }}>BMW Seria 3</span></div>
+              <div className="flex justify-between"><span style={{ color: C.gray }}>Termin</span><span style={{ color: C.navy }}>2-5 kwi 2026 (3 dni)</span></div>
+              <div className="flex justify-between"><span style={{ color: C.gray }}>Odbiór</span><span style={{ color: C.navy }}>Warszawa Centrum</span></div>
+              <div className="flex justify-between"><span style={{ color: C.gray }}>Stawka</span><span style={{ color: C.navy }}>320 zł × 3 dni = 960 zł</span></div>
+              <div className="flex justify-between pt-2" style={{ borderTop: `1px solid ${C.light}` }}>
+                <span className="font-bold" style={{ color: C.navy }}>Łącznie</span><span className="font-bold text-sm" style={{ color: C.orange }}>960 zł</span>
+              </div>
             </div>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }}
-            className="w-full py-3 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: C.accent }}>
-            <CreditCard className="w-3.5 h-3.5" /> Zarezerwuj i zapłać
-          </motion.button>
+          <div className="flex gap-2">
+            <button onClick={() => setStep("extras")} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.light, color: C.navy }}>Wstecz</button>
+            <motion.button whileHover={{ scale: 1.02 }} className="flex-1 py-2.5 rounded-lg text-xs font-bold text-white" style={{ background: C.orange }}>Zarezerwuj i zapłać</motion.button>
+          </div>
         </div>
       )}
-    </DemoSection>
+    </div>
   );
 }
 
-function ComparePage() {
-  const compareCars = cars.slice(0, 3);
+function ReservationsPage() {
+  const statusStyles: Record<string, { bg: string; fg: string; label: string }> = {
+    pending: { bg: C.amber + "15", fg: C.amber, label: "Oczekuje" },
+    confirmed: { bg: C.green + "15", fg: C.green, label: "Potwierdzona" },
+    active: { bg: C.blue + "15", fg: C.blue, label: "Aktywna" },
+    returned: { bg: C.gray + "15", fg: C.gray, label: "Zakończona" },
+  };
+  const timelineStages = ["Oczekuje", "Potwierdzona", "Aktywna", "Zwrócona"];
+
   return (
-    <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Porównywarka pojazdów</h3>
-      <div className="overflow-x-auto">
-        <div className="min-w-[400px]">
-          <div className="grid gap-2" style={{ gridTemplateColumns: `80px repeat(${compareCars.length}, 1fr)` }}>
-            <div />
-            {compareCars.map((c, i) => (
-              <div key={i} className="text-center p-3 rounded-xl" style={{ background: C.light }}>
-                <span className="text-2xl block">{c.image}</span>
-                <span className="text-[10px] font-bold block mt-1" style={{ color: C.navy }}>{c.name}</span>
-                <span className="text-[9px]" style={{ color: C.gray }}>{c.category}</span>
-              </div>
-            ))}
-            {[{ l: "Cena/dzień", k: "price", fmt: (v: any) => `${v} zł` }, { l: "Rok", k: "year" }, { l: "Paliwo", k: "fuel" }, { l: "Skrzynia", k: "transmission" }, { l: "Ocena", k: "rating" }].map((row, ri) => (
-              <React.Fragment key={ri}>
-                <div className="flex items-center text-[10px] font-medium" style={{ color: C.gray }}>{row.l}</div>
-                {compareCars.map((c, ci) => (
-                  <div key={ci} className="text-center p-2 text-xs font-medium" style={{ color: C.navy }}>
-                    {row.fmt ? row.fmt((c as any)[row.k]) : (c as any)[row.k]}
+    <div className="p-4 space-y-3">
+      <span className="text-xs font-bold" style={{ color: C.navy }}>Moje rezerwacje</span>
+      {reservations.map((r, i) => {
+        const st = statusStyles[r.status];
+        const stageIdx = r.status === "pending" ? 0 : r.status === "confirmed" ? 1 : r.status === "returned" ? 3 : 2;
+        return (
+          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+            className="p-4 rounded-xl" style={{ background: C.white }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[10px] font-bold" style={{ color: C.blue }}>{r.code}</span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
+            </div>
+            <h4 className="font-bold text-xs" style={{ color: C.navy }}>{r.car}</h4>
+            <p className="text-[10px]" style={{ color: C.gray }}>{r.from} — {r.to}</p>
+            <div className="flex items-center gap-1 mt-3">
+              {timelineStages.map((s, j) => (
+                <div key={j} className="flex items-center gap-1 flex-1">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center"
+                    style={j <= stageIdx ? { background: C.blue } : { background: C.light }}>
+                    {j <= stageIdx && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
                   </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </div>
-    </DemoSection>
+                  {j < 3 && <div className="flex-1 h-0.5 rounded" style={{ background: j < stageIdx ? C.blue : C.light }} />}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-1 mt-1">
+              {timelineStages.map((s, j) => (
+                <span key={j} className="flex-1 text-[7px] text-center" style={{ color: j <= stageIdx ? C.navy : C.gray }}>{s}</span>
+              ))}
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }
-
-function PanelPage() {
-  return (
-    <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Panel floty</h3>
-      <div className="grid grid-cols-4 gap-2">
-        {[{ l: "Łącznie", v: "30", c: C.blue }, { l: "Dostępne", v: "18", c: C.green }, { l: "Wypożyczone", v: "10", c: C.accent }, { l: "Serwis", v: "2", c: C.amber }].map((s, i) => (
-          <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
-            <span className="font-bold text-sm block" style={{ color: s.c }}>{s.v}</span>
-            <span className="text-[8px]" style={{ color: C.gray }}>{s.l}</span>
-          </div>
-        ))}
-      </div>
-      <h4 className="font-bold text-sm mt-2" style={{ color: C.navy }}>Aktywne wypożyczenia</h4>
-      {[
-        { car: "BMW Seria 3", client: "Jan Kowalski", from: "28 mar", to: "2 kwi", status: "active" },
-        { car: "Mercedes GLC", client: "ABC Sp. z o.o.", from: "30 mar", to: "5 kwi", status: "active" },
-        { car: "VW T-Roc", client: "Anna Nowak", from: "25 mar", to: "31 mar", status: "returning" },
-      ].map((r, i) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-          <Car className="w-5 h-5 shrink-0" style={{ color: C.accent }} />
-          <div className="flex-1">
-            <span className="text-xs font-semibold" style={{ color: C.navy }}>{r.car}</span>
-            <p className="text-[10px]" style={{ color: C.gray }}>{r.client} · {r.from} — {r.to}</p>
-          </div>
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: r.status === "active" ? C.green + "15" : C.amber + "15", color: r.status === "active" ? C.green : C.amber }}>
-            {r.status === "active" ? "Aktywne" : "Zwrot dziś"}
-          </span>
-        </div>
-      ))}
-    </DemoSection>
-  );
-}
-
-import React from "react";
