@@ -1,16 +1,18 @@
 import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
-import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, Target, Award, Lock } from "lucide-react";
+import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, Target, Award, Lock, Search, ArrowLeft, BookOpen, MessageCircle } from "lucide-react";
 
 const C = { coral: "#FF6B6B", cream: "#FFF9F0", peach: "#FFE8D6", dark: "#2D2B3D", navy: "#1A1A2E", white: "#FFFFFF", gray: "#8B8B9E", green: "#10B981", violet: "#8B5CF6", blue: "#3B82F6", amber: "#F59E0B", text: "#3D3B50", warm: "#FFF5EE" };
 
-type MentorPage = "home" | "mentors" | "plans" | "sessions" | "dashboard";
+type MentorPage = "home" | "mentors" | "plans" | "sessions" | "dashboard" | "profile";
+type MentorSpecialty = "all" | "tech" | "design" | "data" | "business";
 
 const mentors = [
-  { name: "Piotr Montewka", title: "CEO & Tech Lead", specialty: "Architektura systemów, AI, Fullstack", rating: 5.0, sessions: 240, price: 450, avatar: "PM", available: true },
-  { name: "Anna Wiśniewska", title: "Senior UX Designer", specialty: "UI/UX Design, Design Systems, Figma", rating: 4.9, sessions: 180, price: 350, avatar: "AW", available: true },
-  { name: "Marek Kowalski", title: "Data Science Lead", specialty: "Machine Learning, Python, Analytics", rating: 4.8, sessions: 120, price: 400, avatar: "MK", available: false },
+  { name: "Piotr Montewka", title: "CEO & Tech Lead", specialty: "Architektura systemów, AI, Fullstack", rating: 5.0, sessions: 240, price: 450, avatar: "PM", available: true, category: "tech" as const, reviews: [{ author: "Tomasz W.", text: "Sesje zmieniły moje podejście do architektury.", rating: 5 }, { author: "Anna K.", text: "Fantastyczny mentor, konkretna wiedza.", rating: 5 }] },
+  { name: "Anna Wiśniewska", title: "Senior UX Designer", specialty: "UI/UX Design, Design Systems, Figma", rating: 4.9, sessions: 180, price: 350, avatar: "AW", available: true, category: "design" as const, reviews: [{ author: "Marek L.", text: "Pomogła mi zbudować portfolio UX.", rating: 5 }, { author: "Ewa S.", text: "Świetne sesje o design systems.", rating: 4 }] },
+  { name: "Marek Kowalski", title: "Data Science Lead", specialty: "Machine Learning, Python, Analytics", rating: 4.8, sessions: 120, price: 400, avatar: "MK", available: false, category: "data" as const, reviews: [{ author: "Kasia P.", text: "Profesjonalne podejście do ML.", rating: 5 }] },
+  { name: "Ewa Lewandowska", title: "Product Manager", specialty: "Strategia produktu, Agile, Roadmapping", rating: 4.7, sessions: 90, price: 300, avatar: "EL", available: true, category: "business" as const, reviews: [{ author: "Jan N.", text: "Pomogła mi przejść z dev do PM.", rating: 5 }] },
 ];
 
 const plans = [
@@ -25,6 +27,13 @@ const upcomingSessions = [
   { mentor: "Piotr Montewka", topic: "Warsztat: CI/CD Pipeline", date: "8 kwi 2026", time: "16:00", duration: "90 min", type: "workshop" as const },
 ];
 
+const resources = [
+  { title: "Wzorce architektoniczne — e-book", icon: "📖", type: "PDF" },
+  { title: "Sesja #22 — Nagranie video", icon: "🎥", type: "Video" },
+  { title: "Roadmapa kariery — szablon", icon: "📋", type: "Template" },
+  { title: "Code review checklist", icon: "✅", type: "Checklist" },
+];
+
 const navItems: { id: MentorPage; label: string; icon: ReactNode }[] = [
   { id: "home", label: "Start", icon: <Crown className="w-3.5 h-3.5" /> },
   { id: "mentors", label: "Mentorzy", icon: <Users className="w-3.5 h-3.5" /> },
@@ -35,6 +44,9 @@ const navItems: { id: MentorPage; label: string; icon: ReactNode }[] = [
 
 export function MentoringDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState<MentorPage>("home");
+  const [profileIdx, setProfileIdx] = useState(0);
+
+  const goToProfile = (idx: number) => { setProfileIdx(idx); setPage("profile"); };
 
   return (
     <PreviewShell title={name}>
@@ -50,7 +62,7 @@ export function MentoringDemo({ name }: { name: string; features: string[] }) {
         <div className="flex gap-0 overflow-x-auto px-2 py-1.5" style={{ background: C.white }}>
           {navItems.map(n => (
             <button key={n.id} onClick={() => setPage(n.id)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all"
-              style={page === n.id ? { background: C.coral, color: C.white } : { color: C.gray }}>
+              style={(page === n.id || (page === "profile" && n.id === "mentors")) ? { background: C.coral, color: C.white } : { color: C.gray }}>
               {n.icon}<span>{n.label}</span>
             </button>
           ))}
@@ -58,8 +70,9 @@ export function MentoringDemo({ name }: { name: string; features: string[] }) {
 
         <AnimatePresence mode="wait">
           <motion.div key={page} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            {page === "home" && <HomePage onNav={setPage} />}
-            {page === "mentors" && <MentorsPage />}
+            {page === "home" && <HomePage onNav={setPage} onProfile={goToProfile} />}
+            {page === "mentors" && <MentorsPage onProfile={goToProfile} />}
+            {page === "profile" && <ProfilePage mentor={mentors[profileIdx]} onBack={() => setPage("mentors")} />}
             {page === "plans" && <PlansPage />}
             {page === "sessions" && <SessionsPage />}
             {page === "dashboard" && <DashboardPage />}
@@ -78,7 +91,7 @@ export function MentoringDemo({ name }: { name: string; features: string[] }) {
   );
 }
 
-function HomePage({ onNav }: { onNav: (p: MentorPage) => void }) {
+function HomePage({ onNav, onProfile }: { onNav: (p: MentorPage) => void; onProfile: (i: number) => void }) {
   return (
     <div>
       <div className="p-6 pb-8" style={{ background: `linear-gradient(160deg, ${C.coral}, ${C.violet})` }}>
@@ -104,7 +117,7 @@ function HomePage({ onNav }: { onNav: (p: MentorPage) => void }) {
         <span className="text-xs font-bold" style={{ color: C.dark }}>Najlepsi mentorzy</span>
         {mentors.slice(0, 2).map((m, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            className="flex gap-3 p-3 rounded-2xl hover:shadow-sm transition-all cursor-pointer" style={{ background: C.white }}>
+            onClick={() => onProfile(i)} className="flex gap-3 p-3 rounded-2xl hover:shadow-sm transition-all cursor-pointer" style={{ background: C.white }}>
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
               style={{ background: `linear-gradient(135deg, ${i === 0 ? C.coral : C.violet}, ${C.dark})` }}>{m.avatar}</div>
             <div className="flex-1 min-w-0">
@@ -113,7 +126,6 @@ function HomePage({ onNav }: { onNav: (p: MentorPage) => void }) {
                 {m.available && <div className="w-2 h-2 rounded-full" style={{ background: C.green }} />}
               </div>
               <p className="text-[10px]" style={{ color: C.gray }}>{m.title}</p>
-              <p className="text-[9px] mt-0.5" style={{ color: C.gray }}>{m.specialty}</p>
               <div className="flex items-center gap-3 mt-1">
                 <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{m.rating}</span>
                 <span className="text-[10px]" style={{ color: C.gray }}>{m.sessions} sesji</span>
@@ -133,37 +145,109 @@ function HomePage({ onNav }: { onNav: (p: MentorPage) => void }) {
   );
 }
 
-function MentorsPage() {
+function MentorsPage({ onProfile }: { onProfile: (i: number) => void }) {
+  const [filter, setFilter] = useState<MentorSpecialty>("all");
+  const [query, setQuery] = useState("");
+  const filtered = mentors.filter(m => {
+    if (filter !== "all" && m.category !== filter) return false;
+    if (query && !m.name.toLowerCase().includes(query.toLowerCase()) && !m.specialty.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
   return (
     <div className="p-4 space-y-3">
-      <span className="text-xs font-bold" style={{ color: C.dark }}>Nasi mentorzy</span>
-      {mentors.map((m, i) => (
-        <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-          className="p-4 rounded-2xl hover:shadow-md transition-all cursor-pointer" style={{ background: C.white }}>
-          <div className="flex gap-3">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-lg font-bold text-white shrink-0"
-              style={{ background: `linear-gradient(135deg, ${[C.coral, C.violet, C.blue][i]}, ${C.dark})` }}>{m.avatar}</div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="font-bold text-sm" style={{ color: C.dark }}>{m.name}</h4>
-                <div className="w-2 h-2 rounded-full" style={{ background: m.available ? C.green : C.gray }} />
-                <span className="text-[9px]" style={{ color: m.available ? C.green : C.gray }}>{m.available ? "Dostępny" : "Zajęty"}</span>
+      <span className="text-xs font-bold" style={{ color: C.dark }}>Znajdź mentora</span>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: C.white, border: `1px solid ${C.coral}20` }}>
+        <Search className="w-4 h-4" style={{ color: C.gray }} />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Szukaj po nazwisku lub specjalizacji..." className="flex-1 text-[11px] bg-transparent outline-none" style={{ color: C.text }} />
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {([["all", "Wszyscy"], ["tech", "Technologia"], ["design", "Design"], ["data", "Data/AI"], ["business", "Biznes"]] as [MentorSpecialty, string][]).map(([id, l]) => (
+          <button key={id} onClick={() => setFilter(id)} className="px-3 py-1.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+            style={filter === id ? { background: C.coral, color: C.white } : { background: C.white, color: C.gray }}>{l}</button>
+        ))}
+      </div>
+
+      {filtered.map((m, i) => {
+        const realIdx = mentors.indexOf(m);
+        return (
+          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+            onClick={() => onProfile(realIdx)} className="p-4 rounded-2xl hover:shadow-md transition-all cursor-pointer" style={{ background: C.white }}>
+            <div className="flex gap-3">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold text-white shrink-0"
+                style={{ background: `linear-gradient(135deg, ${[C.coral, C.violet, C.blue, C.green][i % 4]}, ${C.dark})` }}>{m.avatar}</div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-sm" style={{ color: C.dark }}>{m.name}</h4>
+                  <div className="w-2 h-2 rounded-full" style={{ background: m.available ? C.green : C.gray }} />
+                </div>
+                <p className="text-[10px] font-medium" style={{ color: C.gray }}>{m.title}</p>
+                <p className="text-[10px] mt-0.5" style={{ color: C.gray }}>{m.specialty}</p>
               </div>
-              <p className="text-[10px] font-medium" style={{ color: C.gray }}>{m.title}</p>
-              <p className="text-[10px] mt-1" style={{ color: C.gray }}>{m.specialty}</p>
             </div>
-          </div>
-          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${C.peach}` }}>
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{m.rating}</span>
-              <span className="text-[10px]" style={{ color: C.gray }}>{m.sessions} sesji</span>
-            </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${C.peach}` }}>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{m.rating}</span>
+                <span className="text-[10px]" style={{ color: C.gray }}>{m.sessions} sesji</span>
+              </div>
               <span className="font-bold text-sm" style={{ color: C.coral }}>{m.price} zł/h</span>
-              <button className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white" style={{ background: C.coral }}>Umów sesję</button>
+            </div>
+          </motion.div>
+        );
+      })}
+      {filtered.length === 0 && <p className="text-center text-[10px] py-4" style={{ color: C.gray }}>Brak mentorów pasujących do kryteriów</p>}
+    </div>
+  );
+}
+
+function ProfilePage({ mentor, onBack }: { mentor: typeof mentors[0]; onBack: () => void }) {
+  const [selectedDay, setSelectedDay] = useState(2);
+  const days = ["Pon 31", "Wt 1", "Śr 2", "Czw 3", "Pt 4"];
+  const slots = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"];
+
+  return (
+    <div className="p-4 space-y-3">
+      <button onClick={onBack} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: C.coral }}><ArrowLeft className="w-3 h-3" /> Wszyscy mentorzy</button>
+
+      <div className="p-4 rounded-2xl" style={{ background: C.white }}>
+        <div className="flex gap-3 items-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.coral}, ${C.dark})` }}>{mentor.avatar}</div>
+          <div>
+            <h3 className="font-bold text-sm" style={{ color: C.dark }}>{mentor.name}</h3>
+            <p className="text-[10px]" style={{ color: C.gray }}>{mentor.title}</p>
+            <p className="text-[10px]" style={{ color: C.gray }}>{mentor.specialty}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{mentor.rating}</span>
+              <span className="text-[10px]" style={{ color: C.gray }}>{mentor.sessions} sesji</span>
+              <span className="font-bold text-xs" style={{ color: C.coral }}>{mentor.price} zł/h</span>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </div>
+
+      <span className="text-[10px] font-bold" style={{ color: C.dark }}>Dostępne terminy</span>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {days.map((d, i) => (
+          <button key={i} onClick={() => setSelectedDay(i)} className="px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap"
+            style={selectedDay === i ? { background: C.coral, color: C.white } : { background: C.white, color: C.gray }}>{d}</button>
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-1.5">
+        {slots.map((s, i) => (
+          <button key={i} className="p-2 rounded-lg text-[10px] font-medium text-center" style={{ background: i === 1 ? C.coral + "15" : C.white, color: i === 1 ? C.coral : C.text, border: `1px solid ${i === 1 ? C.coral + "40" : C.peach}` }}>{s}</button>
+        ))}
+      </div>
+      <button className="w-full py-2.5 rounded-full text-xs font-bold text-white" style={{ background: C.coral }}>Umów sesję — {mentor.price} zł/h</button>
+
+      <span className="text-[10px] font-bold" style={{ color: C.dark }}>Opinie ({mentor.reviews.length})</span>
+      {mentor.reviews.map((r, i) => (
+        <div key={i} className="p-3 rounded-xl" style={{ background: C.white }}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-semibold" style={{ color: C.dark }}>{r.author}</span>
+            <span className="text-[10px]" style={{ color: C.amber }}>{"★".repeat(r.rating)}</span>
+          </div>
+          <p className="text-[10px] italic" style={{ color: C.gray }}>"{r.text}"</p>
+        </div>
       ))}
     </div>
   );
@@ -249,6 +333,29 @@ function DashboardPage() {
             <span className="text-[9px] uppercase font-bold" style={{ color: C.gray }}>{s.label}</span>
             <span className="font-bold text-lg block mt-1" style={{ color: s.color }}>{s.val}</span>
           </motion.div>
+        ))}
+      </div>
+
+      <span className="text-xs font-bold" style={{ color: C.dark }}>Aktywne mentorships</span>
+      {mentors.slice(0, 2).map((m, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: C.white }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${[C.coral, C.violet][i]}, ${C.dark})` }}>{m.avatar}</div>
+          <div className="flex-1">
+            <span className="text-[10px] font-bold" style={{ color: C.dark }}>{m.name}</span>
+            <p className="text-[9px]" style={{ color: C.gray }}>{m.specialty.split(",")[0]}</p>
+          </div>
+          <MessageCircle className="w-4 h-4" style={{ color: C.coral }} />
+        </div>
+      ))}
+
+      <span className="text-xs font-bold" style={{ color: C.dark }}>Biblioteka materiałów</span>
+      <div className="grid grid-cols-2 gap-2">
+        {resources.map((r, i) => (
+          <div key={i} className="p-2.5 rounded-xl cursor-pointer hover:shadow-sm" style={{ background: C.white }}>
+            <span className="text-lg block">{r.icon}</span>
+            <span className="text-[9px] font-semibold block mt-1" style={{ color: C.dark }}>{r.title}</span>
+            <span className="text-[8px]" style={{ color: C.gray }}>{r.type}</span>
+          </div>
         ))}
       </div>
 
