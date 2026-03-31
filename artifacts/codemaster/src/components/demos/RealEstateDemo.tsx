@@ -39,7 +39,7 @@ const statusInfo: Record<PropertyStatus, { bg: string; fg: string; label: string
   sold: { bg: C.red + "12", fg: C.red, label: "Sprzedane" },
 };
 
-const topTabs = [
+const topTabs: { id: RealEstatePage; label: string }[] = [
   { id: "home", label: "Start" },
   { id: "search", label: "Szukaj" },
   { id: "detail", label: "Oferta" },
@@ -353,6 +353,8 @@ function ContactPage() {
 }
 
 function AdminPage() {
+  const [adminTab, setAdminTab] = useState<"properties" | "leads">("properties");
+
   const leads = [
     { name: "Jan Kowalski", interest: "N-001 Apartament", date: "31 mar", status: "new" as const },
     { name: "Anna Nowak", interest: "N-002 Penthouse", date: "30 mar", status: "contacted" as const },
@@ -379,22 +381,52 @@ function AdminPage() {
         ))}
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.light}` }}>
-        <div className="grid grid-cols-4 text-[8px] font-bold uppercase px-2.5 py-1.5" style={{ background: C.emerald, color: C.white }}>
-          <span>Klient</span><span>Oferta</span><span>Data</span><span>Status</span>
-        </div>
-        {leads.map((l, i) => (
-          <div key={i} className="grid grid-cols-4 items-center px-2.5 py-2 border-t text-[10px]" style={{ borderColor: C.light, background: C.white }}>
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.emerald }}>{l.name.split(" ").map(n => n[0]).join("")}</div>
-              <span className="font-semibold truncate" style={{ color: C.dark }}>{l.name}</span>
-            </div>
-            <span className="truncate" style={{ color: C.gray }}>{l.interest}</span>
-            <span style={{ color: C.gray }}>{l.date}</span>
-            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold text-center" style={{ background: leadStatusColor(l.status) + "15", color: leadStatusColor(l.status) }}>{leadStatusLabel(l.status)}</span>
-          </div>
-        ))}
+      <div className="flex gap-1">
+        <button onClick={() => setAdminTab("properties")} className="px-3 py-1.5 rounded text-[10px] font-semibold"
+          style={adminTab === "properties" ? { background: C.emerald, color: C.white } : { background: C.white, color: C.gray }}>Nieruchomości</button>
+        <button onClick={() => setAdminTab("leads")} className="px-3 py-1.5 rounded text-[10px] font-semibold"
+          style={adminTab === "leads" ? { background: C.emerald, color: C.white } : { background: C.white, color: C.gray }}>Zapytania</button>
       </div>
+
+      {adminTab === "properties" && (
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.light}` }}>
+          <div className="grid grid-cols-6 text-[8px] font-bold uppercase px-2.5 py-1.5" style={{ background: C.emerald, color: C.white }}>
+            <span>ID</span><span>Oferta</span><span>Lokalizacja</span><span>Cena</span><span>Pow.</span><span>Status</span>
+          </div>
+          {properties.map((p, i) => {
+            const st = statusInfo[p.status];
+            return (
+              <div key={i} className="grid grid-cols-6 items-center px-2.5 py-2 border-t text-[10px]" style={{ borderColor: C.light, background: C.white }}>
+                <span className="font-mono font-bold" style={{ color: C.emerald }}>{p.id}</span>
+                <span className="truncate" style={{ color: C.dark }}>{p.title}</span>
+                <span className="truncate text-[9px]" style={{ color: C.gray }}>{p.location}</span>
+                <span className="font-bold" style={{ color: C.gold }}>{p.price >= 10000 ? `${(p.price / 1000).toFixed(0)}K` : p.price.toLocaleString()}</span>
+                <span style={{ color: C.gray }}>{p.area}m²</span>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold text-center" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {adminTab === "leads" && (
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.light}` }}>
+          <div className="grid grid-cols-4 text-[8px] font-bold uppercase px-2.5 py-1.5" style={{ background: C.emerald, color: C.white }}>
+            <span>Klient</span><span>Oferta</span><span>Data</span><span>Status</span>
+          </div>
+          {leads.map((l, i) => (
+            <div key={i} className="grid grid-cols-4 items-center px-2.5 py-2 border-t text-[10px]" style={{ borderColor: C.light, background: C.white }}>
+              <div className="flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.emerald }}>{l.name.split(" ").map(n => n[0]).join("")}</div>
+                <span className="font-semibold truncate" style={{ color: C.dark }}>{l.name}</span>
+              </div>
+              <span className="truncate" style={{ color: C.gray }}>{l.interest}</span>
+              <span style={{ color: C.gray }}>{l.date}</span>
+              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold text-center" style={{ background: leadStatusColor(l.status) + "15", color: leadStatusColor(l.status) }}>{leadStatusLabel(l.status)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="p-3 rounded-xl" style={{ background: C.white }}>
         <span className="text-[10px] font-bold" style={{ color: C.emerald }}>Konwersja lejka</span>

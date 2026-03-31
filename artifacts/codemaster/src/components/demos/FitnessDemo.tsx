@@ -74,7 +74,7 @@ const checkins = [
   { name: "Piotr M.", time: "10:08", type: "Basic", action: "Wejście" },
 ];
 
-const topTabs = [
+const topTabs: { id: FitnessPage; label: string; icon: JSX.Element }[] = [
   { id: "dashboard", label: "Panel", icon: <BarChart3 className="w-3.5 h-3.5" /> },
   { id: "members", label: "Członkowie", icon: <Users className="w-3.5 h-3.5" /> },
   { id: "schedule", label: "Grafik", icon: <Calendar className="w-3.5 h-3.5" /> },

@@ -41,7 +41,7 @@ const clients = [
   { name: "InnoSoft", nip: "777-888-99-00", invoices: 4, total: 89600, balance: 0 },
 ];
 
-const sidebarItems = [
+const sidebarItems: { id: AccountingPage; label: string; icon: JSX.Element; badge?: string }[] = [
   { id: "dashboard", label: "Panel", icon: <Home className="w-3.5 h-3.5" /> },
   { id: "invoices", label: "Faktury", icon: <FileText className="w-3.5 h-3.5" />, badge: "3" },
   { id: "preview", label: "Podgląd FV", icon: <Eye className="w-3.5 h-3.5" /> },

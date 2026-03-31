@@ -90,7 +90,7 @@ function ClosetConfigurator({ name }: { name: string }) {
   const corpusColor = closetMaterials[0].options[matSel[0]].color;
   const handleColor = closetMaterials[1].options[matSel[1]].color;
 
-  const steps = [
+  const steps: { id: ClosetStep; label: string }[] = [
     { id: "config", label: "1. Wymiary" },
     { id: "sections", label: "2. Sekcje" },
     { id: "materials", label: "3. Materiały" },
@@ -305,7 +305,7 @@ function KitchenConfigurator({ name }: { name: string }) {
   const frontColor = kitchenMaterials[0].options[matSel[0]].color;
   const topColor = kitchenMaterials[1].options[matSel[1]].color;
 
-  const navSteps = [
+  const navSteps: { id: KitchenStep; label: string }[] = [
     { id: "layout", label: "1. Układ" },
     { id: "materials", label: "2. Materiały" },
     { id: "modules", label: "3. Moduły" },
