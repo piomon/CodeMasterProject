@@ -1,346 +1,337 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { Home, Palette, Ruler, Box, CreditCard, ChevronRight, CheckCircle2, RotateCcw, ShoppingCart, Eye, Layers, Settings } from "lucide-react";
+import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
+import { RotateCw, ChevronRight, Layers, Palette, Ruler, ShoppingCart, CheckCircle2, Eye, Package, Download, Plus, Minus, Star } from "lucide-react";
 
-const furnitureC = { oak: "#C4A35A", beige: "#F5E6D3", white: "#FAFAF5", anthracite: "#3C3C3C", walnut: "#5C4033", cream: "#FFF8F0", taupe: "#8B7D6B" };
-const kitchenC = { warmWhite: "#FAF8F5", greige: "#B8AFA6", olive: "#708238", stone: "#8C8C8C", graphite: "#3C3C3C", cream: "#FFF8F0" };
+const C = { oak: "#C4A882", anthracite: "#2C2C2C", greige: "#A8A08C", stone: "#E8E2D8", white: "#FFFFFF", dark: "#1A1A1A", warm: "#F5F0EB", forest: "#3D5A3C", cream: "#FAF7F2" };
 
-function isFurniture(industry: string) { return !industry?.toLowerCase().includes("kitchen"); }
+const materialGroups = [
+  { name: "Korpus", options: [
+    { name: "Dąb naturalny", color: "#C4A882", price: 0 },
+    { name: "Orzech włoski", color: "#5C4033", price: 400 },
+    { name: "Biały mat", color: "#F0F0F0", price: 200 },
+    { name: "Antracyt", color: "#3A3A3A", price: 300 },
+  ]},
+  { name: "Blat", options: [
+    { name: "Kamień naturalny", color: "#B8B0A4", price: 0 },
+    { name: "Konglomerat biały", color: "#EEEEE8", price: 800 },
+    { name: "Drewno dębowe", color: "#D4B68C", price: 600 },
+    { name: "HPL czarny mat", color: "#2A2A2A", price: 500 },
+  ]},
+  { name: "Uchwyty", options: [
+    { name: "Złoty mat", color: "#C9A96E", price: 0 },
+    { name: "Czarny mat", color: "#1A1A1A", price: 150 },
+    { name: "Stal szczotkowana", color: "#A0A0A0", price: 200 },
+    { name: "Bezuchwytowe", color: "transparent", price: 350 },
+  ]},
+];
 
-export function ConfiguratorDemo({ name, industry }: { name: string; features: string[]; industry: string }) {
-  const isFurn = isFurniture(industry || "");
-  const C = isFurn ? furnitureC : kitchenC;
+const modules = [
+  { name: "Szafka dolna 60cm", code: "SD-60", basePrice: 890, icon: "📦" },
+  { name: "Szafka z szufladami 80cm", code: "SZ-80", basePrice: 1290, icon: "🗄️" },
+  { name: "Szafka narożna 90cm", code: "SN-90", basePrice: 1490, icon: "📐" },
+  { name: "Szafka górna 60cm", code: "SG-60", basePrice: 690, icon: "🔲" },
+  { name: "Słupek wysoki 60cm", code: "SW-60", basePrice: 2190, icon: "📏" },
+  { name: "Cargo 30cm", code: "CA-30", basePrice: 1890, icon: "🧺" },
+];
+
+const agd = [
+  { name: "Płyta indukcyjna 60cm", brand: "Bosch", price: 2490, icon: "🔥" },
+  { name: "Piekarnik parowy", brand: "Siemens", price: 4890, icon: "🍞" },
+  { name: "Zmywarka zintegrowana", brand: "Bosch", price: 3290, icon: "🫧" },
+  { name: "Lodówka side-by-side", brand: "Samsung", price: 5490, icon: "❄️" },
+  { name: "Okap teleskopowy", brand: "Faber", price: 1890, icon: "💨" },
+];
+
+const realizations = [
+  { name: "Apartament Mokotów", style: "Minimalistyczny dąb + biały", area: "14 m²", rating: 5.0, value: "38K zł" },
+  { name: "Dom Wilanów", style: "Orzech + kamień naturalny", area: "22 m²", rating: 4.9, value: "62K zł" },
+  { name: "Loft Praga", style: "Antracyt + drewno", area: "12 m²", rating: 5.0, value: "42K zł" },
+];
+
+export function ConfiguratorDemo({ name }: { name: string; features: string[]; industry?: string }) {
   const [page, setPage] = useState("home");
-  const tabs = isFurn ? [
-    { id: "home", label: "Start", icon: <Home className="w-3 h-3" /> },
-    { id: "config", label: "Konfigurator", icon: <Box className="w-3 h-3" /> },
-    { id: "materials", label: "Materiały", icon: <Palette className="w-3 h-3" /> },
-    { id: "dimensions", label: "Wymiary", icon: <Ruler className="w-3 h-3" /> },
-    { id: "preview", label: "Podgląd", icon: <Eye className="w-3 h-3" /> },
-    { id: "summary", label: "Podsumowanie", icon: <CreditCard className="w-3 h-3" /> },
-  ] : [
-    { id: "home", label: "Start", icon: <Home className="w-3 h-3" /> },
-    { id: "config", label: "Konfigurator", icon: <Settings className="w-3 h-3" /> },
-    { id: "materials", label: "Fronty", icon: <Palette className="w-3 h-3" /> },
-    { id: "dimensions", label: "Układ", icon: <Layers className="w-3 h-3" /> },
-    { id: "preview", label: "Moodboard", icon: <Eye className="w-3 h-3" /> },
-    { id: "summary", label: "Wycena", icon: <CreditCard className="w-3 h-3" /> },
+  const [selections, setSelections] = useState([0, 0, 0]);
+  const [selectedModules, setSelectedModules] = useState([0, 0, 0, 0, 0, 0]);
+  const [selectedAgd, setSelectedAgd] = useState<boolean[]>(new Array(agd.length).fill(false));
+
+  const materialCost = materialGroups.reduce((a, g, i) => a + g.options[selections[i]].price, 0);
+  const moduleCost = modules.reduce((a, m, i) => a + m.basePrice * selectedModules[i], 0);
+  const agdCost = agd.reduce((a, item, i) => a + (selectedAgd[i] ? item.price : 0), 0);
+  const totalPrice = materialCost + moduleCost + agdCost;
+
+  const topNav = [
+    { id: "home", label: "Start" },
+    { id: "configurator", label: "Konfigurator" },
+    { id: "modules", label: "Moduły" },
+    { id: "agd", label: "AGD" },
+    { id: "summary", label: "Podsumowanie" },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo={isFurn ? "FORM Studio" : "KitchenLab"} />
-      <AnimatePresence mode="wait">
-        <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-          {page === "home" && <HomePage isFurn={isFurn} onNav={setPage} />}
-          {page === "config" && <ConfigPage isFurn={isFurn} />}
-          {page === "materials" && <MaterialsPage isFurn={isFurn} />}
-          {page === "dimensions" && <DimensionsPage isFurn={isFurn} />}
-          {page === "preview" && <PreviewPage isFurn={isFurn} />}
-          {page === "summary" && <SummaryPage isFurn={isFurn} />}
-        </motion.div>
-      </AnimatePresence>
+      <div style={{ background: C.cream, minHeight: 500 }}>
+        <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: C.white, borderBottom: `1px solid ${C.stone}` }}>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: C.dark, color: C.oak }}>F</div>
+            <div>
+              <span className="font-bold text-xs" style={{ color: C.dark }}>FORM</span><span className="text-xs" style={{ color: C.greige }}> Studio</span>
+              <p className="text-[8px]" style={{ color: C.greige }}>Kuchnie na wymiar</p>
+            </div>
+          </div>
+          {totalPrice > 0 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: C.stone }}>
+              <ShoppingCart className="w-3 h-3" style={{ color: C.dark }} />
+              <span className="text-[10px] font-bold" style={{ color: C.dark }}>{totalPrice.toLocaleString()} zł</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-0 overflow-x-auto" style={{ background: C.white, borderBottom: `1px solid ${C.stone}` }}>
+          {topNav.map((n, i) => (
+            <button key={n.id} onClick={() => setPage(n.id)}
+              className="flex items-center gap-1 px-3 py-2 text-[10px] font-semibold whitespace-nowrap border-b-2 transition-all"
+              style={page === n.id ? { borderColor: C.dark, color: C.dark } : { borderColor: "transparent", color: C.greige }}>
+              <span className="text-[10px]">{i + 1}.</span> {n.label}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={page} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {page === "home" && <HomePage onNav={setPage} />}
+            {page === "configurator" && <ConfiguratorPage selections={selections} setSelections={setSelections} />}
+            {page === "modules" && <ModulesPage mods={selectedModules} setMods={setSelectedModules} />}
+            {page === "agd" && <AgdPage selected={selectedAgd} setSelected={setSelectedAgd} />}
+            {page === "summary" && <SummaryPage selections={selections} mods={selectedModules} agdSel={selectedAgd} total={totalPrice} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <DemoBenefits accentColor={C.oak} bgColor={C.warm} textColor={C.dark} benefits={[
+        { icon: "🎨", title: "Wizualny konfigurator", desc: "Klient widzi efekt zanim zamówi" },
+        { icon: "💰", title: "Automatyczna wycena", desc: "Natychmiastowa kalkulacja ceny" },
+        { icon: "📦", title: "Modułowa budowa", desc: "Dopasowanie do każdego metrażu" },
+        { icon: "📊", title: "Analiza konwersji", desc: "Statystyki popularnych konfiguracji" },
+      ]} />
+      <DemoFooterCTA accentColor={C.oak} bgColor={C.dark} />
     </PreviewShell>
   );
 }
 
-function HomePage({ isFurn, onNav }: { isFurn: boolean; onNav: (p: string) => void }) {
-  const accent = isFurn ? furnitureC.oak : kitchenC.olive;
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const bg = isFurn ? furnitureC.cream : kitchenC.warmWhite;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
-  const logoName = isFurn ? "FORM Studio" : "KitchenLab";
-  const tagline = isFurn ? "Meble na wymiar" : "Kuchnie na wymiar";
-  const subtitle = isFurn
-    ? "Projektuj szafy, garderoby i zabudowy dopasowane idealnie do Twojej przestrzeni. Naturalne materiały, rzemiosło na najwyższym poziomie."
-    : "Zaprojektuj kuchnię marzeń. Funkcjonalność, elegancja i trwałość — wszystko szyte na miarę.";
-
+function HomePage({ onNav }: { onNav: (p: string) => void }) {
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${dark}, ${accent}30)` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: accent }}>{tagline}</p>
-        <h1 className="font-display font-bold text-4xl mt-2" style={{ color: bg }}>{logoName}</h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed" style={{ color: bg + "80" }}>{subtitle}</p>
-        <div className="flex gap-3 justify-center mt-6">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("config")}
-            className="px-7 py-3.5 rounded-lg font-bold text-sm shadow-lg" style={{ background: accent, color: "white" }}>Rozpocznij projekt</motion.button>
-          <button onClick={() => onNav("materials")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border" style={{ borderColor: accent + "40", color: accent }}>Materiały</button>
+      <div className="relative overflow-hidden py-10 px-5" style={{ background: `linear-gradient(135deg, ${C.dark}, ${C.anthracite})` }}>
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `repeating-linear-gradient(45deg, ${C.oak} 0, ${C.oak} 1px, transparent 1px, transparent 30px)` }} />
+        <div className="relative">
+          <p className="text-[9px] tracking-[0.4em] uppercase" style={{ color: C.oak }}>Projektuj swoją wymarzoną kuchnię</p>
+          <h1 className="font-display font-bold text-2xl mt-2" style={{ color: C.white }}>Konfigurator<br /><span style={{ color: C.oak }}>mebli kuchennych</span></h1>
+          <p className="text-xs mt-2 leading-relaxed max-w-[250px]" style={{ color: C.white + "70" }}>Dobierz materiały, moduły i sprzęt AGD. Otrzymaj natychmiastową wycenę.</p>
+          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("configurator")}
+            className="mt-5 px-6 py-3 rounded-lg font-bold text-sm inline-flex items-center gap-2" style={{ background: C.oak, color: C.dark }}>
+            <Layers className="w-4 h-4" /> Rozpocznij konfigurację
+          </motion.button>
         </div>
       </div>
-      <DemoSection>
-        <div className="grid grid-cols-4 gap-2">
-          {(isFurn ? [
-            { icon: "🪵", label: "Drewno", desc: "Dąb & orzech" },
-            { icon: "📏", label: "Na wymiar", desc: "Co do mm" },
-            { icon: "🎨", label: "Kolory", desc: "80+ odcieni" },
-            { icon: "🚚", label: "Montaż", desc: "W cenie" },
-          ] : [
-            { icon: "🍳", label: "AGD", desc: "Premium" },
-            { icon: "📐", label: "Projekt 3D", desc: "Wizualizacja" },
-            { icon: "🪨", label: "Blaty", desc: "Granit & kwarc" },
-            { icon: "🔧", label: "Montaż", desc: "Profesjonalny" },
-          ]).map((f, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: bg }}>
-              <span className="text-lg block">{f.icon}</span>
-              <span className="text-[8px] font-bold block mt-1" style={{ color: dark }}>{f.label}</span>
-              <span className="text-[7px]" style={{ color: mid }}>{f.desc}</span>
+
+      <div className="px-4 py-4 space-y-4">
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { icon: <Palette className="w-4 h-4" />, label: "50+ wykończeń" },
+            { icon: <Package className="w-4 h-4" />, label: "Moduły 30-90cm" },
+            { icon: <Ruler className="w-4 h-4" />, label: "Na wymiar" },
+          ].map((f, i) => (
+            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.white, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+              <span style={{ color: C.oak }}>{f.icon}</span>
+              <span className="text-[10px] font-semibold block mt-1" style={{ color: C.dark }}>{f.label}</span>
             </div>
           ))}
         </div>
-        <h3 className="font-display font-bold text-base mt-4" style={{ color: dark }}>
-          {isFurn ? "Nasze realizacje" : "Popularne układy"}
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {(isFurn ? [
-            { icon: "🚪", name: "Szafa przesuwna", desc: "od 3 200 zł/mb" },
-            { icon: "👗", name: "Garderoba walk-in", desc: "od 4 500 zł/mb" },
-          ] : [
-            { icon: "⌐", name: "Kuchnia L", desc: "od 18 000 zł" },
-            { icon: "⬜", name: "Kuchnia z wyspą", desc: "od 25 000 zł" },
-          ]).map((p, i) => (
-            <div key={i} className="p-4 rounded-xl text-center cursor-pointer" style={{ background: bg, border: `1px solid ${accent}20` }} onClick={() => onNav("config")}>
-              <span className="text-2xl block">{p.icon}</span>
-              <span className="text-xs font-bold block mt-1" style={{ color: dark }}>{p.name}</span>
-              <span className="text-[10px]" style={{ color: accent }}>{p.desc}</span>
+
+        <div>
+          <h3 className="font-bold text-sm mb-2" style={{ color: C.dark }}>Nasze realizacje</h3>
+          <div className="space-y-2">
+            {realizations.map((r, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: C.white }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style={{ background: C.stone }}>🏠</div>
+                <div className="flex-1">
+                  <h4 className="text-xs font-bold" style={{ color: C.dark }}>{r.name}</h4>
+                  <p className="text-[10px]" style={{ color: C.greige }}>{r.style} • {r.area}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Star className="w-2.5 h-2.5" style={{ fill: C.oak, color: C.oak }} />
+                    <span className="text-[10px] font-bold" style={{ color: C.dark }}>{r.rating}</span>
+                    <span className="text-[10px] ml-auto font-bold" style={{ color: C.oak }}>{r.value}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl" style={{ background: C.white }}>
+          <span className="text-xs font-bold" style={{ color: C.dark }}>Jak to działa?</span>
+          {["Dobierz materiały i kolory", "Wybierz moduły szafek", "Dodaj sprzęt AGD", "Otrzymaj wycenę i zamów pomiar"].map((s, i) => (
+            <div key={i} className="flex items-center gap-2 mt-2">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: C.oak, color: C.white }}>{i + 1}</div>
+              <span className="text-[11px]" style={{ color: C.dark }}>{s}</span>
             </div>
           ))}
         </div>
-        <div className="p-4 rounded-2xl mt-3" style={{ background: dark, border: `1px solid ${accent}25` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: accent }}>Opinie klientów</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: bg + "90" }}>
-            {isFurn ? "\"Szafa idealnie dopasowana do naszej sypialni. Jakość drewna i wykończenia na najwyższym poziomie.\"" : "\"Kuchnia jest przepiękna! Blat kwarcowy i fronty w kolorze oliwki wyglądają fantastycznie.\""}
-          </p>
-          <p className="text-[10px] text-center mt-1" style={{ color: accent }}>— {isFurn ? "Katarzyna M." : "Paweł R."} ★★★★★</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[{ v: "500+", l: "Realizacji" },{ v: "4.9", l: "Ocena" },{ v: "10", l: "Lat doświadczenia" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${accent}10` }}>
-              <span className="font-bold text-sm block" style={{ color: accent }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: mid }}>{s.l}</span>
-            </div>
-          ))}
-        </div>
-      </DemoSection>
-      <DemoBenefits accentColor={isFurn ? furnitureC.walnut : kitchenC.blue} bgColor={isFurn ? furnitureC.cream : kitchenC.light} textColor={isFurn ? furnitureC.dark : kitchenC.dark} benefits={[
-        { icon: "🎨", title: "Personalizacja", desc: "Klient projektuje wymiary i kolory" },
-        { icon: "💰", title: "Live pricing", desc: "Cena aktualizuje się na bieżąco" },
-        { icon: "📋", title: "Lepsze leady", desc: "Gotowy brief z konfiguratora" },
-        { icon: "📊", title: "Panel handlowca", desc: "Zapisane konfiguracje klientów" },
-      ]} />
-      <DemoFooterCTA accentColor={isFurn ? furnitureC.walnut : kitchenC.blue} bgColor={isFurn ? furnitureC.dark : kitchenC.dark} />
+      </div>
     </div>
   );
 }
 
-function ConfigPage({ isFurn }: { isFurn: boolean }) {
-  const [selType, setSelType] = useState(0);
-  const types = isFurn
-    ? [{ name: "Szafa przesuwna", icon: "🚪", desc: "2-3 drzwi, lustro opcjonalnie" }, { name: "Szafa narożna", icon: "📐", desc: "Optymalne wykorzystanie narożnika" }, { name: "Garderoba walk-in", icon: "👗", desc: "Otwarta przestrzeń garderobiana" }, { name: "Szafa na wymiar", icon: "📏", desc: "Dowolna konfiguracja" }]
-    : [{ name: "Kuchnia w linii", icon: "▬", desc: "Klasyczny układ liniowy" }, { name: "Kuchnia L", icon: "⌐", desc: "Narożna z wyspą" }, { name: "Kuchnia U", icon: "⊔", desc: "Trzy ściany robocze" }, { name: "Kuchnia z wyspą", icon: "⬜", desc: "Wyspa jako centrum" }];
-  const bg = isFurn ? furnitureC.cream : kitchenC.warmWhite;
-  const accent = isFurn ? furnitureC.oak : kitchenC.olive;
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
+function ConfiguratorPage({ selections, setSelections }: { selections: number[]; setSelections: (s: number[]) => void }) {
+  const corpusColor = materialGroups[0].options[selections[0]].color;
+  const topColor = materialGroups[1].options[selections[1]].color;
+  const handleColor = materialGroups[2].options[selections[2]].color;
 
   return (
-    <DemoSection>
-      <h3 className="font-display font-bold text-lg" style={{ color: dark }}>Wybierz typ {isFurn ? "szafy" : "kuchni"}</h3>
-      <div className="grid grid-cols-2 gap-3">
-        {types.map((t, i) => (
-          <motion.div key={i} whileHover={{ scale: 1.02 }} onClick={() => setSelType(i)}
-            className="p-5 rounded-2xl border cursor-pointer text-center"
-            style={{ borderColor: selType === i ? accent : isFurn ? furnitureC.beige : kitchenC.greige + "40", background: bg }}>
-            <span className="text-3xl block mb-2">{t.icon}</span>
-            <h4 className="font-bold text-sm" style={{ color: dark }}>{t.name}</h4>
-            <p className="text-[10px] mt-1" style={{ color: mid }}>{t.desc}</p>
-          </motion.div>
-        ))}
-      </div>
-      <div className="p-4 rounded-xl mt-3" style={{ background: accent + "10" }}>
-        <p className="text-xs" style={{ color: dark }}>
-          <span className="font-bold">Wybrany typ:</span> {types[selType].name}
-        </p>
-        <p className="text-[10px] mt-1" style={{ color: mid }}>Przejdź do zakładki Materiały, aby wybrać wykończenie</p>
-      </div>
-    </DemoSection>
-  );
-}
+    <div className="px-4 py-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.dark }}>Dobierz materiały</h2>
 
-function MaterialsPage({ isFurn }: { isFurn: boolean }) {
-  const [selMat, setSelMat] = useState(0);
-  const [selColor, setSelColor] = useState(0);
-  const mats = isFurn
-    ? [{ name: "Dąb naturalny", color: "#C4A35A" }, { name: "Orzech włoski", color: "#5C4033" }, { name: "Biel matowa", color: "#F5F5F0" }, { name: "Antracyt", color: "#3C3C3C" }, { name: "Dąb bielony", color: "#E8DCC8" }]
-    : [{ name: "Biel lakier", color: "#FAFAF5" }, { name: "Greige mat", color: "#B8AFA6" }, { name: "Oliwkowy", color: "#708238" }, { name: "Grafitowy", color: "#3C3C3C" }, { name: "Dąb naturalny", color: "#C4A35A" }];
-  const counters = isFurn ? [] : [{ name: "Kwarcyt biały", color: "#F0EDE8" }, { name: "Granit czarny", color: "#2C2C2C" }, { name: "Marmur Calacatta", color: "#F5F0E8" }, { name: "Drewno dębowe", color: "#C4A35A" }];
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
-
-  return (
-    <DemoSection>
-      <h3 className="font-display font-bold text-lg" style={{ color: dark }}>{isFurn ? "Materiał korpusu" : "Fronty"}</h3>
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {mats.map((m, i) => (
-          <motion.div key={i} whileHover={{ scale: 1.05 }} onClick={() => setSelMat(i)}
-            className="text-center cursor-pointer shrink-0">
-            <div className="w-14 h-14 rounded-xl border-2 mb-1" style={{ background: m.color, borderColor: selMat === i ? dark : "transparent" }} />
-            <span className="text-[10px] font-medium" style={{ color: selMat === i ? dark : mid }}>{m.name}</span>
-          </motion.div>
-        ))}
+      <div className="p-4 rounded-xl flex items-center justify-center" style={{ background: C.stone, minHeight: 100 }}>
+        <div className="flex gap-1">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="relative" style={{ width: 60, height: 70 }}>
+              <div className="absolute inset-0 rounded-lg" style={{ background: corpusColor, border: `1px solid ${C.greige}40` }} />
+              <div className="absolute top-0 left-0 right-0 h-2.5 rounded-t-lg" style={{ background: topColor }} />
+              {handleColor !== "transparent" && (
+                <div className="absolute right-1.5 top-[50%] w-0.5 h-3 rounded-full" style={{ background: handleColor }} />
+              )}
+            </div>
+          ))}
+          <div className="relative" style={{ width: 30, height: 70 }}>
+            <div className="absolute inset-0 rounded-lg" style={{ background: corpusColor, border: `1px solid ${C.greige}40` }} />
+            <div className="absolute top-0 left-0 right-0 h-2.5 rounded-t-lg" style={{ background: topColor }} />
+          </div>
+        </div>
       </div>
-      {!isFurn && (
-        <>
-          <h3 className="font-display font-bold text-lg mt-4" style={{ color: dark }}>Blat</h3>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {counters.map((c, i) => (
-              <motion.div key={i} whileHover={{ scale: 1.05 }} onClick={() => setSelColor(i)}
-                className="text-center cursor-pointer shrink-0">
-                <div className="w-14 h-14 rounded-xl border-2 mb-1" style={{ background: c.color, borderColor: selColor === i ? dark : "transparent" }} />
-                <span className="text-[10px] font-medium" style={{ color: selColor === i ? dark : mid }}>{c.name}</span>
-              </motion.div>
+
+      {materialGroups.map((g, gi) => (
+        <div key={gi}>
+          <span className="text-xs font-bold" style={{ color: C.dark }}>{g.name}</span>
+          <div className="grid grid-cols-4 gap-2 mt-1.5">
+            {g.options.map((o, oi) => (
+              <button key={oi} onClick={() => { const s = [...selections]; s[gi] = oi; setSelections(s); }}
+                className="p-2 rounded-xl text-center" style={selections[gi] === oi ? { border: `2px solid ${C.dark}`, background: C.white } : { border: `1px solid ${C.stone}`, background: C.white }}>
+                <div className="w-6 h-6 rounded-full mx-auto mb-1" style={o.color === "transparent" ? { border: "2px dashed " + C.greige } : { background: o.color }} />
+                <span className="text-[9px] font-medium block" style={{ color: C.dark }}>{o.name}</span>
+                {o.price > 0 && <span className="text-[8px]" style={{ color: C.oak }}>+{o.price} zł</span>}
+              </button>
             ))}
           </div>
-        </>
-      )}
-      <div className="p-4 rounded-xl mt-3" style={{ background: isFurn ? furnitureC.beige : kitchenC.greige + "20" }}>
-        <h4 className="font-bold text-xs" style={{ color: dark }}>Aktualna konfiguracja</h4>
-        <p className="text-[10px] mt-1" style={{ color: mid }}>{isFurn ? "Korpus" : "Front"}: {mats[selMat].name}</p>
-        {!isFurn && <p className="text-[10px]" style={{ color: mid }}>Blat: {counters[selColor].name}</p>}
-      </div>
-    </DemoSection>
-  );
-}
-
-function DimensionsPage({ isFurn }: { isFurn: boolean }) {
-  const [w, setW] = useState(isFurn ? 250 : 320);
-  const [h, setH] = useState(isFurn ? 260 : 220);
-  const [d, setD] = useState(isFurn ? 60 : 60);
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const accent = isFurn ? furnitureC.oak : kitchenC.olive;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
-
-  return (
-    <DemoSection>
-      <h3 className="font-display font-bold text-lg" style={{ color: dark }}>{isFurn ? "Wymiary szafy" : "Wymiary kuchni"}</h3>
-      {[
-        { label: "Szerokość (cm)", val: w, set: setW, min: 100, max: 500 },
-        { label: "Wysokość (cm)", val: h, set: setH, min: 200, max: 300 },
-        { label: "Głębokość (cm)", val: d, set: setD, min: 40, max: 80 },
-      ].map((dim, i) => (
-        <div key={i} className="space-y-1">
-          <div className="flex justify-between">
-            <span className="text-xs font-medium" style={{ color: dark }}>{dim.label}</span>
-            <span className="text-xs font-bold" style={{ color: accent }}>{dim.val} cm</span>
-          </div>
-          <input type="range" min={dim.min} max={dim.max} value={dim.val} onChange={e => dim.set(Number(e.target.value))}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer" style={{ background: `linear-gradient(to right, ${accent} ${((dim.val - dim.min) / (dim.max - dim.min)) * 100}%, ${isFurn ? furnitureC.beige : kitchenC.greige + "40"} 0%)` }} />
         </div>
       ))}
-      {isFurn && (
-        <div className="mt-3">
-          <h4 className="text-xs font-bold" style={{ color: dark }}>Wnętrze szafy</h4>
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            {["Półki", "Drążek", "Szuflady", "Lustro", "Oświetlenie", "Organizer"].map((opt, i) => (
-              <label key={i} className="flex items-center gap-2 p-2 rounded-lg border cursor-pointer"
-                style={{ borderColor: isFurn ? furnitureC.beige : kitchenC.greige + "40", background: isFurn ? furnitureC.cream : kitchenC.warmWhite }}>
-                <input type="checkbox" defaultChecked={i < 3} className="accent-amber-700 w-3.5 h-3.5" />
-                <span className="text-[10px]" style={{ color: dark }}>{opt}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-      {!isFurn && (
-        <div className="mt-3">
-          <h4 className="text-xs font-bold" style={{ color: dark }}>Wyposażenie AGD</h4>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {["Piekarnik", "Płyta indukcyjna", "Zmywarka", "Lodówka", "Okap", "Mikrofala"].map((opt, i) => (
-              <label key={i} className="flex items-center gap-2 p-2 rounded-lg border cursor-pointer"
-                style={{ borderColor: kitchenC.greige + "40", background: kitchenC.warmWhite }}>
-                <input type="checkbox" defaultChecked={i < 4} className="accent-green-700 w-3.5 h-3.5" />
-                <span className="text-[10px]" style={{ color: dark }}>{opt}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-    </DemoSection>
+    </div>
   );
 }
 
-function PreviewPage({ isFurn }: { isFurn: boolean }) {
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const accent = isFurn ? furnitureC.oak : kitchenC.olive;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
-
+function ModulesPage({ mods, setMods }: { mods: number[]; setMods: (m: number[]) => void }) {
   return (
-    <DemoSection>
-      <h3 className="font-display font-bold text-lg" style={{ color: dark }}>{isFurn ? "Podgląd 3D" : "Moodboard"}</h3>
-      <div className="w-full h-48 rounded-2xl flex items-center justify-center relative" style={{ background: `linear-gradient(135deg, ${isFurn ? furnitureC.beige : kitchenC.greige}30, ${isFurn ? furnitureC.cream : kitchenC.warmWhite})` }}>
-        <div className="text-center">
-          <span className="text-5xl block mb-2">{isFurn ? "🚪" : "🍳"}</span>
-          <p className="text-xs font-medium" style={{ color: mid }}>{isFurn ? "Podgląd szafy przesuwnej" : "Wizualizacja kuchni L"}</p>
-          <p className="text-[10px]" style={{ color: mid }}>250 × 260 × 60 cm</p>
+    <div className="px-4 py-3 space-y-2">
+      <h2 className="font-bold text-sm" style={{ color: C.dark }}>Wybierz moduły</h2>
+      {modules.map((m, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: C.white }}>
+          <span className="text-xl">{m.icon}</span>
+          <div className="flex-1">
+            <h4 className="text-xs font-bold" style={{ color: C.dark }}>{m.name}</h4>
+            <span className="text-[10px]" style={{ color: C.greige }}>Kod: {m.code} • {m.basePrice} zł/szt</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => { const n = [...mods]; n[i] = Math.max(0, n[i] - 1); setMods(n); }}
+              className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: C.stone }}><Minus className="w-3 h-3" /></button>
+            <span className="font-bold text-sm w-5 text-center" style={{ color: C.dark }}>{mods[i]}</span>
+            <button onClick={() => { const n = [...mods]; n[i]++; setMods(n); }}
+              className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: C.oak, color: C.white }}><Plus className="w-3 h-3" /></button>
+          </div>
         </div>
-        <button className="absolute bottom-3 right-3 p-2 rounded-xl" style={{ background: accent, color: "white" }}>
-          <RotateCcw className="w-4 h-4" />
-        </button>
+      ))}
+    </div>
+  );
+}
+
+function AgdPage({ selected, setSelected }: { selected: boolean[]; setSelected: (s: boolean[]) => void }) {
+  return (
+    <div className="px-4 py-3 space-y-2">
+      <h2 className="font-bold text-sm" style={{ color: C.dark }}>Sprzęt AGD</h2>
+      {agd.map((a, i) => (
+        <label key={i} className="flex items-center gap-3 p-3.5 rounded-xl cursor-pointer" style={{ background: selected[i] ? C.oak + "10" : C.white, border: `1px solid ${selected[i] ? C.oak : C.stone}` }}>
+          <input type="checkbox" checked={selected[i]} onChange={() => { const n = [...selected]; n[i] = !n[i]; setSelected(n); }} className="w-4 h-4 accent-amber-700" />
+          <span className="text-xl">{a.icon}</span>
+          <div className="flex-1">
+            <h4 className="text-xs font-bold" style={{ color: C.dark }}>{a.name}</h4>
+            <span className="text-[10px]" style={{ color: C.greige }}>{a.brand}</span>
+          </div>
+          <span className="font-bold text-sm" style={{ color: C.oak }}>{a.price.toLocaleString()} zł</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function SummaryPage({ selections, mods, agdSel, total }: { selections: number[]; mods: number[]; agdSel: boolean[]; total: number }) {
+  const [sent, setSent] = useState(false);
+  if (sent) {
+    return (
+      <div className="px-4 py-10 text-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.forest + "20" }}>
+            <CheckCircle2 className="w-7 h-7" style={{ color: C.forest }} />
+          </div>
+        </motion.div>
+        <h3 className="font-bold text-lg" style={{ color: C.dark }}>Konfiguracja wysłana!</h3>
+        <p className="text-xs mt-1" style={{ color: C.greige }}>Nr konfiguracji:</p>
+        <p className="font-mono font-bold text-sm" style={{ color: C.oak }}>FORM-{Math.floor(Math.random() * 9000 + 1000)}</p>
+        <p className="text-[10px] mt-2 max-w-[220px] mx-auto" style={{ color: C.greige }}>Skontaktujemy się w ciągu 24h z dokładną wyceną i terminem pomiaru.</p>
       </div>
-      {!isFurn && (
-        <>
-          <h4 className="font-bold text-xs mt-3" style={{ color: dark }}>Paleta kolorów</h4>
-          <div className="flex gap-3">
-            {[kitchenC.warmWhite, kitchenC.greige, kitchenC.olive, kitchenC.stone, kitchenC.graphite].map((c, i) => (
-              <div key={i} className="w-10 h-10 rounded-xl border" style={{ background: c, borderColor: mid + "30" }} />
-            ))}
-          </div>
-          <h4 className="font-bold text-xs mt-3" style={{ color: dark }}>Inspiracje</h4>
-          <div className="grid grid-cols-3 gap-2">
-            {["Skandynawska", "Industrialna", "Minimalistyczna"].map((s, i) => (
-              <div key={i} className="p-3 rounded-xl text-center" style={{ background: kitchenC.greige + "20" }}>
-                <span className="text-xl block mb-1">{["🌿", "⚙️", "◻️"][i]}</span>
-                <span className="text-[10px] font-medium" style={{ color: dark }}>{s}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </DemoSection>
-  );
-}
-
-function SummaryPage({ isFurn }: { isFurn: boolean }) {
-  const dark = isFurn ? furnitureC.anthracite : kitchenC.graphite;
-  const accent = isFurn ? furnitureC.oak : kitchenC.olive;
-  const mid = isFurn ? furnitureC.taupe : kitchenC.stone;
-  const items = isFurn
-    ? [{ name: "Korpus dąb naturalny", price: 3200 }, { name: "Drzwi przesuwne x2", price: 1800 }, { name: "Lustro na drzwiach", price: 600 }, { name: "Oświetlenie LED", price: 450 }, { name: "Montaż", price: 800 }]
-    : [{ name: "Fronty oliwkowe mat", price: 4200 }, { name: "Blat kwarcytowy", price: 3800 }, { name: "Zlewozmywak podwieszany", price: 1200 }, { name: "Oświetlenie LED", price: 650 }, { name: "Montaż i transport", price: 1500 }];
-  const total = items.reduce((a, i) => a + i.price, 0);
+    );
+  }
 
   return (
-    <DemoSection>
-      <h3 className="font-display font-bold text-lg" style={{ color: dark }}>Wycena {isFurn ? "szafy" : "kuchni"}</h3>
-      <div className="space-y-2">
-        {items.map((item, i) => (
-          <div key={i} className="flex justify-between py-2 border-b" style={{ borderColor: isFurn ? furnitureC.beige : kitchenC.greige + "30" }}>
-            <span className="text-xs" style={{ color: dark }}>{item.name}</span>
-            <span className="text-xs font-bold" style={{ color: dark }}>{item.price.toLocaleString()} zł</span>
+    <div className="px-4 py-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.dark }}>Podsumowanie konfiguracji</h2>
+      <div className="p-4 rounded-xl space-y-2" style={{ background: C.white }}>
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: C.greige }}>Materiały</span>
+        {materialGroups.map((g, i) => (
+          <div key={i} className="flex items-center justify-between text-xs">
+            <span style={{ color: C.dark }}>{g.name}: <strong>{g.options[selections[i]].name}</strong></span>
+            {g.options[selections[i]].price > 0 && <span style={{ color: C.oak }}>+{g.options[selections[i]].price} zł</span>}
           </div>
         ))}
       </div>
-      <div className="p-4 rounded-xl mt-3" style={{ background: accent + "10" }}>
-        <div className="flex justify-between">
-          <span className="font-bold text-sm" style={{ color: dark }}>Razem</span>
-          <span className="font-bold text-xl" style={{ color: accent }}>{total.toLocaleString()} zł</span>
-        </div>
-        <p className="text-[10px] mt-1" style={{ color: mid }}>Możliwość rozłożenia na 12 rat: {Math.round(total / 12)} zł/mies.</p>
+      <div className="p-4 rounded-xl space-y-2" style={{ background: C.white }}>
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: C.greige }}>Moduły</span>
+        {modules.map((m, i) => mods[i] > 0 && (
+          <div key={i} className="flex items-center justify-between text-xs">
+            <span style={{ color: C.dark }}>{m.name} ×{mods[i]}</span>
+            <span style={{ color: C.oak }}>{(m.basePrice * mods[i]).toLocaleString()} zł</span>
+          </div>
+        ))}
+        {mods.every(m => m === 0) && <span className="text-[10px]" style={{ color: C.greige }}>Nie wybrano modułów</span>}
       </div>
-      <motion.button whileHover={{ scale: 1.02 }}
-        className="w-full py-3.5 rounded-xl font-semibold text-sm text-white" style={{ background: accent }}>Zamów wycenę szczegółową</motion.button>
-      <motion.button whileHover={{ scale: 1.02 }}
-        className="w-full py-3 rounded-xl font-semibold text-sm border" style={{ borderColor: accent, color: accent }}>Pobierz PDF</motion.button>
-    </DemoSection>
+      <div className="p-4 rounded-xl space-y-2" style={{ background: C.white }}>
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: C.greige }}>Sprzęt AGD</span>
+        {agd.map((a, i) => agdSel[i] && (
+          <div key={i} className="flex items-center justify-between text-xs">
+            <span style={{ color: C.dark }}>{a.name}</span>
+            <span style={{ color: C.oak }}>{a.price.toLocaleString()} zł</span>
+          </div>
+        ))}
+        {agdSel.every(s => !s) && <span className="text-[10px]" style={{ color: C.greige }}>Nie wybrano AGD</span>}
+      </div>
+      <div className="p-4 rounded-xl" style={{ background: C.dark }}>
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold" style={{ color: C.white }}>Szacowana cena</span>
+          <span className="font-bold text-xl" style={{ color: C.oak }}>{total.toLocaleString()} zł</span>
+        </div>
+        <p className="text-[9px] mt-1" style={{ color: C.greige }}>Cena orientacyjna. Ostateczna wycena po pomiarze.</p>
+      </div>
+      <input placeholder="Imię i nazwisko" className="w-full px-4 py-3 rounded-xl text-sm" style={{ background: C.white, border: `1px solid ${C.stone}`, color: C.dark }} />
+      <input placeholder="Telefon lub email" className="w-full px-4 py-3 rounded-xl text-sm" style={{ background: C.white, border: `1px solid ${C.stone}`, color: C.dark }} />
+      <motion.button whileHover={{ scale: 1.02 }} onClick={() => setSent(true)}
+        className="w-full py-3.5 rounded-xl font-bold text-sm text-white" style={{ background: C.oak }}>Wyślij konfigurację i zamów pomiar</motion.button>
+    </div>
   );
 }

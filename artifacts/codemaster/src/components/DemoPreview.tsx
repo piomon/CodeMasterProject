@@ -16,6 +16,7 @@ import { MentoringDemo } from "./demos/MentoringDemo";
 import { AiDemo } from "./demos/AiDemo";
 import { HealthcareDemo } from "./demos/HealthcareDemo";
 import { ServiceDemo } from "./demos/ServiceDemo";
+import { BookingDemo } from "./demos/BookingDemo";
 import { EventsDemo } from "./demos/EventsDemo";
 import { CalculatorDemo } from "./demos/CalculatorDemo";
 
@@ -83,6 +84,9 @@ export function DemoPreview({ project }: DemoPreviewProps) {
 
   if (cat.includes("events") || ind.includes("entertainment") || nm.includes("event") || nm.includes("bilet"))
     return <EventsDemo name={project.name} features={project.features} />;
+
+  if ((cat.includes("service") || nm.includes("serwis") || nm.includes("napraw")) && ind.includes("it"))
+    return <BookingDemo name={project.name} features={project.features} />;
 
   if (cat.includes("service") || nm.includes("serwis") || nm.includes("napraw"))
     return <ServiceDemo name={project.name} features={project.features} />;

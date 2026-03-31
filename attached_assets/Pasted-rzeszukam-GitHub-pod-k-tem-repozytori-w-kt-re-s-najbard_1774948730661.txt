@@ -1,0 +1,70 @@
+rzeszukam GitHub pod kątem repozytoriów, które są najbardziej dojrzałe, publiczne i najbliższe zastosowaniu komercyjnemu dla każdego z Twoich 20 demo. Tam, gdzie nie ma idealnego 1:1 projektu, wybiorę najlepszy najbliższy odpowiednik i wyraźnie to zaznaczę.
+
+Mam już sensowny zestaw kandydatów. Dla części branż są bardzo mocne, dojrzałe repozytoria 1:1, a dla kilku nisz — jak konfigurator szafy czy strefa mentoring premium — najlepsze publiczne projekty są raczej „najbliższym odpowiednikiem” niż idealnym gotowcem.
+
+Thought for 5m 49s
+
+Przejrzałem publiczne repozytoria GitHub i wybrałem po 1 najlepszym / najbardziej profesjonalnym publicznym projekcie dla każdego Twojego demo. Tam, gdzie nie ma idealnego projektu 1:1, podałem najbliższy komercyjny odpowiednik.
+
+Salon Kosmetyczny — Rezerwacje Online
+patriciaperez90/open-source-salon-system-app
+ — najlepszy publiczny fit pod beauty booking o komercyjnym charakterze, bo frontend jest open source, a backend/API jest udostępniany komercyjnie na płatnej licencji.
+Barber / Fryzjer — Kalendarz Wizyt
+StefanoSaffran/gobarber
+ — najbliższy dojrzały barber-booking/public schedule app, opisany wprost jako „Barber Schedule App”.
+Restauracja — Menu i Zamówienia Online
+tastyigniter/TastyIgniter
+ — bardzo mocny, profesjonalny open-source dla restauracji: online ordering, table reservation i restaurant management system.
+Hotel / Apartamenty — System Rezerwacji
+QloApps/QloApps
+ — jeden z najmocniejszych publicznych projektów hotelowych; oferuje PMS, booking engine i hotel website.
+Klinika Medyczna — Panel Pacjenta
+arnobt78/HealthCare-Doctor-Appointment-Management-System--NextJS-FullStack
+ — najlepszy publiczny fit pod nowoczesny patient portal: rejestracja wizyt, panel admina, SMS notifications i file storage.
+Siłownia / Fitness — Membership i Grafik
+mayerbalintdev/GYM-One
+ — pełnoprawna platforma gym management z member management, attendance i admin panelem; bardzo dobry wzorzec pod demo fitness.
+Sklep Meblowy — Konfigurator Szafy
+PAC837/3D-Configurator-CLOSETS
+ — najbliższy 1:1 closet configurator; ma 2D-first closet design tool, real-time pricing i eksport do Mozaik.
+Kuchnie na Wymiar — Konfigurator Projektu
+YauhenGloryas/kitchen-planner
+ — web-based 3D kitchen configurator z wizualizacją i customizacją w czasie rzeczywistym.
+Deweloper Nieruchomości — Katalog Inwestycji
+AHMAD-JX/Hozn-RealEstate-Fullstack
+ — mocny full-stack real estate platform z listingami, zarządzaniem nieruchomościami, auth i admin dashboardem.
+Biuro Rachunkowe — Panel Klienta
+invoiceninja/invoiceninja
+ — najbardziej profesjonalny publiczny kandydat pod client portal/accounting workflow; ma invoice, quote, project/time tracking oraz osobny API/client portal stack oparty o Laravel.
+Kancelaria Prawna — Leady i Konsultacje
+NodineLegal/OpenLawOffice
+ — najbardziej „komercyjny” publiczny legal-office fit, bo obejmuje case management, billing i tasking.
+Agencja Marketingowa — Panel Raportów
+mz7bntfbpm-stack/agency-dashboard
+ — najbliższy 1:1 publiczny projekt pod agencyjny reporting; śledzi Google Ads, Facebook Ads i GA4.
+Szkoła Online — Kursy i Konto
+frappe/lms
+ — bardzo mocny, aktywny open-source LMS; dobry wzorzec pod kursy, konto ucznia i zarządzanie contentem.
+E-learning / Mentoring — Strefa Premium
+skytruong90/Open-Source-Mentorship-Platform
+ — najbliższy publiczny fit pod mentoring platform: mentor/mentee matching, cele, progress i resource sharing.
+Portal Eventowy — Bilety i Harmonogram
+HiEventsDev/hi.events
+ — bardzo mocny nowoczesny open-source odpowiednik Eventbrite/TicketTailor z kontrolą brandingu, checkoutu i danych.
+Wypożyczalnia Aut — Rezerwacje i Flota
+Mohamed-Galdi/real-rent-car
+ — kompletny open-source car rental platform z reservations, fleet management i customer workflows.
+Serwis Komputerowy — Zgłoszenia Napraw
+Zoran-Jankov/RepairQ
+ — bardzo dobry repair-shop ticketing system: tickets, customers, devices, parts inventory i śledzenie napraw.
+Firma Budowlana — Kalkulator Wyceny
+JainCK/construction-cost-estimator
+ — najlepszy publiczny webowy fit pod construction estimate demo: breakdown kosztów, labor, overhead i cost-saving suggestions.
+E-commerce Premium — Landing i Checkout
+bagisto/nextjs-commerce
+ — bardzo mocny headless commerce storefront z Next.js, pozycjonowany jako szybki, elastyczny i skalowalny.
+AI Business Assistant — Chatbot + Lead Scoring
+teodorsanda/ai-lead-chatbot
+ — najbliższy 1:1 publiczny projekt do Twojego demo: chatbot B2B, real-time conversation analysis i lead scoring.
+
+Najmocniejsze, najbardziej „production-like” z tej listy to: TastyIgniter, QloApps, Invoice Ninja, frappe/lms, Hi.Events, bagisto/nextjs-commerce i OpenEMR — to są projekty, które najmocniej pachną realnym wdrożeniem komercyjnym.

@@ -1,323 +1,383 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { ShoppingCart, Star, Heart, CreditCard, Truck, Package, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Gift, User, Search } from "lucide-react";
+import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
+import { ShoppingBag, Star, Heart, CreditCard, Truck, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Search, Filter, User, ArrowLeft, Package } from "lucide-react";
 
-const C = { black: "#0A0A0A", cream: "#FFF8F0", gold: "#C9A96E", taupe: "#8B7D6B", graphite: "#2D2D2D", dark: "#1A1A1A", beige: "#F5E6D3" };
+const C = { black: "#0A0A0A", cream: "#FAF5EE", gold: "#B8860B", taupe: "#8B7D6B", white: "#FFFFFF", warm: "#F5EDE3", rose: "#9E6B6B", dark: "#1C1917" };
 
-const products = [
-  { name: "Skórzana torba Premium", price: 890, oldPrice: 1190, cat: "Torby", rating: 4.9, reviews: 156, icon: "👜", badge: "Bestseller" },
-  { name: "Zegarek Minimal Gold", price: 1450, oldPrice: 0, cat: "Zegarki", rating: 5.0, reviews: 89, icon: "⌚", badge: "Nowość" },
-  { name: "Portfel skórzany slim", price: 340, oldPrice: 420, cat: "Akcesoria", rating: 4.8, reviews: 234, icon: "💼", badge: "" },
-  { name: "Okulary Classic Edition", price: 560, oldPrice: 0, cat: "Okulary", rating: 4.7, reviews: 67, icon: "🕶️", badge: "" },
-  { name: "Pasek premium leather", price: 280, oldPrice: 350, cat: "Akcesoria", rating: 4.9, reviews: 198, icon: "🪢", badge: "Bestseller" },
-  { name: "Bransoletka Gold Chain", price: 720, oldPrice: 890, cat: "Biżuteria", rating: 4.8, reviews: 112, icon: "💫", badge: "-19%" },
+const categories = [
+  { id: "all", name: "Wszystko", icon: "✨" },
+  { id: "coats", name: "Płaszcze", icon: "🧥" },
+  { id: "dresses", name: "Sukienki", icon: "👗" },
+  { id: "bags", name: "Torebki", icon: "👜" },
+  { id: "shoes", name: "Obuwie", icon: "👠" },
+  { id: "accessories", name: "Akcesoria", icon: "💎" },
 ];
 
-const categories = ["Wszystkie", "Torby", "Zegarki", "Akcesoria", "Okulary", "Biżuteria"];
+const products = [
+  { name: "Płaszcz Kaszmirowy Oversize", cat: "coats", price: 1890, oldPrice: 2490, sizes: ["S", "M", "L"], color: "Camel", badge: "BESTSELLER", rating: 4.9, reviews: 89 },
+  { name: "Sukienka Midi Jedwabna", cat: "dresses", price: 890, sizes: ["XS", "S", "M", "L"], color: "Czarny", badge: "NOWOŚĆ", rating: 5.0, reviews: 34 },
+  { name: "Torebka Skórzana Baguette", cat: "bags", price: 690, oldPrice: 890, sizes: [], color: "Nude", badge: "-23%", rating: 4.8, reviews: 156 },
+  { name: "Botki Chelsea Skóra", cat: "shoes", price: 590, sizes: ["36", "37", "38", "39", "40"], color: "Czarny", badge: "", rating: 4.7, reviews: 67 },
+  { name: "Szal Wełniany Premium", cat: "accessories", price: 290, sizes: [], color: "Grey Melange", badge: "NOWOŚĆ", rating: 4.9, reviews: 45 },
+  { name: "Marynarka Oversize Lniana", cat: "coats", price: 1190, sizes: ["S", "M", "L", "XL"], color: "Ecru", badge: "", rating: 4.8, reviews: 78 },
+  { name: "Spódnica Plisowana Maxi", cat: "dresses", price: 490, sizes: ["XS", "S", "M"], color: "Champagne", badge: "", rating: 4.6, reviews: 52 },
+  { name: "Kopertówka Wieczorowa", cat: "bags", price: 390, sizes: [], color: "Gold", badge: "LUX", rating: 5.0, reviews: 28 },
+];
+
+type CartItem = { product: typeof products[0]; qty: number; size: string };
 
 export function EcommerceDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState("home");
-  const [cart, setCart] = useState<{ product: typeof products[0]; qty: number }[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [selProduct, setSelProduct] = useState(-1);
+  const [wishlist, setWishlist] = useState<Set<number>>(new Set());
   const cartCount = cart.reduce((a, c) => a + c.qty, 0);
   const cartTotal = cart.reduce((a, c) => a + c.product.price * c.qty, 0);
 
-  const addToCart = (p: typeof products[0]) => {
+  const addToCart = (product: typeof products[0], size: string) => {
     setCart(prev => {
-      const ex = prev.find(c => c.product.name === p.name);
-      if (ex) return prev.map(c => c.product.name === p.name ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { product: p, qty: 1 }];
+      const ex = prev.find(c => c.product.name === product.name && c.size === size);
+      if (ex) return prev.map(c => c.product.name === product.name && c.size === size ? { ...c, qty: c.qty + 1 } : c);
+      return [...prev, { product, qty: 1, size }];
     });
   };
 
-  const toggleWish = (name: string) => setWishlist(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
-
-  const tabs = [
-    { id: "home", label: "Sklep", icon: <Package className="w-3 h-3" /> },
-    { id: "catalog", label: "Katalog", icon: <Search className="w-3 h-3" /> },
-    { id: "cart", label: `Koszyk (${cartCount})`, icon: <ShoppingCart className="w-3 h-3" /> },
-    { id: "checkout", label: "Zamów", icon: <CreditCard className="w-3 h-3" /> },
-    { id: "account", label: "Konto", icon: <User className="w-3 h-3" /> },
-  ];
+  const toggleWish = (i: number) => {
+    setWishlist(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  };
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="LUXE" />
-      <AnimatePresence mode="wait">
-        <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-          {page === "home" && <HomePage addToCart={addToCart} toggleWish={toggleWish} wishlist={wishlist} onNav={setPage} />}
-          {page === "catalog" && <CatalogPage addToCart={addToCart} toggleWish={toggleWish} wishlist={wishlist} />}
-          {page === "cart" && <CartPage cart={cart} setCart={setCart} total={cartTotal} onNav={setPage} />}
-          {page === "checkout" && <CheckoutPage total={cartTotal} />}
-          {page === "account" && <AccountPage />}
-        </motion.div>
-      </AnimatePresence>
+      <div style={{ background: C.cream, minHeight: 500 }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ background: C.black }}>
+          <div>
+            <h1 className="font-display font-bold text-sm tracking-[0.2em]" style={{ color: C.cream }}>MAISON</h1>
+            <p className="text-[7px] tracking-[0.3em]" style={{ color: C.gold }}>BOUTIQUE</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setPage("home")} className="text-xs" style={{ color: C.cream + "80" }}>
+              <Search className="w-4 h-4" />
+            </button>
+            <button onClick={() => setPage("wishlist")} className="text-xs relative" style={{ color: C.cream + "80" }}>
+              <Heart className="w-4 h-4" />
+              {wishlist.size > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.black }}>{wishlist.size}</span>}
+            </button>
+            <button onClick={() => setPage("cart")} className="relative">
+              <ShoppingBag className="w-4 h-4" style={{ color: C.cream + "80" }} />
+              {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.black }}>{cartCount}</span>}
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={page + selProduct} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {page === "home" && <HomePage onNav={setPage} setProduct={setSelProduct} toggleWish={toggleWish} wishlist={wishlist} />}
+            {page === "shop" && <ShopPage addToCart={addToCart} setProduct={setSelProduct} onNav={setPage} toggleWish={toggleWish} wishlist={wishlist} />}
+            {page === "product" && selProduct >= 0 && <ProductPage product={products[selProduct]} addToCart={addToCart} onNav={setPage} toggleWish={() => toggleWish(selProduct)} isWished={wishlist.has(selProduct)} />}
+            {page === "cart" && <CartPage cart={cart} setCart={setCart} total={cartTotal} onNav={setPage} />}
+            {page === "checkout" && <CheckoutPage total={cartTotal} onNav={setPage} />}
+            {page === "wishlist" && <WishlistPage wishlist={wishlist} toggleWish={toggleWish} setProduct={setSelProduct} onNav={setPage} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <DemoBenefits accentColor={C.gold} bgColor={C.cream} textColor={C.black} benefits={[
+        { icon: "🛍️", title: "Profesjonalny e-commerce", desc: "Sklep klasy premium z konwersją" },
+        { icon: "📱", title: "Mobile-first", desc: "Responsywny design na każde urządzenie" },
+        { icon: "💳", title: "Szybka płatność", desc: "Integracja z bramkami płatności" },
+        { icon: "📦", title: "Zarządzanie magazynem", desc: "Stany magazynowe w czasie rzeczywistym" },
+      ]} />
+      <DemoFooterCTA accentColor={C.gold} bgColor={C.black} />
     </PreviewShell>
   );
 }
 
-function HomePage({ addToCart, toggleWish, wishlist, onNav }: any) {
+function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: string) => void; setProduct: (i: number) => void; toggleWish: (i: number) => void; wishlist: Set<number> }) {
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${C.black}, ${C.graphite})` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.gold }}>Premium Accessories</p>
-        <h1 className="font-display font-bold text-4xl mt-2" style={{ color: C.cream }}>LUXE</h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed" style={{ color: C.cream + "80" }}>Ekskluzywne akcesoria i biżuteria. Skóra najwyższej jakości, ponadczasowy design, bezpłatna dostawa.</p>
-        <div className="flex gap-3 justify-center mt-6">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("catalog")}
-            className="px-7 py-3.5 rounded-lg font-semibold text-sm shadow-lg" style={{ background: C.gold, color: C.black }}>Odkryj kolekcję</motion.button>
-          <button onClick={() => onNav("cart")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border" style={{ borderColor: C.gold + "40", color: C.gold }}>Koszyk</button>
+      <div className="relative py-10 px-5 text-center" style={{ background: `linear-gradient(180deg, ${C.black}, ${C.dark})` }}>
+        <p className="text-[10px] tracking-[0.3em] uppercase" style={{ color: C.gold }}>Kolekcja Jesień / Zima 2026</p>
+        <h2 className="font-display font-bold text-2xl mt-2" style={{ color: C.cream }}>Elegancja<br />w każdym detalu</h2>
+        <p className="text-xs mt-2" style={{ color: C.cream + "70" }}>Odkryj nową kolekcję premium. Kaszmiry, jedwabie, skóry.</p>
+        <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("shop")}
+          className="mt-4 px-8 py-3 rounded-none font-bold text-xs tracking-[0.2em] uppercase inline-flex items-center gap-2" style={{ background: C.gold, color: C.black }}>
+          Odkryj kolekcję <ChevronRight className="w-3 h-3" />
+        </motion.button>
+      </div>
+
+      <div className="px-4 py-4 space-y-4">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {categories.slice(1).map(c => (
+            <motion.button key={c.id} whileHover={{ y: -2 }} onClick={() => onNav("shop")}
+              className="shrink-0 px-4 py-2.5 rounded-none text-center" style={{ background: C.white, border: `1px solid ${C.warm}` }}>
+              <span className="text-base block">{c.icon}</span>
+              <span className="text-[9px] font-semibold block mt-0.5 tracking-wider uppercase" style={{ color: C.dark }}>{c.name}</span>
+            </motion.button>
+          ))}
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Bestsellery</h3>
+            <button onClick={() => onNav("shop")} className="text-[10px] font-semibold" style={{ color: C.gold }}>Wszystkie →</button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {products.filter(p => p.badge).slice(0, 4).map((p, i) => {
+              const idx = products.indexOf(p);
+              return (
+                <motion.div key={idx} whileHover={{ y: -3 }} onClick={() => { setProduct(idx); onNav("product"); }}
+                  className="rounded-none overflow-hidden cursor-pointer" style={{ background: C.white }}>
+                  <div className="h-28 flex items-center justify-center relative" style={{ background: C.warm }}>
+                    <span className="text-4xl">{categories.find(c => c.id === p.cat)?.icon || "🛍️"}</span>
+                    {p.badge && <span className="absolute top-2 left-2 px-1.5 py-0.5 text-[8px] font-bold tracking-wider" style={{ background: C.black, color: C.cream }}>{p.badge}</span>}
+                    <button onClick={e => { e.stopPropagation(); toggleWish(idx); }} className="absolute top-2 right-2">
+                      <Heart className="w-4 h-4" style={{ fill: wishlist.has(idx) ? C.rose : "none", color: wishlist.has(idx) ? C.rose : C.taupe }} />
+                    </button>
+                  </div>
+                  <div className="p-2.5">
+                    <h4 className="text-[11px] font-semibold leading-tight" style={{ color: C.dark }}>{p.name}</h4>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="font-bold text-sm" style={{ color: C.dark }}>{p.price} zł</span>
+                      {p.oldPrice && <span className="text-[10px] line-through" style={{ color: C.taupe }}>{p.oldPrice} zł</span>}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="p-5 text-center" style={{ background: C.black }}>
+          <p className="text-[9px] tracking-[0.3em] uppercase" style={{ color: C.gold }}>Darmowa dostawa</p>
+          <p className="text-xs font-bold mt-1" style={{ color: C.cream }}>Przy zamówieniach powyżej 500 zł</p>
+          <div className="flex justify-center gap-6 mt-3">
+            {[
+              { icon: <Truck className="w-4 h-4" />, label: "48h dostawa" },
+              { icon: <Shield className="w-4 h-4" />, label: "14 dni zwrot" },
+              { icon: <CreditCard className="w-4 h-4" />, label: "Bezp. płatność" },
+            ].map((f, i) => (
+              <div key={i} className="flex flex-col items-center gap-0.5" style={{ color: C.cream + "70" }}>
+                {f.icon}
+                <span className="text-[8px]">{f.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      <DemoSection>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: "👜", label: "Skóra", desc: "Włoska" },
-            { icon: "🚚", label: "Dostawa", desc: "Gratis od 500" },
-            { icon: "🎁", label: "Pakowanie", desc: "Na prezent" },
-            { icon: "↩️", label: "Zwroty", desc: "30 dni" },
-          ].map((f, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.beige }}>
-              <span className="text-lg block">{f.icon}</span>
-              <span className="text-[8px] font-bold block mt-1" style={{ color: C.dark }}>{f.label}</span>
-              <span className="text-[7px]" style={{ color: C.taupe }}>{f.desc}</span>
-            </div>
-          ))}
-        </div>
-        <h3 className="font-bold text-sm tracking-wider uppercase mt-4" style={{ color: C.gold }}>Bestsellery</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {products.slice(0, 4).map((p, i) => (
-            <motion.div key={i} whileHover={{ y: -3 }} className="rounded-2xl border overflow-hidden" style={{ borderColor: C.beige, background: C.cream }}>
-              <div className="h-20 flex items-center justify-center text-3xl relative" style={{ background: `linear-gradient(135deg, ${C.beige}80, ${C.cream})` }}>
-                {p.badge && <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold text-white" style={{ background: C.gold }}>{p.badge}</span>}
-                <button onClick={() => toggleWish(p.name)} className="absolute top-2 right-2">
-                  <Heart className="w-3.5 h-3.5" style={{ fill: wishlist.includes(p.name) ? C.gold : "transparent", color: wishlist.includes(p.name) ? C.gold : C.taupe }} />
-                </button>
-                {p.icon}
-              </div>
-              <div className="p-2.5">
-                <h4 className="text-[10px] font-semibold" style={{ color: C.dark }}>{p.name}</h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-bold text-sm" style={{ color: C.dark }}>{p.price} zł</span>
-                  {p.oldPrice > 0 && <span className="text-[10px] line-through" style={{ color: C.taupe }}>{p.oldPrice} zł</span>}
-                </div>
-                <motion.button whileHover={{ scale: 1.05 }} onClick={() => addToCart(p)}
-                  className="w-full mt-1.5 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: C.dark, color: C.cream }}>Do koszyka</motion.button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        <div className="p-4 rounded-2xl mt-3" style={{ background: C.dark, border: `1px solid ${C.gold}25` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.gold }}>Opinie klientów</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: C.cream + "90" }}>"Torba Premium jest absolutnie piękna. Skóra najwyższej jakości, świetne wykończenie."</p>
-          <p className="text-[10px] text-center mt-1" style={{ color: C.gold }}>— Anna K. ★★★★★</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[{ v: "10K+", l: "Klientów" },{ v: "4.9", l: "Ocena" },{ v: "98%", l: "Poleca" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${C.gold}08` }}>
-              <span className="font-bold text-sm block" style={{ color: C.gold }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.taupe }}>{s.l}</span>
-            </div>
-          ))}
-        </div>
-      </DemoSection>
-      <DemoBenefits accentColor={C.gold} bgColor={C.black} textColor={C.cream} benefits={[
-        { icon: "🛒", title: "Wyższa konwersja", desc: "Premium checkout bez zbędnych kroków" },
-        { icon: "📦", title: "Pełny lejek", desc: "Od storytellingu do finalizacji" },
-        { icon: "⭐", title: "Social proof", desc: "Opinie klientów budują zaufanie" },
-        { icon: "📊", title: "Konta klientów", desc: "Historia zamówień i retencja" },
-      ]} />
-      <DemoFooterCTA accentColor={C.gold} bgColor={C.black} />
     </div>
   );
 }
 
-function CatalogPage({ addToCart, toggleWish, wishlist }: any) {
-  const [selCat, setSelCat] = useState("Wszystkie");
-  const filtered = selCat === "Wszystkie" ? products : products.filter(p => p.cat === selCat);
+function ShopPage({ addToCart, setProduct, onNav, toggleWish, wishlist }: any) {
+  const [selCat, setSelCat] = useState("all");
+  const filtered = selCat === "all" ? products : products.filter(p => p.cat === selCat);
+
   return (
-    <DemoSection>
-      <div className="flex gap-2 overflow-x-auto pb-2">
+    <div className="px-4 py-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Kolekcja</h2>
+        <span className="text-[10px]" style={{ color: C.taupe }}>{filtered.length} produktów</span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {categories.map(c => (
-          <button key={c} onClick={() => setSelCat(c)} className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
-            style={selCat === c ? { background: C.dark, color: C.cream } : { background: C.beige, color: C.taupe }}>{c}</button>
+          <button key={c.id} onClick={() => setSelCat(c.id)}
+            className="px-3 py-1.5 text-[10px] font-semibold whitespace-nowrap tracking-wider uppercase"
+            style={selCat === c.id ? { background: C.black, color: C.cream } : { background: C.white, color: C.taupe, border: `1px solid ${C.warm}` }}>{c.name}</button>
         ))}
       </div>
-      <div className="space-y-3 mt-2">
-        {filtered.map((p, i) => (
-          <motion.div key={p.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-            className="flex gap-4 p-4 rounded-2xl border" style={{ borderColor: C.beige, background: C.cream }}>
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl shrink-0" style={{ background: C.beige }}>
-              {p.icon}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-sm" style={{ color: C.dark }}>{p.name}</h4>
-                {p.badge && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold text-white" style={{ background: C.gold }}>{p.badge}</span>}
+      <div className="grid grid-cols-2 gap-3">
+        {filtered.map((p, i) => {
+          const idx = products.indexOf(p);
+          return (
+            <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+              onClick={() => { setProduct(idx); onNav("product"); }}
+              className="rounded-none overflow-hidden cursor-pointer" style={{ background: C.white }}>
+              <div className="h-28 flex items-center justify-center relative" style={{ background: C.warm }}>
+                <span className="text-3xl">{categories.find(c => c.id === p.cat)?.icon || "🛍️"}</span>
+                {p.badge && <span className="absolute top-2 left-2 px-1.5 py-0.5 text-[8px] font-bold tracking-wider" style={{ background: C.black, color: C.cream }}>{p.badge}</span>}
+                <button onClick={e => { e.stopPropagation(); toggleWish(idx); }} className="absolute top-2 right-2">
+                  <Heart className="w-4 h-4" style={{ fill: wishlist.has(idx) ? C.rose : "none", color: wishlist.has(idx) ? C.rose : C.taupe }} />
+                </button>
               </div>
-              <p className="text-[10px]" style={{ color: C.taupe }}>{p.cat}</p>
-              <div className="flex items-center gap-1 mt-0.5"><Star className="w-3 h-3" style={{ fill: C.gold, color: C.gold }} /><span className="text-[10px]">{p.rating} ({p.reviews})</span></div>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="font-bold text-base" style={{ color: C.dark }}>{p.price} zł</span>
-                {p.oldPrice > 0 && <span className="text-xs line-through" style={{ color: C.taupe }}>{p.oldPrice} zł</span>}
+              <div className="p-2.5">
+                <h4 className="text-[10px] font-semibold leading-tight" style={{ color: C.dark }}>{p.name}</h4>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="font-bold text-xs" style={{ color: C.dark }}>{p.price} zł</span>
+                  {p.oldPrice && <span className="text-[9px] line-through" style={{ color: C.taupe }}>{p.oldPrice} zł</span>}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 items-center">
-              <button onClick={() => toggleWish(p.name)}>
-                <Heart className="w-5 h-5" style={{ fill: wishlist.includes(p.name) ? C.gold : "transparent", color: wishlist.includes(p.name) ? C.gold : C.taupe }} />
-              </button>
-              <motion.button whileHover={{ scale: 1.1 }} onClick={() => addToCart(p)}
-                className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: C.dark, color: C.cream }}>
-                <Plus className="w-4 h-4" />
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
-    </DemoSection>
+    </div>
   );
 }
 
-function CartPage({ cart, setCart, total, onNav }: any) {
+function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { product: typeof products[0]; addToCart: (p: typeof products[0], s: string) => void; onNav: (p: string) => void; toggleWish: () => void; isWished: boolean }) {
+  const [selSize, setSelSize] = useState("");
+  return (
+    <div>
+      <div className="h-48 flex items-center justify-center relative" style={{ background: C.warm }}>
+        <span className="text-6xl">{categories.find(c => c.id === product.cat)?.icon || "🛍️"}</span>
+        <button onClick={() => onNav("shop")} className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: C.white + "80" }}>
+          <ArrowLeft className="w-4 h-4" style={{ color: C.dark }} />
+        </button>
+        <button onClick={toggleWish} className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: C.white + "80" }}>
+          <Heart className="w-4 h-4" style={{ fill: isWished ? C.rose : "none", color: isWished ? C.rose : C.dark }} />
+        </button>
+        {product.badge && <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[9px] font-bold tracking-wider" style={{ background: C.black, color: C.cream }}>{product.badge}</span>}
+      </div>
+      <div className="px-4 py-4 space-y-3">
+        <div>
+          <h2 className="font-display font-bold text-lg" style={{ color: C.dark }}>{product.name}</h2>
+          <p className="text-xs mt-0.5" style={{ color: C.taupe }}>Kolor: {product.color}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex">{[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3 h-3" style={{ fill: i <= Math.round(product.rating) ? C.gold : C.warm, color: i <= Math.round(product.rating) ? C.gold : C.warm }} />)}</div>
+            <span className="text-[10px]" style={{ color: C.taupe }}>{product.rating} ({product.reviews})</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-2xl" style={{ color: C.dark }}>{product.price} zł</span>
+          {product.oldPrice && <span className="text-base line-through" style={{ color: C.taupe }}>{product.oldPrice} zł</span>}
+        </div>
+        {product.sizes.length > 0 && (
+          <div>
+            <span className="text-xs font-semibold" style={{ color: C.dark }}>Rozmiar</span>
+            <div className="flex gap-2 mt-1.5">
+              {product.sizes.map(s => (
+                <button key={s} onClick={() => setSelSize(s)}
+                  className="w-10 h-10 flex items-center justify-center text-xs font-semibold"
+                  style={selSize === s ? { background: C.black, color: C.cream } : { background: C.white, color: C.dark, border: `1px solid ${C.warm}` }}>{s}</button>
+              ))}
+            </div>
+          </div>
+        )}
+        <motion.button whileHover={{ scale: 1.02 }} onClick={() => { addToCart(product, selSize || "ONE"); onNav("cart"); }}
+          className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase flex items-center justify-center gap-2" style={{ background: C.black, color: C.cream }}>
+          <ShoppingBag className="w-4 h-4" /> Dodaj do koszyka
+        </motion.button>
+      </div>
+    </div>
+  );
+}
+
+function CartPage({ cart, setCart, total, onNav }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; total: number; onNav: (p: string) => void }) {
   if (cart.length === 0) {
     return (
-      <DemoSection>
-        <div className="text-center py-12">
-          <ShoppingCart className="w-12 h-12 mx-auto mb-3" style={{ color: C.taupe + "40" }} />
-          <p className="font-medium" style={{ color: C.taupe }}>Koszyk jest pusty</p>
-        </div>
-      </DemoSection>
+      <div className="text-center py-16 px-4">
+        <ShoppingBag className="w-12 h-12 mx-auto mb-3" style={{ color: C.taupe + "40" }} />
+        <p className="font-semibold" style={{ color: C.taupe }}>Koszyk jest pusty</p>
+        <button onClick={() => onNav("shop")} className="mt-4 px-6 py-2.5 text-sm font-bold tracking-wider uppercase" style={{ background: C.black, color: C.cream }}>Przeglądaj kolekcję</button>
+      </div>
     );
   }
   return (
-    <DemoSection>
-      <h3 className="font-bold text-sm tracking-wider uppercase" style={{ color: C.gold }}>Koszyk</h3>
-      {cart.map((c: any, i: number) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.beige, background: C.cream }}>
-          <span className="text-2xl">{c.product.icon}</span>
+    <div className="px-4 py-3 space-y-3">
+      <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Koszyk ({cart.length})</h2>
+      {cart.map((c, i) => (
+        <div key={i} className="flex gap-3 p-3" style={{ background: C.white }}>
+          <div className="w-16 h-16 flex items-center justify-center text-2xl" style={{ background: C.warm }}>
+            {categories.find(ct => ct.id === c.product.cat)?.icon || "🛍️"}
+          </div>
           <div className="flex-1">
             <h4 className="text-xs font-semibold" style={{ color: C.dark }}>{c.product.name}</h4>
-            <span className="text-[10px]" style={{ color: C.taupe }}>{c.product.price} zł</span>
+            <p className="text-[10px]" style={{ color: C.taupe }}>{c.size !== "ONE" ? `Rozmiar: ${c.size}` : ""}</p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: Math.max(1, cc.qty - 1) } : cc))}
+                className="w-5 h-5 flex items-center justify-center" style={{ border: `1px solid ${C.warm}` }}><Minus className="w-2.5 h-2.5" /></button>
+              <span className="text-xs font-bold w-4 text-center">{c.qty}</span>
+              <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: cc.qty + 1 } : cc))}
+                className="w-5 h-5 flex items-center justify-center" style={{ background: C.black, color: C.cream }}><Plus className="w-2.5 h-2.5" /></button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setCart(cart.map((cc: any, j: number) => j === i ? { ...cc, qty: Math.max(1, cc.qty - 1) } : cc))}
-              className="w-6 h-6 rounded-full border flex items-center justify-center" style={{ borderColor: C.taupe + "30" }}><Minus className="w-3 h-3" /></button>
-            <span className="font-bold text-sm w-5 text-center">{c.qty}</span>
-            <button onClick={() => setCart(cart.map((cc: any, j: number) => j === i ? { ...cc, qty: cc.qty + 1 } : cc))}
-              className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: C.dark, color: C.cream }}><Plus className="w-3 h-3" /></button>
+          <div className="flex flex-col items-end justify-between">
+            <button onClick={() => setCart(cart.filter((_, j) => j !== i))}><X className="w-4 h-4" style={{ color: C.taupe }} /></button>
+            <span className="font-bold text-sm" style={{ color: C.dark }}>{c.product.price * c.qty} zł</span>
           </div>
-          <span className="font-bold text-sm w-16 text-right" style={{ color: C.dark }}>{c.product.price * c.qty} zł</span>
-          <button onClick={() => setCart(cart.filter((_: any, j: number) => j !== i))}><X className="w-4 h-4" style={{ color: C.taupe }} /></button>
         </div>
       ))}
-      <div className="p-4 rounded-xl mt-2" style={{ background: C.beige }}>
+      <div className="p-4" style={{ background: C.white }}>
         <div className="flex justify-between text-sm"><span style={{ color: C.taupe }}>Produkty</span><span style={{ color: C.dark }}>{total} zł</span></div>
-        <div className="flex justify-between text-sm"><span style={{ color: C.taupe }}>Dostawa</span><span style={{ color: total >= 500 ? "#10B981" : C.dark }}>{total >= 500 ? "Gratis" : "29 zł"}</span></div>
-        <div className="border-t mt-2 pt-2 flex justify-between" style={{ borderColor: C.taupe + "20" }}>
-          <span className="font-bold" style={{ color: C.dark }}>Razem</span><span className="font-bold text-xl" style={{ color: C.gold }}>{total + (total >= 500 ? 0 : 29)} zł</span>
+        <div className="flex justify-between text-sm mt-1"><span style={{ color: C.taupe }}>Dostawa</span><span style={{ color: total >= 500 ? "#22C55E" : C.dark }}>{total >= 500 ? "GRATIS" : "24,99 zł"}</span></div>
+        <div className="border-t mt-2 pt-2 flex justify-between" style={{ borderColor: C.warm }}>
+          <span className="font-bold" style={{ color: C.dark }}>Razem</span>
+          <span className="font-bold text-xl" style={{ color: C.dark }}>{total + (total >= 500 ? 0 : 24.99)} zł</span>
         </div>
       </div>
-      <h4 className="text-xs font-bold mt-3" style={{ color: C.dark }}>Może Cię zainteresować</h4>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {products.slice(3, 6).map((p, i) => (
-          <div key={i} className="min-w-[120px] p-3 rounded-xl border text-center" style={{ borderColor: C.beige, background: C.cream }}>
-            <span className="text-2xl block">{p.icon}</span>
-            <p className="text-[10px] font-medium mt-1" style={{ color: C.dark }}>{p.name}</p>
-            <p className="text-[10px] font-bold" style={{ color: C.gold }}>{p.price} zł</p>
-          </div>
-        ))}
-      </div>
       <motion.button whileHover={{ scale: 1.02 }} onClick={() => onNav("checkout")}
-        className="w-full py-3.5 rounded-xl font-bold text-sm" style={{ background: C.dark, color: C.cream }}>Przejdź do kasy</motion.button>
-    </DemoSection>
+        className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase" style={{ background: C.black, color: C.cream }}>Przejdź do kasy</motion.button>
+    </div>
   );
 }
 
-function CheckoutPage({ total }: { total: number }) {
+function CheckoutPage({ total, onNav }: { total: number; onNav: (p: string) => void }) {
   const [confirmed, setConfirmed] = useState(false);
   if (confirmed) {
     return (
-      <DemoSection>
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
-          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: C.gold + "20" }}>
-            <CheckCircle2 className="w-8 h-8" style={{ color: C.gold }} />
-          </div>
-          <h3 className="font-bold text-lg" style={{ color: C.dark }}>Zamówienie złożone!</h3>
-          <p className="text-sm mt-1" style={{ color: C.taupe }}>Otrzymasz potwierdzenie e-mailem</p>
-          <p className="text-xs font-bold mt-2" style={{ color: C.gold }}>Nr: LUX-{Math.floor(Math.random()*9000+1000)}</p>
-          <div className="mt-4 p-3 rounded-xl border text-left" style={{ borderColor: C.beige }}>
-            <div className="flex items-center gap-2"><Truck className="w-4 h-4" style={{ color: C.gold }} /><span className="text-xs" style={{ color: C.dark }}>Szacowana dostawa: 2-3 dni robocze</span></div>
+      <div className="px-4 py-10 text-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#22C55E20" }}>
+            <CheckCircle2 className="w-7 h-7" style={{ color: "#22C55E" }} />
           </div>
         </motion.div>
-      </DemoSection>
+        <h3 className="font-bold text-lg" style={{ color: C.dark }}>Zamówienie złożone!</h3>
+        <p className="font-mono font-bold text-sm mt-2" style={{ color: C.gold }}>MSN-{Math.floor(Math.random() * 9000 + 1000)}</p>
+        <p className="text-[10px] mt-2 max-w-[220px] mx-auto" style={{ color: C.taupe }}>Potwierdzenie wysłane na email. Śledzenie przesyłki będzie dostępne w ciągu 24h.</p>
+      </div>
     );
   }
   return (
-    <DemoSection>
-      <h3 className="font-bold text-sm tracking-wider uppercase" style={{ color: C.gold }}>Finalizacja zamówienia</h3>
-      <input placeholder="Imię i nazwisko" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.beige, background: C.cream, color: C.dark }} />
-      <input placeholder="E-mail" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.beige, background: C.cream, color: C.dark }} />
-      <input placeholder="Adres dostawy" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.beige, background: C.cream, color: C.dark }} />
-      <h4 className="text-xs font-semibold mt-2" style={{ color: C.dark }}>Metoda płatności</h4>
-      <div className="grid grid-cols-3 gap-2">
-        {["💳 Karta", "🏦 Przelew", "📱 BLIK"].map((m, i) => (
-          <button key={m} className="p-3 rounded-xl border text-center text-xs font-medium"
-            style={i === 0 ? { borderColor: C.gold, background: C.gold + "10", color: C.dark } : { borderColor: C.beige, background: C.cream, color: C.taupe }}>{m}</button>
-        ))}
+    <div className="px-4 py-3 space-y-3">
+      <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Dane dostawy</h2>
+      <div className="grid grid-cols-2 gap-2">
+        <input placeholder="Imię" className="px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+        <input placeholder="Nazwisko" className="px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
       </div>
-      <div className="p-3 rounded-xl flex items-center gap-2" style={{ background: C.gold + "08" }}>
-        <Shield className="w-4 h-4" style={{ color: C.gold }} />
-        <span className="text-[10px]" style={{ color: C.taupe }}>Bezpieczna płatność z szyfrowaniem SSL</span>
+      <input placeholder="Ulica i nr" className="w-full px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+      <div className="grid grid-cols-3 gap-2">
+        <input placeholder="Kod" className="px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+        <input placeholder="Miasto" className="col-span-2 px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+      </div>
+      <input placeholder="Email" className="w-full px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+      <input placeholder="Telefon" className="w-full px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />
+      <div className="p-3" style={{ background: C.white }}>
+        <div className="flex justify-between"><span style={{ color: C.taupe }}>Do zapłaty</span><span className="font-bold text-lg" style={{ color: C.dark }}>{total + (total >= 500 ? 0 : 24.99)} zł</span></div>
       </div>
       <motion.button whileHover={{ scale: 1.02 }} onClick={() => setConfirmed(true)}
-        className="w-full py-3.5 rounded-xl font-bold text-sm" style={{ background: C.gold, color: C.black }}>Zapłać {total + (total >= 500 ? 0 : 29)} zł</motion.button>
-    </DemoSection>
+        className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase" style={{ background: C.black, color: C.cream }}>Zamawiam i płacę</motion.button>
+    </div>
   );
 }
 
-function AccountPage() {
-  const orders = [
-    { id: "LUX-4821", date: "15 mar 2026", total: 1230, status: "Dostarczono" },
-    { id: "LUX-4756", date: "2 mar 2026", total: 560, status: "Dostarczono" },
-    { id: "LUX-4698", date: "18 lut 2026", total: 890, status: "Dostarczono" },
-  ];
+function WishlistPage({ wishlist, toggleWish, setProduct, onNav }: any) {
+  const wished = products.filter((_, i) => wishlist.has(i));
+  if (wished.length === 0) {
+    return (
+      <div className="text-center py-16 px-4">
+        <Heart className="w-12 h-12 mx-auto mb-3" style={{ color: C.taupe + "40" }} />
+        <p className="font-semibold" style={{ color: C.taupe }}>Lista życzeń jest pusta</p>
+        <button onClick={() => onNav("shop")} className="mt-4 px-6 py-2.5 text-sm font-bold tracking-wider uppercase" style={{ background: C.black, color: C.cream }}>Przeglądaj kolekcję</button>
+      </div>
+    );
+  }
   return (
-    <DemoSection>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center font-bold" style={{ background: C.dark, color: C.gold }}>AK</div>
-        <div>
-          <h3 className="font-bold text-base" style={{ color: C.dark }}>Anna Kowalska</h3>
-          <p className="text-xs" style={{ color: C.taupe }}>Klientka premium od 2024</p>
-        </div>
-        <span className="ml-auto px-2 py-1 rounded-full text-[10px] font-bold" style={{ background: C.gold + "20", color: C.gold }}>VIP</span>
-      </div>
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="p-3 rounded-xl text-center" style={{ background: C.beige }}>
-          <span className="font-bold text-base block" style={{ color: C.dark }}>8</span>
-          <span className="text-[10px]" style={{ color: C.taupe }}>Zamówień</span>
-        </div>
-        <div className="p-3 rounded-xl text-center" style={{ background: C.beige }}>
-          <span className="font-bold text-base block" style={{ color: C.gold }}>420</span>
-          <span className="text-[10px]" style={{ color: C.taupe }}>Punkty</span>
-        </div>
-        <div className="p-3 rounded-xl text-center" style={{ background: C.beige }}>
-          <span className="font-bold text-base block" style={{ color: C.dark }}>3</span>
-          <span className="text-[10px]" style={{ color: C.taupe }}>Ulubione</span>
-        </div>
-      </div>
-      <h4 className="text-xs font-semibold" style={{ color: C.dark }}>Historia zamówień</h4>
-      {orders.map((o, i) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.beige, background: C.cream }}>
-          <Package className="w-4 h-4" style={{ color: C.gold }} />
-          <div className="flex-1">
-            <span className="text-xs font-mono font-bold" style={{ color: C.dark }}>{o.id}</span>
-            <p className="text-[10px]" style={{ color: C.taupe }}>{o.date}</p>
+    <div className="px-4 py-3 space-y-3">
+      <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Lista życzeń ({wished.length})</h2>
+      {wished.map((p, i) => {
+        const idx = products.indexOf(p);
+        return (
+          <div key={idx} className="flex gap-3 p-3" style={{ background: C.white }}>
+            <div className="w-14 h-14 flex items-center justify-center text-2xl cursor-pointer" onClick={() => { setProduct(idx); onNav("product"); }}
+              style={{ background: C.warm }}>{categories.find(c => c.id === p.cat)?.icon || "🛍️"}</div>
+            <div className="flex-1">
+              <h4 className="text-xs font-semibold" style={{ color: C.dark }}>{p.name}</h4>
+              <span className="font-bold text-sm" style={{ color: C.dark }}>{p.price} zł</span>
+            </div>
+            <button onClick={() => toggleWish(idx)}><X className="w-4 h-4" style={{ color: C.taupe }} /></button>
           </div>
-          <span className="font-bold text-xs" style={{ color: C.dark }}>{o.total} zł</span>
-          <CheckCircle2 className="w-4 h-4" style={{ color: "#10B981" }} />
-        </div>
-      ))}
-    </DemoSection>
+        );
+      })}
+    </div>
   );
 }

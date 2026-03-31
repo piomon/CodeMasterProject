@@ -1,505 +1,416 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection, DemoStatCard, DemoTable, DemoBadge, DemoHero } from "./PreviewShell";
+import { motion, AnimatePresence } from "framer-motion";
+import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
 import {
-  Calendar, Clock, Users, Star, Bell, CheckCircle2, ChevronRight,
-  Phone, Mail, MapPin, Scissors, Heart, User, Settings, BarChart3,
-  CreditCard, Plus, Search, Filter, LogOut, Home, Sparkles
+  Monitor, Cpu, HardDrive, Wrench, Clock, CheckCircle2, AlertTriangle,
+  Package, Truck, MessageSquare, Phone, Search, Plus, ChevronDown,
+  BarChart3, Users, Settings, FileText, Shield, Zap
 } from "lucide-react";
 
-export function BookingDemo({ name, features, industry }: { name: string; features: string[]; industry: string }) {
-  const [page, setPage] = useState("home");
-  const isSalon = industry.toLowerCase().includes("beauty") || industry.toLowerCase().includes("salon") || industry.toLowerCase().includes("barber") || industry.toLowerCase().includes("fryzjer");
-  const isHotel = industry.toLowerCase().includes("hotel") || industry.toLowerCase().includes("hospitality");
-  const isFitness = industry.toLowerCase().includes("fitness") || industry.toLowerCase().includes("siłownia");
-  const isAuto = industry.toLowerCase().includes("auto") || industry.toLowerCase().includes("wypożyczalnia");
+const C = { blue: "#0EA5E9", dark: "#0C1222", navy: "#162032", slate: "#1E293B", gray: "#94A3B8", light: "#F1F5F9", white: "#FFFFFF", green: "#22C55E", orange: "#F59E0B", red: "#EF4444" };
 
-  const tabs = [
-    { id: "home", label: "Strona główna", icon: <Home className="w-3 h-3" /> },
-    { id: "booking", label: "Rezerwacja", icon: <Calendar className="w-3 h-3" /> },
-    { id: "client", label: "Panel klienta", icon: <User className="w-3 h-3" /> },
-    { id: "admin", label: "Panel admin", icon: <Settings className="w-3 h-3" /> },
+const tickets = [
+  { id: "RQ-2847", device: "MacBook Pro 16\"", client: "Firma TechStar Sp. z o.o.", issue: "Wymiana matrycy + baterii", status: "in-progress", priority: "high", tech: "Michał K.", created: "2 godz. temu", eta: "Dziś 17:00" },
+  { id: "RQ-2846", device: "Dell Latitude 5540", client: "Kancelaria Prawo i Finanse", issue: "Reinstalacja systemu, odzysk danych", status: "diagnostics", priority: "medium", tech: "Paweł W.", created: "4 godz. temu", eta: "Jutro 12:00" },
+  { id: "RQ-2845", device: "HP ProDesk 600 G6", client: "Biuro Rachunkowe Sigma", issue: "Awaria zasilacza, upgrade RAM 32GB", status: "waiting-parts", priority: "low", tech: "Anna M.", created: "Wczoraj", eta: "Śr 28 mar" },
+  { id: "RQ-2844", device: "iPhone 15 Pro", client: "Jan Kowalski", issue: "Wymiana wyświetlacza OLED", status: "ready", priority: "medium", tech: "Michał K.", created: "Wczoraj", eta: "Gotowe" },
+  { id: "RQ-2843", device: "Serwer Rack 2U", client: "Logistex Sp. z o.o.", issue: "Wymiana dysków RAID, konfiguracja backup", status: "completed", priority: "high", tech: "Paweł W.", created: "2 dni temu", eta: "Zakończone" },
+];
+
+const statusMap: Record<string, { label: string; color: string; bg: string }> = {
+  "diagnostics": { label: "Diagnostyka", color: C.orange, bg: C.orange + "20" },
+  "in-progress": { label: "W naprawie", color: C.blue, bg: C.blue + "20" },
+  "waiting-parts": { label: "Czeka na części", color: C.gray, bg: C.gray + "20" },
+  "ready": { label: "Gotowe do odbioru", color: C.green, bg: C.green + "20" },
+  "completed": { label: "Zakończone", color: C.gray, bg: C.slate },
+};
+
+const priorityMap: Record<string, { label: string; color: string }> = {
+  high: { label: "Pilne", color: C.red },
+  medium: { label: "Normalny", color: C.orange },
+  low: { label: "Niski", color: C.gray },
+};
+
+const pricing = [
+  { name: "Diagnostyka komputera", price: "99 zł", time: "do 24h", icon: "🔍" },
+  { name: "Reinstalacja systemu", price: "149 zł", time: "1-2 dni", icon: "💻" },
+  { name: "Wymiana dysku SSD", price: "od 199 zł", time: "1 dzień", icon: "💾" },
+  { name: "Odzysk danych", price: "od 299 zł", time: "2-5 dni", icon: "🔐" },
+  { name: "Naprawa płyty głównej", price: "od 349 zł", time: "3-7 dni", icon: "🔧" },
+  { name: "Serwis sieci / serwera", price: "od 199 zł/h", time: "umownie", icon: "🌐" },
+];
+
+export function BookingDemo({ name }: { name: string; features: string[] }) {
+  const [page, setPage] = useState("dashboard");
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: <BarChart3 className="w-4 h-4" /> },
+    { id: "tickets", label: "Zgłoszenia", icon: <FileText className="w-4 h-4" /> },
+    { id: "new-ticket", label: "Nowe", icon: <Plus className="w-4 h-4" /> },
+    { id: "pricing", label: "Cennik", icon: <Package className="w-4 h-4" /> },
+    { id: "tracking", label: "Śledź naprawę", icon: <Search className="w-4 h-4" /> },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo={name.split("—")[0].trim()} />
-      {page === "home" && <BookingHome name={name} isSalon={isSalon} isHotel={isHotel} isFitness={isFitness} isAuto={isAuto} features={features} onNavigate={setPage} />}
-      {page === "booking" && <BookingPage isSalon={isSalon} isHotel={isHotel} isFitness={isFitness} isAuto={isAuto} />}
-      {page === "client" && <ClientPanel isSalon={isSalon} />}
-      {page === "admin" && <AdminPanel />}
+      <div style={{ background: C.dark, minHeight: 500 }}>
+        <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: C.navy, background: C.slate }}>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: C.blue }}>
+              <Wrench className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-sm" style={{ color: C.white }}>Repair<span style={{ color: C.blue }}>Q</span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <MessageSquare className="w-4 h-4" style={{ color: C.gray }} />
+              <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ background: C.red }} />
+            </div>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: C.blue, color: C.white }}>MK</div>
+          </div>
+        </div>
+
+        <div className="flex">
+          <div className="w-[52px] shrink-0 border-r py-2 flex flex-col items-center gap-1" style={{ borderColor: C.navy, background: C.slate + "80" }}>
+            {navItems.map(n => (
+              <button key={n.id} onClick={() => setPage(n.id)}
+                className="w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all"
+                style={page === n.id ? { background: C.blue + "20", color: C.blue } : { color: C.gray }}>
+                {n.icon}
+                <span className="text-[7px] font-medium leading-none">{n.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              <motion.div key={page} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+                {page === "dashboard" && <DashboardPage onNav={setPage} />}
+                {page === "tickets" && <TicketsPage />}
+                {page === "new-ticket" && <NewTicketPage onNav={setPage} />}
+                {page === "pricing" && <PricingPage />}
+                {page === "tracking" && <TrackingPage />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+      <DemoBenefits accentColor={C.blue} bgColor={C.slate} textColor={C.white} benefits={[
+        { icon: "📋", title: "Porządek w zleceniach", desc: "Koniec z kartkami i Excelem" },
+        { icon: "📱", title: "Klient śledzi online", desc: "Status naprawy w czasie rzeczywistym" },
+        { icon: "💰", title: "Szybsze rozliczenia", desc: "Automatyczne wyceny i faktury" },
+        { icon: "📊", title: "Analityka serwisu", desc: "Raporty wydajności i przychodów" },
+      ]} />
+      <DemoFooterCTA accentColor={C.blue} bgColor={C.dark} />
     </PreviewShell>
   );
 }
 
-function BookingHome({ name, isSalon, isHotel, isFitness, isAuto, features, onNavigate }: any) {
-  const services = isSalon
-    ? [{ name: "Strzyżenie damskie", price: "120 PLN", time: "45 min", icon: <Scissors className="w-5 h-5" /> },
-       { name: "Koloryzacja", price: "250 PLN", time: "90 min", icon: <Heart className="w-5 h-5" /> },
-       { name: "Manicure hybrydowy", price: "80 PLN", time: "60 min", icon: <Sparkles className="w-5 h-5" /> },
-       { name: "Pielęgnacja brwi", price: "60 PLN", time: "30 min", icon: <Star className="w-5 h-5" /> }]
-    : isHotel
-    ? [{ name: "Pokój Standard", price: "299 PLN/noc", time: "2 os.", icon: <Home className="w-5 h-5" /> },
-       { name: "Pokój Premium", price: "499 PLN/noc", time: "2 os.", icon: <Star className="w-5 h-5" /> },
-       { name: "Apartament", price: "799 PLN/noc", time: "4 os.", icon: <Sparkles className="w-5 h-5" /> },
-       { name: "Penthouse Suite", price: "1299 PLN/noc", time: "4 os.", icon: <CreditCard className="w-5 h-5" /> }]
-    : isFitness
-    ? [{ name: "Trening personalny", price: "150 PLN", time: "60 min", icon: <Users className="w-5 h-5" /> },
-       { name: "Yoga", price: "40 PLN", time: "75 min", icon: <Heart className="w-5 h-5" /> },
-       { name: "CrossFit", price: "50 PLN", time: "60 min", icon: <Star className="w-5 h-5" /> },
-       { name: "Karnet miesięczny", price: "199 PLN", time: "∞", icon: <CreditCard className="w-5 h-5" /> }]
-    : [{ name: "Sedan Premium", price: "199 PLN/dzień", time: "od 1 dnia", icon: <Home className="w-5 h-5" /> },
-       { name: "SUV Komfort", price: "299 PLN/dzień", time: "od 1 dnia", icon: <Star className="w-5 h-5" /> },
-       { name: "Van 9 os.", price: "399 PLN/dzień", time: "od 2 dni", icon: <Users className="w-5 h-5" /> },
-       { name: "Elektryczny", price: "249 PLN/dzień", time: "od 1 dnia", icon: <Sparkles className="w-5 h-5" /> }];
-
-  const reviews = [
-    { author: "Anna K.", rating: 5, text: "Wspaniała obsługa, polecam serdecznie!" },
-    { author: "Marek W.", rating: 5, text: "Profesjonalizm na najwyższym poziomie." },
-    { author: "Katarzyna M.", rating: 4, text: "Bardzo miła atmosfera, na pewno wrócę." },
+function DashboardPage({ onNav }: { onNav: (p: string) => void }) {
+  const stats = [
+    { label: "Aktywne", value: "12", icon: <Wrench className="w-3.5 h-3.5" />, color: C.blue },
+    { label: "Oczekujące", value: "4", icon: <Clock className="w-3.5 h-3.5" />, color: C.orange },
+    { label: "Gotowe", value: "3", icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: C.green },
+    { label: "Przychód/tydz", value: "8.4K", icon: <BarChart3 className="w-3.5 h-3.5" />, color: "#A78BFA" },
   ];
 
   return (
-    <div>
-      <div className="bg-gradient-to-br from-primary/20 via-accent/10 to-background p-6 md:p-10 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(var(--primary-rgb,99,102,241),0.15),transparent_60%)]" />
-        <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4 border border-primary/30">
-            {isSalon ? <Scissors className="w-8 h-8 text-primary" /> : isHotel ? <Home className="w-8 h-8 text-primary" /> : isFitness ? <Heart className="w-8 h-8 text-primary" /> : <Star className="w-8 h-8 text-primary" />}
+    <div className="p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-sm" style={{ color: C.white }}>Dashboard serwisu</h2>
+        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: C.green + "20", color: C.green }}>● Online</span>
+      </div>
+
+      <div className="grid grid-cols-4 gap-2">
+        {stats.map((s, i) => (
+          <div key={i} className="p-2.5 rounded-xl" style={{ background: C.navy }}>
+            <div className="flex items-center gap-1 mb-1" style={{ color: s.color }}>{s.icon}</div>
+            <span className="font-bold text-lg block" style={{ color: C.white }}>{s.value}</span>
+            <span className="text-[9px]" style={{ color: C.gray }}>{s.label}</span>
           </div>
-          <h1 className="font-display font-bold text-2xl md:text-3xl mb-2">{name.split("—")[0].trim()}</h1>
-          <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-            {isSalon ? "Zadbaj o siebie w profesjonalnym salonie. Zarezerwuj wizytę online w 30 sekund." :
-             isHotel ? "Twój wymarzony wypoczynek na wyciągnięcie ręki. Zarezerwuj pokój online." :
-             isFitness ? "Trenuj z najlepszymi. Zapisz się na zajęcia i zacznij transformację." :
-             "Wynajmij samochód szybko i wygodnie. Bogata flota do wyboru."}
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate("booking")}
-            className="px-6 py-3 rounded-xl bg-primary text-white font-semibold text-sm shadow-lg shadow-primary/25 inline-flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4" /> Zarezerwuj teraz
-          </motion.button>
+        ))}
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ background: C.navy }}>
+        <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: C.slate }}>
+          <span className="text-xs font-bold" style={{ color: C.white }}>Ostatnie zgłoszenia</span>
+          <button onClick={() => onNav("tickets")} className="text-[10px] font-medium" style={{ color: C.blue }}>Zobacz wszystkie →</button>
+        </div>
+        {tickets.slice(0, 4).map((t, i) => {
+          const st = statusMap[t.status];
+          const pr = priorityMap[t.priority];
+          return (
+            <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 border-b" style={{ borderColor: C.slate + "60" }}>
+              <div className="w-1 h-8 rounded-full" style={{ background: pr.color }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold" style={{ color: C.blue }}>{t.id}</span>
+                  <span className="text-[10px] truncate" style={{ color: C.white }}>{t.device}</span>
+                </div>
+                <span className="text-[9px] truncate block" style={{ color: C.gray }}>{t.issue}</span>
+              </div>
+              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold shrink-0" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div className="p-3 rounded-xl" style={{ background: C.navy }}>
+          <span className="text-[10px] font-medium" style={{ color: C.gray }}>Technicy na zmianie</span>
+          <div className="flex items-center gap-1 mt-2">
+            {["MK", "PW", "AM"].map((a, i) => (
+              <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border-2" style={{ background: C.slate, color: C.white, borderColor: C.navy, marginLeft: i > 0 ? -6 : 0 }}>{a}</div>
+            ))}
+            <span className="text-[10px] ml-2" style={{ color: C.green }}>3 online</span>
+          </div>
+        </div>
+        <div className="p-3 rounded-xl" style={{ background: C.navy }}>
+          <span className="text-[10px] font-medium" style={{ color: C.gray }}>Części zamówione</span>
+          <div className="flex items-center gap-2 mt-2">
+            <Truck className="w-4 h-4" style={{ color: C.orange }} />
+            <span className="font-bold text-sm" style={{ color: C.white }}>5 paczek</span>
+          </div>
+          <span className="text-[9px]" style={{ color: C.orange }}>2 dziś dotrą</span>
         </div>
       </div>
 
-      <DemoSection>
-        <h3 className="font-display font-bold text-lg">
-          {isSalon ? "Nasze usługi" : isHotel ? "Pokoje i apartamenty" : isFitness ? "Zajęcia i karnety" : "Nasza flota"}
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {services.map((s, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -2, borderColor: "var(--primary)" }}
-              className="p-4 rounded-xl border border-border bg-card cursor-pointer transition-all"
-              onClick={() => onNavigate("booking")}
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-3">{s.icon}</div>
-              <h4 className="font-semibold text-sm mb-1">{s.name}</h4>
-              <div className="flex items-center justify-between">
-                <span className="text-primary font-bold text-sm">{s.price}</span>
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {s.time}</span>
-              </div>
-            </motion.div>
+      <div className="p-3 rounded-xl" style={{ background: C.navy }}>
+        <span className="text-[10px] font-medium" style={{ color: C.gray }}>Wydajność tygodnia</span>
+        <div className="flex items-end gap-1 mt-2 h-12">
+          {[65, 80, 45, 90, 70, 85, 55].map((v, i) => (
+            <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: i === 3 ? C.blue : C.slate }} />
           ))}
         </div>
-
-        <h3 className="font-display font-bold text-lg pt-4">Opinie klientów</h3>
-        <div className="space-y-3">
-          {reviews.map((r, i) => (
-            <div key={i} className="p-4 rounded-xl border border-border bg-card">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">{r.author[0]}</div>
-                <div>
-                  <span className="font-semibold text-xs">{r.author}</span>
-                  <div className="flex gap-0.5">{Array.from({ length: r.rating }).map((_, j) => <Star key={j} className="w-3 h-3 text-yellow-500 fill-yellow-500" />)}</div>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">{r.text}</p>
-            </div>
+        <div className="flex justify-between mt-1">
+          {["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((d, i) => (
+            <span key={i} className="text-[7px] flex-1 text-center" style={{ color: C.gray }}>{d}</span>
           ))}
         </div>
-
-        <div className="p-4 rounded-xl bg-secondary/50 border border-border space-y-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> ul. Przykładowa 15, 00-001 Warszawa</div>
-          <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> +48 123 456 789</div>
-          <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /> kontakt@przyklad.pl</div>
-          <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /> Pon-Pt 8:00–20:00, Sob 9:00–16:00</div>
-        </div>
-      </DemoSection>
+      </div>
     </div>
   );
 }
 
-function BookingPage({ isSalon, isHotel, isFitness, isAuto }: any) {
-  const [step, setStep] = useState(1);
-  const [selectedDay, setSelectedDay] = useState(15);
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [selectedService, setSelectedService] = useState("");
-  const [formData, setFormData] = useState({ name: "", phone: "", email: "", notes: "" });
-  const [booked, setBooked] = useState(false);
-
-  const days = Array.from({ length: 28 }, (_, i) => i + 1);
-  const dayHeaders = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"];
-  const slots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "13:00", "14:00", "14:30", "15:00", "16:00", "17:00"];
-  const busySlots = ["10:00", "11:00", "14:00"];
-
-  const serviceList = isSalon
-    ? ["Strzyżenie damskie — 120 PLN", "Strzyżenie męskie — 60 PLN", "Koloryzacja — 250 PLN", "Manicure hybrydowy — 80 PLN", "Pedicure — 90 PLN", "Pielęgnacja brwi — 60 PLN"]
-    : isHotel
-    ? ["Pokój Standard — 299 PLN/noc", "Pokój Premium — 499 PLN/noc", "Apartament — 799 PLN/noc", "Suite Penthouse — 1299 PLN/noc"]
-    : isFitness
-    ? ["Trening personalny — 150 PLN", "Yoga — 40 PLN", "CrossFit — 50 PLN", "Pilates — 45 PLN", "Spinning — 35 PLN"]
-    : ["Sedan Premium — 199 PLN/dzień", "SUV Komfort — 299 PLN/dzień", "Van 9 os. — 399 PLN/dzień", "Elektryczny — 249 PLN/dzień"];
-
-  if (booked) {
-    return (
-      <DemoSection>
-        <div className="text-center py-10 space-y-4">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-10 h-10 text-green-500" />
-          </motion.div>
-          <h2 className="font-display font-bold text-2xl">Rezerwacja potwierdzona!</h2>
-          <p className="text-sm text-muted-foreground">Potwierdzenie wysłane na {formData.email || "twój email"}</p>
-          <div className="p-4 rounded-xl bg-secondary/50 border border-border text-sm space-y-2 max-w-sm mx-auto text-left">
-            <div className="flex justify-between"><span className="text-muted-foreground">Usługa:</span><span className="font-medium">{selectedService.split("—")[0]}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Data:</span><span className="font-medium">{selectedDay} marca 2026</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Godzina:</span><span className="font-medium">{selectedSlot}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Nr ref:</span><span className="font-medium text-primary">#BK-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span></div>
-          </div>
-          <button onClick={() => { setBooked(false); setStep(1); setSelectedSlot(""); setSelectedService(""); }} className="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium mt-4">
-            Nowa rezerwacja
-          </button>
-        </div>
-      </DemoSection>
-    );
-  }
+function TicketsPage() {
+  const [filter, setFilter] = useState("all");
+  const filtered = filter === "all" ? tickets : tickets.filter(t => t.status === filter);
 
   return (
-    <DemoSection>
-      <div className="flex items-center gap-3 mb-2">
-        {[1, 2, 3].map(s => (
-          <div key={s} className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${step >= s ? "bg-primary text-white border-primary" : "border-border text-muted-foreground"}`}>{s}</div>
-            {s < 3 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
+    <div className="p-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.white }}>Zgłoszenia serwisowe</h2>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {[{ id: "all", label: "Wszystkie" }, { id: "in-progress", label: "W naprawie" }, { id: "diagnostics", label: "Diagnostyka" }, { id: "waiting-parts", label: "Oczekuje" }, { id: "ready", label: "Gotowe" }].map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)} className="px-2.5 py-1 rounded-lg text-[10px] font-medium whitespace-nowrap"
+            style={filter === f.id ? { background: C.blue, color: C.white } : { background: C.navy, color: C.gray }}>{f.label}</button>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {filtered.map((t, i) => {
+          const st = statusMap[t.status];
+          const pr = priorityMap[t.priority];
+          return (
+            <motion.div key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="p-3 rounded-xl" style={{ background: C.navy }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-xs" style={{ color: C.blue }}>{t.id}</span>
+                  <span className="px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ color: pr.color, background: pr.color + "15" }}>● {pr.label}</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+              </div>
+              <h4 className="text-xs font-semibold" style={{ color: C.white }}>{t.device}</h4>
+              <p className="text-[10px] mt-0.5" style={{ color: C.gray }}>{t.issue}</p>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: C.slate }}>
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px]" style={{ color: C.gray }}>👤 {t.client}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px]" style={{ color: C.gray }}>🔧 {t.tech}</span>
+                  <span className="text-[9px] font-medium" style={{ color: C.blue }}>ETA: {t.eta}</span>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NewTicketPage({ onNav }: { onNav: (p: string) => void }) {
+  const [step, setStep] = useState(0);
+  const [deviceType, setDeviceType] = useState("");
+  const deviceTypes = [
+    { id: "laptop", label: "Laptop", icon: "💻" },
+    { id: "desktop", label: "Komputer stacjonarny", icon: "🖥️" },
+    { id: "phone", label: "Telefon / Tablet", icon: "📱" },
+    { id: "server", label: "Serwer / Sieć", icon: "🌐" },
+    { id: "printer", label: "Drukarka", icon: "🖨️" },
+    { id: "other", label: "Inne urządzenie", icon: "⚡" },
+  ];
+
+  return (
+    <div className="p-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.white }}>Nowe zgłoszenie</h2>
+      <div className="flex items-center gap-2 mb-2">
+        {["Urządzenie", "Problem", "Dane", "Gotowe"].map((s, i) => (
+          <div key={s} className="flex items-center gap-1.5 flex-1">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
+              style={step >= i ? { background: C.blue, color: C.white } : { background: C.navy, color: C.gray }}>{step > i ? "✓" : i + 1}</div>
+            <span className="text-[9px] hidden sm:block" style={{ color: step >= i ? C.white : C.gray }}>{s}</span>
+            {i < 3 && <div className="flex-1 h-px" style={{ background: step > i ? C.blue : C.navy }} />}
           </div>
         ))}
-        <span className="text-xs text-muted-foreground ml-2">{step === 1 ? "Wybierz usługę" : step === 2 ? "Termin" : "Potwierdź"}</span>
       </div>
 
-      {step === 1 && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm">Wybierz usługę</h3>
-          {serviceList.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => { setSelectedService(s); setStep(2); }}
-              className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${selectedService === s ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-            >
-              <span className="text-sm font-medium">{s.split("—")[0]}</span>
-              <span className="text-sm text-primary font-bold">{s.split("—")[1]}</span>
-            </button>
+      {step === 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {deviceTypes.map(d => (
+            <motion.button key={d.id} whileHover={{ scale: 1.03 }} onClick={() => { setDeviceType(d.id); setStep(1); }}
+              className="p-3 rounded-xl text-center" style={{ background: deviceType === d.id ? C.blue + "20" : C.navy, border: `1px solid ${deviceType === d.id ? C.blue : C.slate}` }}>
+              <span className="text-2xl block mb-1">{d.icon}</span>
+              <span className="text-[10px] font-medium" style={{ color: C.white }}>{d.label}</span>
+            </motion.button>
           ))}
         </div>
       )}
 
-      {step === 2 && (
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm">Wybierz termin — {selectedService.split("—")[0]}</h3>
-          <div className="rounded-xl border border-border p-3">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold text-sm">Marzec 2026</span>
-              <div className="flex gap-1">
-                <button className="p-1 rounded hover:bg-secondary"><ChevronRight className="w-4 h-4 rotate-180" /></button>
-                <button className="p-1 rounded hover:bg-secondary"><ChevronRight className="w-4 h-4" /></button>
-              </div>
-            </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs">
-              {dayHeaders.map(d => <div key={d} className="text-muted-foreground font-medium py-1">{d}</div>)}
-              {days.map(d => (
-                <button key={d} onClick={() => setSelectedDay(d)}
-                  className={`py-1.5 rounded-md text-xs transition-all ${d === selectedDay ? "bg-primary text-white font-bold" : [6,7,13,14,20,21,27,28].includes(d) ? "text-muted-foreground/40" : "hover:bg-secondary"}`}>
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium mb-2">Dostępne godziny — {selectedDay} marca</p>
-            <div className="grid grid-cols-4 gap-2">
-              {slots.map(s => {
-                const busy = busySlots.includes(s);
-                return (
-                  <button key={s} onClick={() => !busy && setSelectedSlot(s)} disabled={busy}
-                    className={`py-2 rounded-lg text-xs font-medium transition-all border ${busy ? "border-border text-muted-foreground/30 bg-secondary/30 cursor-not-allowed line-through" : selectedSlot === s ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50"}`}>
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+      {step === 1 && (
+        <div className="space-y-2">
+          <input placeholder="Marka i model urządzenia" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
+          <textarea placeholder="Opisz problem szczegółowo..." rows={3} className="w-full px-3 py-2.5 rounded-lg text-sm resize-none" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
           <div className="flex gap-2">
-            <button onClick={() => setStep(1)} className="px-4 py-2 rounded-lg border border-border text-sm">Wstecz</button>
-            <button onClick={() => selectedSlot && setStep(3)} disabled={!selectedSlot}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold text-white ${selectedSlot ? "bg-primary" : "bg-primary/50 cursor-not-allowed"}`}>
-              Dalej
-            </button>
+            {["Nie włącza się", "Wolno działa", "Uszkodzony ekran", "Problem z siecią", "Wirusy/malware"].map(q => (
+              <button key={q} className="px-2 py-1 rounded-lg text-[9px] font-medium whitespace-nowrap" style={{ background: C.slate, color: C.gray }}>{q}</button>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button onClick={() => setStep(0)} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.navy, color: C.gray }}>Wstecz</button>
+            <button onClick={() => setStep(2)} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Dalej</button>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-2">
+          <input placeholder="Imię i nazwisko / Firma" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
+          <input placeholder="Telefon kontaktowy" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
+          <input placeholder="E-mail" className="w-full px-3 py-2.5 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
+          <label className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer" style={{ background: C.navy }}>
+            <input type="checkbox" className="accent-sky-500 w-3.5 h-3.5" />
+            <span className="text-[10px]" style={{ color: C.gray }}>Zgadzam się na przetwarzanie danych</span>
+          </label>
+          <div className="flex gap-2">
+            <button onClick={() => setStep(1)} className="px-4 py-2 rounded-lg text-xs" style={{ background: C.navy, color: C.gray }}>Wstecz</button>
+            <button onClick={() => setStep(3)} className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Wyślij zgłoszenie</button>
           </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm">Potwierdź rezerwację</h3>
-          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-1 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Usługa:</span><span className="font-medium">{selectedService.split("—")[0]}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Termin:</span><span className="font-medium">{selectedDay} marca 2026, {selectedSlot}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Cena:</span><span className="font-bold text-primary">{selectedService.split("—")[1]}</span></div>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
+          <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.green + "20" }}>
+            <CheckCircle2 className="w-7 h-7" style={{ color: C.green }} />
           </div>
-          <div className="space-y-3">
-            <input placeholder="Imię i nazwisko *" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none" />
-            <input placeholder="Telefon *" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none" />
-            <input placeholder="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none" />
-            <textarea placeholder="Uwagi (opcjonalnie)" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}
-              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none min-h-[60px]" />
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => setStep(2)} className="px-4 py-2 rounded-lg border border-border text-sm">Wstecz</button>
-            <motion.button whileTap={{ scale: 0.97 }} onClick={() => setBooked(true)}
-              className="flex-1 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-lg shadow-primary/25">
-              Rezerwuję
-            </motion.button>
-          </div>
-        </div>
+          <h3 className="font-bold text-base" style={{ color: C.white }}>Zgłoszenie przyjęte!</h3>
+          <p className="text-xs mt-1" style={{ color: C.gray }}>Nr zgłoszenia:</p>
+          <p className="font-mono font-bold text-lg mt-0.5" style={{ color: C.blue }}>RQ-{Math.floor(Math.random() * 9000 + 1000)}</p>
+          <p className="text-[10px] mt-2 max-w-[200px] mx-auto" style={{ color: C.gray }}>Skontaktujemy się w ciągu 1h. Możesz śledzić status naprawy online.</p>
+          <button onClick={() => onNav("tracking")} className="mt-4 px-5 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Śledź naprawę</button>
+        </motion.div>
       )}
-    </DemoSection>
+    </div>
   );
 }
 
-function ClientPanel({ isSalon }: { isSalon: boolean }) {
-  const [tab, setTab] = useState("upcoming");
-  const bookings = [
-    { service: isSalon ? "Strzyżenie damskie" : "Pokój Premium", date: "22.03.2026", time: "10:00", status: "confirmed" },
-    { service: isSalon ? "Manicure hybrydowy" : "Apartament", date: "28.03.2026", time: "14:30", status: "confirmed" },
-  ];
-  const history = [
-    { service: isSalon ? "Koloryzacja" : "Pokój Standard", date: "05.02.2026", price: isSalon ? "250 PLN" : "299 PLN", rated: true },
-    { service: isSalon ? "Strzyżenie + modelowanie" : "Suite", date: "15.01.2026", price: isSalon ? "150 PLN" : "1299 PLN", rated: false },
-    { service: isSalon ? "Pedicure spa" : "Pokój Premium", date: "02.01.2026", price: isSalon ? "120 PLN" : "499 PLN", rated: true },
-  ];
-
+function PricingPage() {
   return (
-    <DemoSection>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">AK</div>
-          <div>
-            <h3 className="font-display font-bold">Anna Kowalska</h3>
-            <p className="text-xs text-muted-foreground">Klient od: styczeń 2025 • Punkty lojalnościowe: 340</p>
-          </div>
-        </div>
-        <button className="p-2 rounded-lg border border-border hover:bg-secondary"><LogOut className="w-4 h-4" /></button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-center">
-          <p className="text-2xl font-bold text-primary">{bookings.length}</p>
-          <p className="text-[10px] text-muted-foreground">Nadchodzące</p>
-        </div>
-        <div className="p-3 rounded-xl bg-secondary/50 border border-border text-center">
-          <p className="text-2xl font-bold">{history.length + bookings.length}</p>
-          <p className="text-[10px] text-muted-foreground">Łącznie wizyt</p>
-        </div>
-        <div className="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20 text-center">
-          <p className="text-2xl font-bold text-yellow-500">340</p>
-          <p className="text-[10px] text-muted-foreground">Punkty</p>
-        </div>
-      </div>
-
-      <div className="flex gap-2 border-b border-border">
-        {[{ id: "upcoming", label: "Nadchodzące" }, { id: "history", label: "Historia" }, { id: "loyalty", label: "Program lojalnościowy" }].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-3 py-2 text-xs font-medium border-b-2 transition-all ${tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-            {t.label}
-          </button>
+    <div className="p-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.white }}>Cennik usług</h2>
+      <div className="space-y-2">
+        {pricing.map((p, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+            className="flex items-center gap-3 p-3 rounded-xl" style={{ background: C.navy }}>
+            <span className="text-xl">{p.icon}</span>
+            <div className="flex-1">
+              <h4 className="text-xs font-semibold" style={{ color: C.white }}>{p.name}</h4>
+              <span className="text-[10px]" style={{ color: C.gray }}>{p.time}</span>
+            </div>
+            <span className="font-bold text-sm" style={{ color: C.blue }}>{p.price}</span>
+          </motion.div>
         ))}
       </div>
-
-      {tab === "upcoming" && (
-        <div className="space-y-3">
-          {bookings.map((b, i) => (
-            <div key={i} className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">{b.service}</h4>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                  <Calendar className="w-3 h-3" /> {b.date} <Clock className="w-3 h-3" /> {b.time}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <DemoBadge variant="success">Potwierdzona</DemoBadge>
-                <button className="text-xs text-destructive hover:underline">Anuluj</button>
-              </div>
-            </div>
-          ))}
+      <div className="p-3 rounded-xl" style={{ background: C.blue + "10", border: `1px solid ${C.blue}30` }}>
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4" style={{ color: C.blue }} />
+          <span className="text-xs font-bold" style={{ color: C.white }}>Gwarancja na naprawę</span>
         </div>
-      )}
-      {tab === "history" && (
-        <div className="space-y-3">
-          {history.map((h, i) => (
-            <div key={i} className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">{h.service}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{h.date} • {h.price}</p>
-              </div>
-              {h.rated ? <div className="flex gap-0.5">{Array.from({length:5}).map((_,j) => <Star key={j} className="w-3 h-3 text-yellow-500 fill-yellow-500" />)}</div>
-                : <button className="text-xs text-primary hover:underline">Oceń wizytę</button>}
-            </div>
-          ))}
-        </div>
-      )}
-      {tab === "loyalty" && (
-        <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-primary/10 border border-yellow-500/20">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium">Twój poziom: <span className="text-yellow-500 font-bold">GOLD</span></span>
-              <span className="text-xs text-muted-foreground">340 / 500 pkt do Platinum</span>
-            </div>
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-yellow-500 to-primary" style={{ width: "68%" }} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            {[{ label: "5% rabatu na wszystkie usługi", pts: "100 pkt", active: true }, { label: "Darmowa pielęgnacja dłoni", pts: "200 pkt", active: true }, { label: "15% rabatu na koloryzację", pts: "400 pkt", active: false }].map((r, i) => (
-              <div key={i} className={`p-3 rounded-lg border flex items-center justify-between ${r.active ? "border-green-500/30 bg-green-500/5" : "border-border opacity-60"}`}>
-                <span className="text-xs font-medium">{r.label}</span>
-                <span className="text-[10px] text-muted-foreground">{r.pts}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </DemoSection>
+        <p className="text-[10px] mt-1" style={{ color: C.gray }}>Wszystkie naprawy objęte 6-miesięczną gwarancją. Darmowa rediagnostyka w razie powrotu usterki.</p>
+      </div>
+      <div className="p-3 rounded-xl" style={{ background: C.navy }}>
+        <span className="text-[10px] font-bold" style={{ color: C.white }}>Obsługujemy firmy B2B</span>
+        <p className="text-[9px] mt-1" style={{ color: C.gray }}>Stałe umowy serwisowe, SLA, faktura z odroczonym terminem. Zadzwoń: +48 793 020 820</p>
+      </div>
+    </div>
   );
 }
 
-function AdminPanel() {
-  const [tab, setTab] = useState("today");
-  const todayBookings = [
-    { time: "09:00", client: "Anna K.", service: "Strzyżenie", status: "done" },
-    { time: "10:00", client: "Maria W.", service: "Koloryzacja", status: "in-progress" },
-    { time: "11:30", client: "Jan N.", service: "Manicure", status: "upcoming" },
-    { time: "13:00", client: "Ewa S.", service: "Pielęgnacja brwi", status: "upcoming" },
-    { time: "14:30", client: "Piotr M.", service: "Strzyżenie męskie", status: "upcoming" },
+function TrackingPage() {
+  const [code, setCode] = useState("RQ-2847");
+  const [tracked, setTracked] = useState(true);
+
+  const timeline = [
+    { label: "Przyjęcie urządzenia", time: "22 mar, 09:15", done: true, desc: "MacBook Pro 16\" — diagnostyka" },
+    { label: "Diagnostyka zakończona", time: "22 mar, 11:30", done: true, desc: "Ustalono: wymiana matrycy + baterii" },
+    { label: "Wycena zaakceptowana", time: "22 mar, 12:00", done: true, desc: "Klient zatwierdził: 1 890 zł" },
+    { label: "Naprawa w toku", time: "22 mar, 14:00", done: true, desc: "Technik: Michał K." },
+    { label: "Testowanie", time: "~22 mar, 16:00", done: false, desc: "Sprawdzanie komponentów" },
+    { label: "Gotowe do odbioru", time: "~22 mar, 17:00", done: false, desc: "Powiadomienie SMS" },
   ];
 
   return (
-    <DemoSection>
-      <div className="flex items-center justify-between">
-        <h3 className="font-display font-bold text-lg">Panel Administratora</h3>
-        <DemoBadge variant="info">Dzisiaj: {todayBookings.length} wizyt</DemoBadge>
+    <div className="p-3 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.white }}>Śledź naprawę</h2>
+      <div className="flex gap-2">
+        <input value={code} onChange={e => setCode(e.target.value)} placeholder="Nr zgłoszenia (np. RQ-2847)"
+          className="flex-1 px-3 py-2 rounded-lg text-sm" style={{ background: C.navy, border: `1px solid ${C.slate}`, color: C.white }} />
+        <button onClick={() => setTracked(true)} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>
+          <Search className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        <DemoStatCard icon={<Calendar className="w-4 h-4" />} label="Dziś" value="5" change="+2" />
-        <DemoStatCard icon={<Users className="w-4 h-4" />} label="Klienci" value="847" change="+12" />
-        <DemoStatCard icon={<CreditCard className="w-4 h-4" />} label="Przychód" value="12.4K" change="+8%" />
-        <DemoStatCard icon={<Star className="w-4 h-4" />} label="Ocena" value="4.9" />
-      </div>
-
-      <div className="flex gap-2 border-b border-border">
-        {[{ id: "today", label: "Dzisiaj" }, { id: "week", label: "Tydzień" }, { id: "clients", label: "Klienci" }, { id: "stats", label: "Statystyki" }].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-3 py-2 text-xs font-medium border-b-2 transition-all ${tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "today" && (
-        <div className="space-y-2">
-          {todayBookings.map((b, i) => (
-            <div key={i} className="p-3 rounded-xl border border-border flex items-center gap-3">
-              <span className="text-xs font-mono text-muted-foreground w-12">{b.time}</span>
-              <div className="flex-1">
-                <span className="font-medium text-sm">{b.client}</span>
-                <span className="text-xs text-muted-foreground ml-2">— {b.service}</span>
-              </div>
-              <DemoBadge variant={b.status === "done" ? "success" : b.status === "in-progress" ? "warning" : "info"}>
-                {b.status === "done" ? "Zakończona" : b.status === "in-progress" ? "W trakcie" : "Oczekuje"}
-              </DemoBadge>
+      {tracked && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <div className="p-3 rounded-xl mb-3" style={{ background: C.blue + "10", border: `1px solid ${C.blue}30` }}>
+            <div className="flex items-center justify-between">
+              <span className="font-mono font-bold text-sm" style={{ color: C.blue }}>{code}</span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: C.blue + "20", color: C.blue }}>W naprawie</span>
             </div>
-          ))}
-        </div>
-      )}
-      {tab === "week" && (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-border p-4">
-            <h4 className="text-sm font-medium mb-3">Obłożenie tygodnia</h4>
-            <div className="flex items-end gap-2 h-32">
-              {[{ day: "Pon", v: 80 }, { day: "Wt", v: 60 }, { day: "Śr", v: 95 }, { day: "Czw", v: 70 }, { day: "Pt", v: 100 }, { day: "Sb", v: 45 }].map(d => (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t bg-primary/30 hover:bg-primary/60 transition-colors" style={{ height: `${d.v}%` }} />
-                  <span className="text-[10px] text-muted-foreground">{d.day}</span>
+            <p className="text-xs mt-1" style={{ color: C.white }}>MacBook Pro 16\" — Wymiana matrycy + baterii</p>
+            <p className="text-[10px]" style={{ color: C.gray }}>Szacowane zakończenie: dziś ~17:00</p>
+          </div>
+
+          <div className="space-y-0 pl-2">
+            {timeline.map((t, i) => (
+              <div key={i} className="flex gap-3 relative">
+                <div className="flex flex-col items-center">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 z-10"
+                    style={t.done ? { background: C.blue, borderColor: C.blue } : { background: C.dark, borderColor: C.slate }}>
+                    {t.done && <CheckCircle2 className="w-3 h-3 text-white" />}
+                  </div>
+                  {i < timeline.length - 1 && <div className="w-0.5 flex-1 min-h-[20px]" style={{ background: t.done ? C.blue + "40" : C.slate }} />}
                 </div>
-              ))}
-            </div>
-          </div>
-          <DemoTable headers={["Dzień", "Wizyty", "Przychód", "Obłożenie"]}
-            rows={[["Poniedziałek", "8", "1 840 PLN", <DemoBadge variant="success">80%</DemoBadge>],
-                   ["Wtorek", "6", "1 200 PLN", <DemoBadge variant="warning">60%</DemoBadge>],
-                   ["Środa", "10", "2 350 PLN", <DemoBadge variant="success">95%</DemoBadge>]]} />
-        </div>
-      )}
-      {tab === "clients" && (
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <input className="bg-transparent text-xs outline-none flex-1" placeholder="Szukaj klienta..." />
-            </div>
-            <button className="px-3 py-2 rounded-lg bg-primary text-white text-xs font-medium flex items-center gap-1"><Plus className="w-3 h-3" /> Dodaj</button>
-          </div>
-          <DemoTable headers={["Klient", "Telefon", "Wizyty", "Ostatnia", "Wartość"]}
-            rows={[
-              [<span className="font-medium">Anna Kowalska</span>, "601 234 567", "12", "15.03.2026", <span className="text-primary font-medium">2 840 PLN</span>],
-              [<span className="font-medium">Maria Wiśniewska</span>, "602 345 678", "8", "10.03.2026", <span className="text-primary font-medium">1 920 PLN</span>],
-              [<span className="font-medium">Jan Nowak</span>, "603 456 789", "5", "05.03.2026", <span className="text-primary font-medium">750 PLN</span>],
-              [<span className="font-medium">Ewa Szymańska</span>, "604 567 890", "3", "01.03.2026", <span className="text-primary font-medium">420 PLN</span>],
-            ]} />
-        </div>
-      )}
-      {tab === "stats" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Przychód miesięczny</p>
-              <p className="text-2xl font-bold">38 450 PLN</p>
-              <p className="text-xs text-green-500">+15% vs. poprzedni miesiąc</p>
-            </div>
-            <div className="p-4 rounded-xl border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Średnia wartość wizyty</p>
-              <p className="text-2xl font-bold">145 PLN</p>
-              <p className="text-xs text-green-500">+5% vs. poprzedni miesiąc</p>
-            </div>
-          </div>
-          <div className="rounded-xl border border-border p-4">
-            <h4 className="text-sm font-medium mb-3">Najpopularniejsze usługi</h4>
-            {[{ name: "Strzyżenie damskie", pct: 35 }, { name: "Koloryzacja", pct: 25 }, { name: "Manicure hybrydowy", pct: 20 }, { name: "Pedicure", pct: 12 }, { name: "Pielęgnacja brwi", pct: 8 }].map(s => (
-              <div key={s.name} className="flex items-center gap-3 mb-2">
-                <span className="text-xs w-36 truncate">{s.name}</span>
-                <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width: `${s.pct}%` }} /></div>
-                <span className="text-xs text-muted-foreground w-8">{s.pct}%</span>
+                <div className="pb-4 flex-1">
+                  <span className="text-xs font-semibold" style={{ color: t.done ? C.white : C.gray }}>{t.label}</span>
+                  <span className="text-[10px] ml-2" style={{ color: C.gray }}>{t.time}</span>
+                  <p className="text-[10px]" style={{ color: C.gray }}>{t.desc}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-    </DemoSection>
+    </div>
   );
 }
