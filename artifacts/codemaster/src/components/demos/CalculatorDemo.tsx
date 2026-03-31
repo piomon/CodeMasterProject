@@ -1,43 +1,52 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { Calculator, Home, Ruler, ChevronRight, CheckCircle2, Download, Building2, Layers, BarChart3, HardHat } from "lucide-react";
+import { PreviewShell, DemoNav, DemoSection, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { Calculator, Home, Ruler, ChevronRight, CheckCircle2, Download, Building2, Layers, BarChart3, HardHat, Settings, FileText, ArrowRight } from "lucide-react";
 
-const C = { anthracite: "#2D2D2D", concrete: "#8C8C8C", sand: "#D4C5A9", orange: "#E87D2F", white: "#F8FAFC", dark: "#1A1A1A", light: "#F5F3EF" };
+const C = { navy: "#1A1A2E", dark: "#16213E", graphite: "#2D3436", white: "#F8FAFC", gray: "#6B7280", green: "#10B981", blue: "#3B82F6", amber: "#F59E0B", red: "#EF4444", light: "#F1F5F9", teal: "#0D9488", violet: "#6366F1" };
 
-const projectTypes = [
-  { name: "Dom jednorodzinny", icon: "🏠", desc: "Budowa od fundamentów" },
-  { name: "Mieszkanie – remont", icon: "🔧", desc: "Remont generalny" },
-  { name: "Biuro – fit-out", icon: "🏢", desc: "Aranżacja biura" },
-  { name: "Lokal usługowy", icon: "🏪", desc: "Wykończenie lokalu" },
+const buildTypes = [
+  { name: "Dom jednorodzinny", icon: "🏠", pricePerSqm: { low: 4200, mid: 5800, high: 7500 }, desc: "Parterowy lub piętrowy" },
+  { name: "Bliźniak", icon: "🏘️", pricePerSqm: { low: 3800, mid: 5200, high: 6800 }, desc: "Segment bliźniaka" },
+  { name: "Rozbudowa / nadbudowa", icon: "🔨", pricePerSqm: { low: 3500, mid: 4800, high: 6200 }, desc: "Istniejąca bryła" },
+  { name: "Hala / budynek usługowy", icon: "🏢", pricePerSqm: { low: 2800, mid: 4200, high: 5800 }, desc: "Komercyjne" },
 ];
 
-const costItems = [
-  { category: "Materiały", items: [{ name: "Płytki ceramiczne", unit: "m²", price: 120 }, { name: "Farba lateksowa", unit: "l", price: 45 }, { name: "Panele podłogowe", unit: "m²", price: 85 }] },
-  { category: "Robocizna", items: [{ name: "Układanie płytek", unit: "m²", price: 80 }, { name: "Malowanie", unit: "m²", price: 25 }, { name: "Montaż podłóg", unit: "m²", price: 40 }] },
-  { category: "Instalacje", items: [{ name: "Elektryka", unit: "punkt", price: 180 }, { name: "Hydraulika", unit: "punkt", price: 250 }] },
+const standards = [
+  { name: "Ekonomiczny", key: "low" as const, desc: "Solidne materiały, prosty design", color: C.teal },
+  { name: "Standard", key: "mid" as const, desc: "Dobre materiały, wyższy komfort", color: C.blue },
+  { name: "Premium", key: "high" as const, desc: "Najwyższa jakość, design i komfort", color: C.violet },
 ];
 
-export function CalculatorDemo({ name }: { name: string; features: string[]; industry?: string }) {
+const costBreakdown = [
+  { category: "Fundamenty i stan zero", percent: 15 },
+  { category: "Ściany i konstrukcja", percent: 22 },
+  { category: "Dach i pokrycie", percent: 12 },
+  { category: "Instalacje (el., wod., kan.)", percent: 18 },
+  { category: "Wykończenie wewnętrzne", percent: 25 },
+  { category: "Stolarka okienna i drzwiowa", percent: 8 },
+];
+
+export function CalculatorDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState("home");
   const tabs = [
     { id: "home", label: "Start", icon: <Home className="w-3 h-3" /> },
-    { id: "wizard", label: "Kalkulator", icon: <Calculator className="w-3 h-3" /> },
-    { id: "catalog", label: "Cennik", icon: <BarChart3 className="w-3 h-3" /> },
-    { id: "estimate", label: "Kosztorys", icon: <Layers className="w-3 h-3" /> },
-    { id: "projects", label: "Projekty", icon: <Building2 className="w-3 h-3" /> },
+    { id: "calculator", label: "Kalkulator", icon: <Calculator className="w-3 h-3" /> },
+    { id: "breakdown", label: "Kosztorys", icon: <BarChart3 className="w-3 h-3" /> },
+    { id: "compare", label: "Porównanie", icon: <Layers className="w-3 h-3" /> },
+    { id: "contact", label: "Wycena", icon: <FileText className="w-3 h-3" /> },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="BuildCalc" />
+      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="BudżetBud" />
       <AnimatePresence mode="wait">
         <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
           {page === "home" && <HomePage onNav={setPage} />}
-          {page === "wizard" && <WizardPage />}
-          {page === "catalog" && <CatalogPage />}
-          {page === "estimate" && <EstimatePage />}
-          {page === "projects" && <ProjectsPage />}
+          {page === "calculator" && <CalculatorPage />}
+          {page === "breakdown" && <BreakdownPage />}
+          {page === "compare" && <ComparePage />}
+          {page === "contact" && <ContactPage />}
         </motion.div>
       </AnimatePresence>
     </PreviewShell>
@@ -47,241 +56,218 @@ export function CalculatorDemo({ name }: { name: string; features: string[]; ind
 function HomePage({ onNav }: { onNav: (p: string) => void }) {
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${C.anthracite}, ${C.dark})` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.orange }}>Kalkulator Budowlany</p>
-        <h1 className="font-display font-bold text-4xl mt-2 text-white">Build<span style={{ color: C.orange }}>Calc</span></h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed" style={{ color: C.concrete }}>Precyzyjne kosztorysy budowy i remontu. 340+ pozycji cennikowych, aktualne ceny materiałów i robocizny.</p>
-        <div className="flex gap-3 justify-center mt-6">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("wizard")}
-            className="px-7 py-3.5 rounded-lg font-bold text-sm text-white shadow-lg" style={{ background: C.orange }}>Rozpocznij kalkulację</motion.button>
-          <button onClick={() => onNav("catalog")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border" style={{ borderColor: C.orange + "40", color: C.orange }}>Cennik</button>
+      <div className="p-8 pb-10" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.dark})` }}>
+        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.teal }}>Kalkulator budowlany</p>
+        <h1 className="font-display font-bold text-3xl mt-1 text-white">Budżet<span style={{ color: C.teal }}>Bud</span></h1>
+        <p className="text-xs mt-2 text-white/70 max-w-[280px] leading-relaxed">Oblicz koszt budowy domu, rozbudowy lub hali. Szybki kosztorys z podziałem na etapy i standardy wykończenia.</p>
+        <div className="flex gap-3 mt-5">
+          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("calculator")}
+            className="px-6 py-3 rounded-lg font-bold text-sm shadow-lg text-white" style={{ background: C.teal }}>Oblicz koszt budowy</motion.button>
+          <button onClick={() => onNav("compare")} className="px-6 py-3 rounded-lg font-semibold text-sm border border-white/20 text-white">Porównaj standardy</button>
         </div>
       </div>
+
       <DemoSection>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: "🏠", label: "Domy", desc: "Od fundamentów" },
-            { icon: "🔧", label: "Remonty", desc: "Generalny" },
-            { icon: "🏢", label: "Biura", desc: "Fit-out" },
-            { icon: "📐", label: "Na wymiar", desc: "Precyzyjnie" },
-          ].map((f, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
-              <span className="text-lg block">{f.icon}</span>
-              <span className="text-[8px] font-bold block mt-1" style={{ color: C.anthracite }}>{f.label}</span>
-              <span className="text-[7px]" style={{ color: C.concrete }}>{f.desc}</span>
-            </div>
-          ))}
-        </div>
-        <h3 className="font-bold text-sm mt-4" style={{ color: C.anthracite }}>Rodzaj projektu</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {projectTypes.map((t, i) => (
-            <motion.div key={i} whileHover={{ y: -2 }} onClick={() => onNav("wizard")}
-              className="p-3 rounded-xl border cursor-pointer text-center" style={{ borderColor: C.sand + "60", background: C.light }}>
-              <span className="text-2xl block mb-1">{t.icon}</span>
-              <h4 className="font-bold text-xs" style={{ color: C.anthracite }}>{t.name}</h4>
-              <p className="text-[10px]" style={{ color: C.concrete }}>{t.desc}</p>
+        <h3 className="font-bold text-sm" style={{ color: C.graphite }}>Wybierz typ budowy</h3>
+        <div className="space-y-2">
+          {buildTypes.map((bt, i) => (
+            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
+              onClick={() => onNav("calculator")}
+              className="flex items-center gap-3 p-3 rounded-xl border hover:shadow-sm transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
+              <span className="text-2xl shrink-0">{bt.icon}</span>
+              <div className="flex-1">
+                <h4 className="text-xs font-bold" style={{ color: C.graphite }}>{bt.name}</h4>
+                <p className="text-[10px]" style={{ color: C.gray }}>{bt.desc}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-[9px]" style={{ color: C.gray }}>od</span>
+                <span className="text-xs font-bold block" style={{ color: C.teal }}>{bt.pricePerSqm.low.toLocaleString()} zł/m²</span>
+              </div>
             </motion.div>
           ))}
         </div>
-        <div className="p-4 rounded-2xl mt-3" style={{ background: C.light, border: `1px solid ${C.orange}15` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.orange }}>Opinie użytkowników</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: C.anthracite + "90" }}>"BuildCalc zaoszczędził mi 15 000 zł — wiedziałem dokładnie ile kosztuje remont, zanim podpisałem umowę."</p>
-          <p className="text-[10px] text-center mt-1" style={{ color: C.orange }}>— Marek T. ★★★★★</p>
-        </div>
-        <div className="grid grid-cols-3 gap-3 mt-3">
-          {[{ l: "Kalkulacji", v: "5,200+" },{ l: "Pozycji cennika", v: "340" },{ l: "Średni koszt/m²", v: "4 500 zł" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.sand + "30" }}>
-              <span className="font-bold text-sm block" style={{ color: C.orange }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.concrete }}>{s.l}</span>
+
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          {[{ v: "2 500+", l: "Wycen wykonanych" }, { v: "±8%", l: "Dokładność" }, { v: "30s", l: "Czas kalkulacji" }].map((s, i) => (
+            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
+              <span className="font-bold text-sm block" style={{ color: C.teal }}>{s.v}</span>
+              <span className="text-[8px]" style={{ color: C.gray }}>{s.l}</span>
             </div>
           ))}
         </div>
       </DemoSection>
-      <DemoBenefits accentColor={C.orange} bgColor={C.light} textColor={C.dark} benefits={[
-        { icon: "🧮", title: "Szybka wycena", desc: "Klient dostaje kosztorys online" },
-        { icon: "📋", title: "Lepsze leady", desc: "Przygotowany brief od klienta" },
-        { icon: "⚡", title: "Automatyzacja", desc: "Kalkulator liczy za Ciebie" },
-        { icon: "📊", title: "Panel ofert", desc: "CRM zapytań handlowych" },
+
+      <DemoBenefits accentColor={C.teal} bgColor={C.light} textColor={C.graphite} benefits={[
+        { icon: "🧮", title: "Szybka kalkulacja", desc: "Koszt budowy w 30 sekund" },
+        { icon: "📊", title: "Kosztorys szczegółowy", desc: "Podział na etapy budowy" },
+        { icon: "📋", title: "PDF do pobrania", desc: "Kosztorys w formacie PDF" },
+        { icon: "📞", title: "Wycena eksperta", desc: "Dokładna wycena od wykonawcy" },
       ]} />
-      <DemoFooterCTA accentColor={C.orange} bgColor={C.dark} />
+      <DemoFooterCTA accentColor={C.teal} bgColor={C.navy} />
     </div>
   );
 }
 
-function WizardPage() {
-  const [step, setStep] = useState(0);
-  const [area, setArea] = useState(65);
-  const [selType, setSelType] = useState(1);
-  const [quality, setQuality] = useState(1);
-  const qualityLabels = ["Ekonomiczny", "Standard", "Premium"];
-  const priceMultiplier = [3200, 4500, 7000];
-  const estimated = area * priceMultiplier[quality];
+function CalculatorPage() {
+  const [buildType, setBuildType] = useState(0);
+  const [standard, setStandard] = useState(1);
+  const [area, setArea] = useState(140);
+  const [floors, setFloors] = useState(1);
+
+  const bt = buildTypes[buildType];
+  const std = standards[standard];
+  const totalCost = bt.pricePerSqm[std.key] * area * (floors > 1 ? 1.15 : 1);
+  const costPerSqm = bt.pricePerSqm[std.key] * (floors > 1 ? 1.15 : 1);
 
   return (
     <DemoSection>
-      <div className="flex gap-1 mb-4">
-        {["Typ", "Parametry", "Jakość", "Wynik"].map((s, i) => (
-          <div key={s} className="flex items-center gap-1 flex-1">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-              style={step >= i ? { background: C.orange, color: "white" } : { background: C.sand + "40", color: C.concrete }}>{step > i ? "✓" : i+1}</div>
-            <span className="text-[9px]" style={{ color: step >= i ? C.anthracite : C.concrete }}>{s}</span>
-          </div>
-        ))}
-      </div>
+      <h3 className="font-bold text-sm" style={{ color: C.graphite }}>Kalkulator kosztów budowy</h3>
 
-      {step === 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          {projectTypes.map((t, i) => (
-            <button key={i} onClick={() => { setSelType(i); setStep(1); }}
-              className="p-4 rounded-xl border text-center" style={selType === i ? { borderColor: C.orange, background: C.orange + "08" } : { borderColor: C.sand + "60", background: C.light }}>
-              <span className="text-2xl block mb-1">{t.icon}</span>
-              <span className="text-xs font-medium" style={{ color: C.anthracite }}>{t.name}</span>
+      <div>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Typ budowy</span>
+        <div className="grid grid-cols-2 gap-2 mt-1">
+          {buildTypes.map((bt, i) => (
+            <button key={i} onClick={() => setBuildType(i)}
+              className="p-3 rounded-xl text-left transition-all" style={buildType === i ? { background: C.teal + "10", border: `2px solid ${C.teal}`, color: C.graphite } : { background: C.white, border: `1px solid ${C.light}`, color: C.graphite }}>
+              <span className="text-xl block">{bt.icon}</span>
+              <span className="text-[10px] font-bold block mt-1">{bt.name}</span>
             </button>
           ))}
         </div>
-      )}
+      </div>
 
-      {step === 1 && (
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between"><span className="text-xs font-medium" style={{ color: C.anthracite }}>Powierzchnia (m²)</span><span className="text-xs font-bold" style={{ color: C.orange }}>{area} m²</span></div>
-            <input type="range" min={20} max={300} value={area} onChange={e => setArea(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer" style={{ background: `linear-gradient(to right, ${C.orange} ${((area-20)/280)*100}%, ${C.sand}40 0%)` }} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><span className="text-[10px]" style={{ color: C.concrete }}>Liczba pomieszczeń</span><input type="number" defaultValue={3} className="w-full px-3 py-2 rounded-lg border text-sm" style={{ borderColor: C.sand + "60", background: C.light, color: C.anthracite }} /></div>
-            <div><span className="text-[10px]" style={{ color: C.concrete }}>Piętro</span><input type="number" defaultValue={2} className="w-full px-3 py-2 rounded-lg border text-sm" style={{ borderColor: C.sand + "60", background: C.light, color: C.anthracite }} /></div>
-          </div>
-          <motion.button whileHover={{ scale: 1.02 }} onClick={() => setStep(2)}
-            className="w-full py-3 rounded-xl font-semibold text-sm text-white" style={{ background: C.orange }}>Dalej →</motion.button>
+      <div>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Powierzchnia użytkowa: {area} m²</span>
+        <input type="range" min={60} max={400} value={area} onChange={e => setArea(Number(e.target.value))}
+          className="w-full mt-1 accent-teal-600" />
+        <div className="flex justify-between text-[9px]" style={{ color: C.gray }}><span>60 m²</span><span>400 m²</span></div>
+      </div>
+
+      <div>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Liczba kondygnacji</span>
+        <div className="flex gap-2 mt-1">
+          {[1, 2].map(f => (
+            <button key={f} onClick={() => setFloors(f)}
+              className="flex-1 py-2.5 rounded-xl text-xs font-medium transition-all"
+              style={floors === f ? { background: C.teal, color: "white" } : { background: C.light, color: C.graphite }}>{f === 1 ? "Parterowy" : "Piętrowy"}</button>
+          ))}
         </div>
-      )}
+      </div>
 
-      {step === 2 && (
-        <div className="space-y-3">
-          <p className="text-xs" style={{ color: C.concrete }}>Wybierz standard wykończenia:</p>
-          {qualityLabels.map((q, i) => (
-            <button key={q} onClick={() => setQuality(i)}
-              className="w-full p-4 rounded-xl border text-left" style={quality === i ? { borderColor: C.orange, background: C.orange + "08" } : { borderColor: C.sand + "60", background: C.light }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-sm" style={{ color: C.anthracite }}>{q}</span>
-                  <p className="text-[10px]" style={{ color: C.concrete }}>~{priceMultiplier[i].toLocaleString()} zł/m²</p>
-                </div>
-                <span className="font-bold text-sm" style={{ color: C.orange }}>{(area * priceMultiplier[i]).toLocaleString()} zł</span>
+      <div>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Standard wykończenia</span>
+        <div className="flex gap-2 mt-1">
+          {standards.map((s, i) => (
+            <button key={i} onClick={() => setStandard(i)}
+              className="flex-1 py-2.5 rounded-xl text-xs font-medium transition-all"
+              style={standard === i ? { background: s.color, color: "white" } : { background: C.light, color: C.graphite }}>{s.name}</button>
+          ))}
+        </div>
+        <p className="text-[10px] mt-1" style={{ color: C.gray }}>{std.desc}</p>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+        className="p-5 rounded-xl text-center" style={{ background: `linear-gradient(135deg, ${C.navy}, ${C.dark})` }}>
+        <p className="text-[9px] uppercase tracking-wider text-white/40">Szacowany koszt budowy</p>
+        <motion.span key={totalCost} initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+          className="font-bold text-3xl text-white block mt-1">{Math.round(totalCost).toLocaleString()} zł</motion.span>
+        <p className="text-[10px] mt-1" style={{ color: C.teal }}>{Math.round(costPerSqm).toLocaleString()} zł/m² · {area} m² · {floors === 1 ? "parter" : "piętrowy"} · {std.name}</p>
+        <div className="flex gap-2 justify-center mt-4">
+          <motion.button whileHover={{ scale: 1.02 }} className="px-4 py-2 rounded-lg text-[10px] font-bold text-white flex items-center gap-1" style={{ background: C.teal }}>
+            <Download className="w-3 h-3" /> Pobierz PDF
+          </motion.button>
+          <button className="px-4 py-2 rounded-lg text-[10px] font-bold border border-white/20 text-white">Zapytaj o wycenę</button>
+        </div>
+      </motion.div>
+    </DemoSection>
+  );
+}
+
+function BreakdownPage() {
+  const totalCost = 812000;
+  return (
+    <DemoSection>
+      <h3 className="font-bold text-sm" style={{ color: C.graphite }}>Kosztorys szczegółowy</h3>
+      <p className="text-xs" style={{ color: C.gray }}>Dom 140m², standard, parterowy</p>
+      <div className="space-y-2 mt-2">
+        {costBreakdown.map((c, i) => {
+          const cost = Math.round(totalCost * c.percent / 100);
+          return (
+            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
+              className="p-3 rounded-xl" style={{ background: C.white, border: `1px solid ${C.light}` }}>
+              <div className="flex justify-between mb-1">
+                <span className="text-xs font-medium" style={{ color: C.graphite }}>{c.category}</span>
+                <span className="text-xs font-bold" style={{ color: C.teal }}>{cost.toLocaleString()} zł</span>
               </div>
-            </button>
-          ))}
-          <motion.button whileHover={{ scale: 1.02 }} onClick={() => setStep(3)}
-            className="w-full py-3 rounded-xl font-semibold text-sm text-white" style={{ background: C.orange }}>Zobacz wynik</motion.button>
-        </div>
-      )}
-
-      {step === 3 && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <div className="p-5 rounded-xl text-center" style={{ background: C.orange + "10" }}>
-            <p className="text-xs" style={{ color: C.concrete }}>Szacowany koszt</p>
-            <h2 className="font-bold text-3xl mt-1" style={{ color: C.orange }}>{estimated.toLocaleString()} zł</h2>
-            <p className="text-xs mt-1" style={{ color: C.concrete }}>{projectTypes[selType].name} • {area} m² • {qualityLabels[quality]}</p>
-            <p className="text-[10px] mt-1" style={{ color: C.concrete }}>{Math.round(estimated/area).toLocaleString()} zł/m²</p>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mt-3">
-            <div className="p-2 rounded-lg text-center" style={{ background: C.sand + "30" }}>
-              <span className="text-[10px]" style={{ color: C.concrete }}>Materiały</span>
-              <p className="font-bold text-xs" style={{ color: C.anthracite }}>{Math.round(estimated*0.45).toLocaleString()} zł</p>
-            </div>
-            <div className="p-2 rounded-lg text-center" style={{ background: C.sand + "30" }}>
-              <span className="text-[10px]" style={{ color: C.concrete }}>Robocizna</span>
-              <p className="font-bold text-xs" style={{ color: C.anthracite }}>{Math.round(estimated*0.40).toLocaleString()} zł</p>
-            </div>
-            <div className="p-2 rounded-lg text-center" style={{ background: C.sand + "30" }}>
-              <span className="text-[10px]" style={{ color: C.concrete }}>Inne</span>
-              <p className="font-bold text-xs" style={{ color: C.anthracite }}>{Math.round(estimated*0.15).toLocaleString()} zł</p>
-            </div>
-          </div>
-          <motion.button whileHover={{ scale: 1.02 }}
-            className="w-full mt-3 py-3 rounded-xl font-semibold text-sm text-white" style={{ background: C.orange }}>Pobierz szczegółowy kosztorys (PDF)</motion.button>
-          <button onClick={() => setStep(0)} className="w-full mt-2 py-2 rounded-xl text-xs font-medium" style={{ color: C.orange }}>Nowa kalkulacja</button>
-        </motion.div>
-      )}
-    </DemoSection>
-  );
-}
-
-function CatalogPage() {
-  return (
-    <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.anthracite }}>Cennik usług i materiałów</h3>
-      {costItems.map((cat, i) => (
-        <div key={i}>
-          <h4 className="text-xs font-bold mt-3 mb-1" style={{ color: C.orange }}>{cat.category}</h4>
-          {cat.items.map((item, j) => (
-            <div key={j} className="flex items-center justify-between py-2 border-b" style={{ borderColor: C.sand + "30" }}>
-              <span className="text-xs" style={{ color: C.anthracite }}>{item.name}</span>
-              <span className="text-xs font-bold" style={{ color: C.anthracite }}>{item.price} zł/{item.unit}</span>
-            </div>
-          ))}
-        </div>
-      ))}
-    </DemoSection>
-  );
-}
-
-function EstimatePage() {
-  const items = [
-    { name: "Płytki łazienka (12 m²)", qty: 12, price: 120, total: 1440 },
-    { name: "Układanie płytek", qty: 12, price: 80, total: 960 },
-    { name: "Farba salon (45 m²)", qty: 15, price: 45, total: 675 },
-    { name: "Malowanie ścian", qty: 45, price: 25, total: 1125 },
-    { name: "Panele (35 m²)", qty: 35, price: 85, total: 2975 },
-    { name: "Montaż paneli", qty: 35, price: 40, total: 1400 },
-    { name: "Instalacja elektryczna", qty: 12, price: 180, total: 2160 },
-  ];
-  const total = items.reduce((a, i) => a + i.total, 0);
-
-  return (
-    <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.anthracite }}>Kosztorys szczegółowy</h3>
-      <p className="text-[10px]" style={{ color: C.concrete }}>Mieszkanie 65 m² — remont standard</p>
-      <div className="space-y-1 mt-2">
-        {items.map((it, i) => (
-          <div key={i} className="flex justify-between py-1.5 border-b" style={{ borderColor: C.sand + "20" }}>
-            <span className="text-xs" style={{ color: C.anthracite }}>{it.name}</span>
-            <span className="text-xs font-bold" style={{ color: C.anthracite }}>{it.total.toLocaleString()} zł</span>
-          </div>
-        ))}
+              <div className="w-full h-2 rounded-full" style={{ background: C.light }}>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${c.percent}%` }} transition={{ delay: i * 0.06, duration: 0.5 }}
+                  className="h-full rounded-full" style={{ background: `linear-gradient(to right, ${C.teal}, ${C.blue})` }} />
+              </div>
+              <span className="text-[9px]" style={{ color: C.gray }}>{c.percent}% całkowitego kosztu</span>
+            </motion.div>
+          );
+        })}
       </div>
-      <div className="p-3 rounded-xl mt-3" style={{ background: C.orange + "10" }}>
+      <div className="p-4 rounded-xl mt-2" style={{ background: C.light }}>
         <div className="flex justify-between">
-          <span className="font-bold" style={{ color: C.anthracite }}>Razem</span>
-          <span className="font-bold text-xl" style={{ color: C.orange }}>{total.toLocaleString()} zł</span>
+          <span className="font-bold text-sm" style={{ color: C.graphite }}>Łączny koszt</span>
+          <span className="font-bold text-lg" style={{ color: C.teal }}>{totalCost.toLocaleString()} zł</span>
         </div>
+        <p className="text-[10px] mt-1" style={{ color: C.gray }}>Cena obejmuje materiały i robociznę. Nie obejmuje: projekt architektoniczny, przyłącza, ogrodzenie.</p>
       </div>
     </DemoSection>
   );
 }
 
-function ProjectsPage() {
+function ComparePage() {
+  const area = 140;
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.anthracite }}>Twoje projekty</h3>
-      {[
-        { name: "Remont mieszkania 65m²", date: "15 mar 2026", status: "W trakcie", cost: "292K zł" },
-        { name: "Łazienka — kalkulacja", date: "10 mar 2026", status: "Zapisana", cost: "18K zł" },
-        { name: "Biuro 120m²", date: "28 lut 2026", status: "Zakończony", cost: "540K zł" },
-      ].map((p, i) => (
-        <div key={i} className="p-4 rounded-xl border" style={{ borderColor: C.sand + "40", background: C.light }}>
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="font-bold text-sm" style={{ color: C.anthracite }}>{p.name}</h4>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{
-              background: p.status === "W trakcie" ? C.orange + "15" : p.status === "Zapisana" ? "#2563EB15" : "#10B98115",
-              color: p.status === "W trakcie" ? C.orange : p.status === "Zapisana" ? "#2563EB" : "#10B981"
-            }}>{p.status}</span>
-          </div>
-          <p className="text-[10px]" style={{ color: C.concrete }}>{p.date}</p>
-          <p className="font-bold text-sm mt-1" style={{ color: C.orange }}>{p.cost}</p>
-        </div>
-      ))}
+      <h3 className="font-bold text-sm" style={{ color: C.graphite }}>Porównanie standardów — {area} m²</h3>
+      <div className="space-y-3">
+        {standards.map((std, i) => {
+          const cost = buildTypes[0].pricePerSqm[std.key] * area;
+          return (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+              className="p-4 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ background: std.color }} />
+                  <h4 className="font-bold text-sm" style={{ color: C.graphite }}>{std.name}</h4>
+                </div>
+                <span className="font-bold text-lg" style={{ color: std.color }}>{cost.toLocaleString()} zł</span>
+              </div>
+              <p className="text-[10px] mb-2" style={{ color: C.gray }}>{std.desc}</p>
+              <p className="text-[10px] font-medium" style={{ color: std.color }}>{buildTypes[0].pricePerSqm[std.key].toLocaleString()} zł/m²</p>
+            </motion.div>
+          );
+        })}
+      </div>
+    </DemoSection>
+  );
+}
+
+function ContactPage() {
+  const [submitted, setSubmitted] = useState(false);
+  if (submitted) return (
+    <DemoSection>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
+        <CheckCircle2 className="w-12 h-12 mx-auto mb-3" style={{ color: C.green }} />
+        <h3 className="font-bold text-lg" style={{ color: C.graphite }}>Zapytanie wysłane!</h3>
+        <p className="text-xs mt-1" style={{ color: C.gray }}>Odpowiemy w ciągu 24h z dokładną wyceną.</p>
+      </motion.div>
+    </DemoSection>
+  );
+  return (
+    <DemoSection>
+      <h3 className="font-bold text-sm" style={{ color: C.graphite }}>Zamów dokładną wycenę</h3>
+      <p className="text-xs" style={{ color: C.gray }}>Nasz ekspert przygotuje szczegółowy kosztorys</p>
+      <input placeholder="Imię i nazwisko" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.graphite }} />
+      <input placeholder="Telefon" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.graphite }} />
+      <input placeholder="E-mail" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.graphite }} />
+      <textarea placeholder="Opisz swój projekt budowlany..." rows={4} className="w-full px-4 py-3 rounded-xl border text-sm resize-none" style={{ borderColor: C.light, background: C.white, color: C.graphite }} />
+      <motion.button whileHover={{ scale: 1.02 }} onClick={() => setSubmitted(true)}
+        className="w-full py-3 rounded-xl text-xs font-bold text-white" style={{ background: C.teal }}>Wyślij zapytanie</motion.button>
     </DemoSection>
   );
 }

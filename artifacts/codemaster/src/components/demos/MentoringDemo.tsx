@@ -1,42 +1,48 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, MessageCircle, Target, Home, Award, CreditCard } from "lucide-react";
+import { PreviewShell, DemoNav, DemoSection, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, MessageCircle, Target, Home, Award, CreditCard, ChevronRight, Lock, Zap, Shield } from "lucide-react";
 
-const C = { black: "#0A0A0A", violet: "#7C3AED", gold: "#C9A96E", beige: "#F5E6D3", graphite: "#2D2D2D", gray: "#9CA3AF", cream: "#FFF8F0" };
+const C = { navy: "#0F172A", dark: "#1A1A2E", gold: "#D4A853", amber: "#F59E0B", white: "#F8FAFC", gray: "#64748B", green: "#10B981", violet: "#8B5CF6", blue: "#3B82F6", light: "#F1F5F9", red: "#EF4444" };
 
 const mentors = [
-  { name: "Marta Zielińska", title: "CTO @ ScaleUp", exp: "15 lat w IT", rating: 5.0, sessions: 320, price: 450, areas: ["Leadership", "Architektura", "Skalowanie"] },
-  { name: "Kamil Borowski", title: "VP Product @ FinTech", exp: "12 lat product", rating: 4.9, sessions: 180, price: 380, areas: ["Product Strategy", "OKR", "Roadmapping"] },
-  { name: "Ewa Jankowska", title: "Head of Marketing", exp: "10 lat growth", rating: 4.9, sessions: 240, price: 320, areas: ["Growth Hacking", "Content", "Brand"] },
+  { name: "Piotr Montewka", title: "CEO & Tech Lead", specialty: "Architektura systemów, AI, Fullstack", rating: 5.0, sessions: 240, price: 450, avatar: "PM", available: true },
+  { name: "Anna Wiśniewska", title: "Senior UX Designer", specialty: "UI/UX Design, Design Systems, Figma", rating: 4.9, sessions: 180, price: 350, avatar: "AW", available: true },
+  { name: "Marek Kowalski", title: "Data Science Lead", specialty: "Machine Learning, Python, Analytics", rating: 4.8, sessions: 120, price: 400, avatar: "MK", available: false },
 ];
 
-const memberships: { name: string; price: string; features: string[]; color: string; popular?: boolean }[] = [
-  { name: "Starter", price: "99 zł/mies.", features: ["1 sesja / miesiąc", "Materiały podstawowe", "Grupa na Slack"], color: C.gray },
-  { name: "Premium", price: "299 zł/mies.", features: ["4 sesje / miesiąc", "Pełne materiały", "Priorytetowy dostęp", "Nagrania sesji"], color: C.violet, popular: true },
-  { name: "VIP", price: "599 zł/mies.", features: ["Nielimitowane sesje", "Dedykowany mentor", "Warsztaty 1:1", "Certyfikat"], color: C.gold },
+const plans = [
+  { name: "Starter", price: 199, period: "/mies.", features: ["2 sesje 1:1 miesięcznie", "Dostęp do materiałów", "Czat z mentorem", "Nagrania sesji"], color: C.blue, popular: false },
+  { name: "Premium", price: 499, period: "/mies.", features: ["6 sesji 1:1 miesięcznie", "Priorytetowy dostęp", "Code review", "Ścieżka kariery", "Certyfikat ukończenia"], color: C.gold, popular: true },
+  { name: "Enterprise", price: 1299, period: "/mies.", features: ["Nielimitowane sesje", "Dedykowany mentor", "Zespołowe warsztaty", "Audyt projektu", "Wsparcie 24/7"], color: C.violet, popular: false },
 ];
 
-export function MentoringDemo({ name }: { name: string; features: string[]; industry?: string }) {
+const upcomingSessions = [
+  { mentor: "Piotr Montewka", topic: "Architektura mikrousług w Node.js", date: "2 kwi 2026", time: "14:00", duration: "60 min", type: "1:1" },
+  { mentor: "Anna Wiśniewska", topic: "Design System — budowa od zera", date: "4 kwi 2026", time: "10:00", duration: "45 min", type: "1:1" },
+  { mentor: "Piotr Montewka", topic: "Warsztat: CI/CD Pipeline", date: "8 kwi 2026", time: "16:00", duration: "90 min", type: "workshop" },
+];
+
+export function MentoringDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState("home");
   const tabs = [
     { id: "home", label: "Start", icon: <Home className="w-3 h-3" /> },
     { id: "mentors", label: "Mentorzy", icon: <Users className="w-3 h-3" /> },
-    { id: "session", label: "Sesja 1:1", icon: <Video className="w-3 h-3" /> },
-    { id: "membership", label: "Karnet", icon: <Crown className="w-3 h-3" /> },
-    { id: "progress", label: "Postępy", icon: <Target className="w-3 h-3" /> },
+    { id: "plans", label: "Plany", icon: <Crown className="w-3 h-3" /> },
+    { id: "sessions", label: "Sesje", icon: <Video className="w-3 h-3" /> },
+    { id: "dashboard", label: "Dashboard", icon: <Target className="w-3 h-3" /> },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="MentorPro" />
+      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="MentorHub" />
       <AnimatePresence mode="wait">
         <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
           {page === "home" && <HomePage onNav={setPage} />}
-          {page === "mentors" && <MentorsPage onNav={setPage} />}
-          {page === "session" && <SessionPage />}
-          {page === "membership" && <MembershipPage />}
-          {page === "progress" && <ProgressPage />}
+          {page === "mentors" && <MentorsPage />}
+          {page === "plans" && <PlansPage />}
+          {page === "sessions" && <SessionsPage />}
+          {page === "dashboard" && <DashboardPage />}
         </motion.div>
       </AnimatePresence>
     </PreviewShell>
@@ -46,190 +52,243 @@ export function MentoringDemo({ name }: { name: string; features: string[]; indu
 function HomePage({ onNav }: { onNav: (p: string) => void }) {
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${C.black}, ${C.violet}40)` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.gold }}>Platforma Mentoringowa</p>
-        <h1 className="font-display font-bold text-4xl mt-2" style={{ color: C.cream }}>Mentor<span style={{ color: C.gold }}>Pro</span></h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed" style={{ color: C.cream + "80" }}>Sesje 1:1 z najlepszymi ekspertami. Leadership, product, marketing — rozwijaj się z topowymi mentorami.</p>
-        <div className="flex gap-3 justify-center mt-6">
+      <div className="p-8 pb-10" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.dark})` }}>
+        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.gold }}>Premium Mentoring</p>
+        <h1 className="font-display font-bold text-3xl mt-1 text-white">Mentor<span style={{ color: C.gold }}>Hub</span></h1>
+        <p className="text-xs mt-2 text-white/70 max-w-[280px] leading-relaxed">Indywidualne sesje z ekspertami. Rozwijaj umiejętności, buduj karierę, osiągaj cele szybciej.</p>
+        <div className="flex gap-3 mt-5">
           <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("mentors")}
-            className="px-7 py-3.5 rounded-lg font-bold text-sm shadow-lg" style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream }}>Znajdź mentora</motion.button>
-          <button onClick={() => onNav("membership")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border" style={{ borderColor: C.gold + "40", color: C.gold }}>Karnety</button>
+            className="px-6 py-3 rounded-lg font-bold text-sm shadow-lg text-white" style={{ background: `linear-gradient(135deg, ${C.gold}, ${C.amber})` }}>Znajdź mentora</motion.button>
+          <button onClick={() => onNav("plans")} className="px-6 py-3 rounded-lg font-semibold text-sm border border-white/20 text-white">Porównaj plany</button>
+        </div>
+        <div className="grid grid-cols-3 gap-2 mt-6">
+          {[{ v: "50+", l: "Ekspertów" }, { v: "2 400+", l: "Sesji" }, { v: "4.9", l: "Avg. ocena" }].map((s, i) => (
+            <div key={i} className="p-2.5 rounded-lg text-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="font-bold text-sm text-white block">{s.v}</span>
+              <span className="text-[8px] text-white/40">{s.l}</span>
+            </div>
+          ))}
         </div>
       </div>
+
       <DemoSection>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: "👨‍🏫", label: "50+ mentorów", desc: "Eksperci" },
-            { icon: "🎥", label: "Online", desc: "Video 1:1" },
-            { icon: "📋", label: "Plan", desc: "Rozwoju" },
-            { icon: "🏆", label: "Certyfikat", desc: "Po kursie" },
-          ].map((f, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.graphite }}>
-              <span className="text-lg block">{f.icon}</span>
-              <span className="text-[8px] font-bold block mt-1" style={{ color: C.cream }}>{f.label}</span>
-              <span className="text-[7px]" style={{ color: C.gray }}>{f.desc}</span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-sm" style={{ color: C.navy }}>Najlepsi mentorzy</h3>
+          <button onClick={() => onNav("mentors")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.gold }}>Wszyscy <ChevronRight className="w-3 h-3" /></button>
         </div>
-        <h4 className="font-bold text-sm mt-4" style={{ color: C.cream }}>Top mentorzy</h4>
         {mentors.slice(0, 2).map((m, i) => (
-          <div key={i} className="p-4 rounded-xl border cursor-pointer" style={{ borderColor: C.graphite, background: C.black }} onClick={() => onNav("mentors")}>
-            <div className="flex gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm" style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream }}>
-                {m.name.split(" ").map(n => n[0]).join("")}
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+            className="flex gap-3 p-3 rounded-xl border hover:shadow-sm transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+              style={{ background: `linear-gradient(135deg, ${i === 0 ? C.gold : C.violet}, ${C.navy})` }}>{m.avatar}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-bold" style={{ color: C.navy }}>{m.name}</h4>
+                {m.available && <div className="w-2 h-2 rounded-full" style={{ background: C.green }} />}
               </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-sm" style={{ color: C.cream }}>{m.name}</h4>
-                <p className="text-[10px]" style={{ color: C.gold }}>{m.title}</p>
-                <div className="flex items-center gap-1 mt-0.5"><Star className="w-3 h-3" style={{ fill: C.gold, color: C.gold }} /><span className="text-[10px]" style={{ color: C.gray }}>{m.rating} ({m.sessions})</span></div>
+              <p className="text-[10px]" style={{ color: C.gray }}>{m.title}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: C.gray }}>{m.specialty}</p>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}>
+                  <Star className="w-3 h-3 fill-current" />{m.rating}
+                </span>
+                <span className="text-[10px]" style={{ color: C.gray }}>{m.sessions} sesji</span>
+                <span className="ml-auto font-bold text-xs" style={{ color: C.gold }}>{m.price} zł/h</span>
               </div>
-              <span className="font-bold text-sm" style={{ color: C.gold }}>{m.price} zł</span>
             </div>
-          </div>
+          </motion.div>
         ))}
-        <div className="p-4 rounded-2xl mt-3" style={{ background: C.graphite, border: `1px solid ${C.violet}20` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.violet }}>Opinie uczestników</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: C.cream + "90" }}>"Sesje z Martą kompletnie zmieniły moje podejście do leadership. Najlepsza inwestycja w rozwój."</p>
-          <p className="text-[10px] text-center mt-1" style={{ color: C.gold }}>— Paweł K. ★★★★★</p>
+
+        <div className="p-4 rounded-xl" style={{ background: `linear-gradient(135deg, ${C.navy}, ${C.dark})` }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Crown className="w-4 h-4" style={{ color: C.gold }} />
+            <span className="text-xs font-bold text-white">Plan Premium</span>
+            <span className="ml-auto px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ background: C.gold + "20", color: C.gold }}>Najpopularniejszy</span>
+          </div>
+          <p className="text-[10px] text-white/60">6 sesji 1:1 miesięcznie, priorytetowy dostęp, code review i certyfikat ukończenia.</p>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="font-bold text-lg text-white">499 zł</span>
+            <span className="text-[10px] text-white/40">/miesiąc</span>
+          </div>
+          <motion.button whileHover={{ scale: 1.02 }} onClick={() => onNav("plans")}
+            className="w-full mt-3 py-2.5 rounded-lg text-xs font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.gold}, ${C.amber})` }}>Wybierz plan →</motion.button>
         </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[{ v: "50+", l: "Mentorów" },{ v: "2,400+", l: "Sesji" },{ v: "4.9", l: "Ocena" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.graphite }}>
-              <span className="font-bold text-sm block" style={{ color: C.gold }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
-            </div>
-          ))}
+
+        <div className="p-4 rounded-xl" style={{ background: C.light, border: `1px solid ${C.gold}15` }}>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.gold }}>Opinie uczestników</p>
+          <p className="text-xs mt-2 text-center italic" style={{ color: C.navy + "90" }}>"Sesje z Piotrem zmieniły moje podejście do architektury. W 3 miesiące awansowałem na Tech Leada."</p>
+          <p className="text-[10px] text-center mt-1" style={{ color: C.gold }}>— Tomasz W. ★★★★★</p>
         </div>
       </DemoSection>
-      <DemoBenefits accentColor={C.violet} bgColor={C.black} textColor={C.cream} benefits={[
-        { icon: "👨‍🏫", title: "Sesje 1:1", desc: "Kalendarz i booking mentora" },
-        { icon: "🏆", title: "Ekskluzywność", desc: "Prywatny klub premium" },
-        { icon: "📚", title: "Biblioteka wiedzy", desc: "Materiały, nagrania, case studies" },
-        { icon: "📊", title: "Plan rozwoju", desc: "Śledzenie postępów i celów" },
+
+      <DemoBenefits accentColor={C.gold} bgColor={C.light} textColor={C.navy} benefits={[
+        { icon: "🎯", title: "Indywidualny plan", desc: "Ścieżka dopasowana do celów" },
+        { icon: "🎥", title: "Sesje video 1:1", desc: "Nagrywane na żywo do rewizji" },
+        { icon: "💬", title: "Czat z mentorem", desc: "Wsparcie między sesjami" },
+        { icon: "🏅", title: "Certyfikat", desc: "Potwierdzenie ukończenia ścieżki" },
       ]} />
-      <DemoFooterCTA accentColor={C.violet} bgColor={C.black} />
+      <DemoFooterCTA accentColor={C.gold} bgColor={C.navy} />
     </div>
   );
 }
 
-function MentorsPage({ onNav }: { onNav: (p: string) => void }) {
+function MentorsPage() {
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.cream }}>Nasi mentorzy</h3>
-      {mentors.map((m, i) => (
-        <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-          className="p-5 rounded-xl border" style={{ borderColor: C.graphite, background: C.black }}>
-          <div className="flex gap-4">
-            <div className="w-16 h-16 rounded-xl flex items-center justify-center font-bold" style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream }}>
-              {m.name.split(" ").map(n => n[0]).join("")}
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-base" style={{ color: C.cream }}>{m.name}</h4>
-              <p className="text-xs" style={{ color: C.gold }}>{m.title}</p>
-              <p className="text-[10px]" style={{ color: C.gray }}>{m.exp}</p>
-              <div className="flex gap-1.5 mt-2 flex-wrap">
-                {m.areas.map((a, j) => <span key={j} className="px-2 py-0.5 rounded text-[9px]" style={{ background: C.violet + "20", color: C.violet }}>{a}</span>)}
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Nasi mentorzy</h3>
+      <div className="space-y-3">
+        {mentors.map((m, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+            className="p-4 rounded-xl border hover:shadow-md transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
+            <div className="flex gap-3">
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center text-lg font-bold text-white shrink-0"
+                style={{ background: `linear-gradient(135deg, ${[C.gold, C.violet, C.blue][i]}, ${C.navy})` }}>{m.avatar}</div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-sm" style={{ color: C.navy }}>{m.name}</h4>
+                  <div className="w-2 h-2 rounded-full" style={{ background: m.available ? C.green : C.gray }} />
+                  <span className="text-[9px]" style={{ color: m.available ? C.green : C.gray }}>{m.available ? "Dostępny" : "Zajęty"}</span>
+                </div>
+                <p className="text-[10px] font-medium" style={{ color: C.gray }}>{m.title}</p>
+                <p className="text-[10px] mt-1" style={{ color: C.gray }}>{m.specialty}</p>
               </div>
             </div>
-          </div>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: C.graphite }}>
-            <div><span className="font-bold text-lg" style={{ color: C.gold }}>{m.price} zł</span><span className="text-[10px]" style={{ color: C.gray }}>/sesja</span></div>
-            <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("session")}
-              className="px-5 py-2 rounded-lg font-semibold text-sm" style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream }}>Umów sesję</motion.button>
-          </div>
-        </motion.div>
-      ))}
-    </DemoSection>
-  );
-}
-
-function SessionPage() {
-  const [booked, setBooked] = useState(false);
-  const slots = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"];
-  if (booked) return (
-    <DemoSection>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
-        <Video className="w-12 h-12 mx-auto mb-3" style={{ color: C.violet }} />
-        <h3 className="font-bold text-lg" style={{ color: C.cream }}>Sesja zarezerwowana!</h3>
-        <p className="text-sm mt-1" style={{ color: C.gray }}>Marta Zielińska • Śr 26 mar, 14:00</p>
-        <p className="text-xs mt-2 font-medium" style={{ color: C.gold }}>Link do spotkania zostanie wysłany mailem</p>
-      </motion.div>
-    </DemoSection>
-  );
-  return (
-    <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.cream }}>Zarezerwuj sesję 1:1</h3>
-      <div className="p-3 rounded-xl border flex items-center gap-3" style={{ borderColor: C.graphite, background: C.black }}>
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream }}>MZ</div>
-        <div><span className="text-sm font-bold" style={{ color: C.cream }}>Marta Zielińska</span><p className="text-[10px]" style={{ color: C.gold }}>CTO @ ScaleUp</p></div>
-      </div>
-      <h4 className="text-xs font-bold" style={{ color: C.cream }}>Wybierz termin:</h4>
-      <div className="grid grid-cols-3 gap-2">
-        {slots.map(s => (
-          <button key={s} onClick={() => setBooked(true)} className="py-3 rounded-lg text-sm font-medium" style={{ background: C.graphite, color: C.cream }}>{s}</button>
+            <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: `1px solid ${C.light}` }}>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: C.amber }}><Star className="w-3 h-3 fill-current" />{m.rating}</span>
+                <span className="text-[10px]" style={{ color: C.gray }}>{m.sessions} sesji</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm" style={{ color: C.gold }}>{m.price} zł/h</span>
+                <motion.button whileHover={{ scale: 1.02 }} className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.gold}, ${C.amber})` }}>Umów sesję</motion.button>
+              </div>
+            </div>
+          </motion.div>
         ))}
       </div>
-      <div className="p-3 rounded-xl" style={{ background: C.violet + "10" }}>
-        <div className="flex items-center gap-2"><Video className="w-4 h-4" style={{ color: C.violet }} /><span className="text-xs" style={{ color: C.cream }}>Sesja online (45 min) • <span className="font-bold" style={{ color: C.gold }}>450 zł</span></span></div>
-      </div>
     </DemoSection>
   );
 }
 
-function MembershipPage() {
+function PlansPage() {
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.cream }}>Plany członkostwa</h3>
-      <div className="space-y-3">
-        {memberships.map((m, i) => (
-          <div key={i} className="p-5 rounded-xl border relative" style={{ borderColor: m.popular ? C.violet : C.graphite, background: C.black }}>
-            {m.popular && <span className="absolute -top-2 right-4 px-2 py-0.5 rounded text-[9px] font-bold text-white" style={{ background: C.violet }}>Najpopularniejszy</span>}
+      <h3 className="font-bold text-sm text-center" style={{ color: C.navy }}>Wybierz swój plan</h3>
+      <p className="text-[10px] text-center" style={{ color: C.gray }}>Elastyczne plany dopasowane do Twoich potrzeb</p>
+      <div className="space-y-3 mt-2">
+        {plans.map((p, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+            className="p-4 rounded-xl border relative" style={{ borderColor: p.popular ? C.gold + "40" : C.light, background: C.white }}>
+            {p.popular && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[8px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.gold}, ${C.amber})` }}>Najpopularniejszy</div>}
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-lg" style={{ color: C.cream }}>{m.name}</h4>
-              <span className="font-bold text-lg" style={{ color: m.color }}>{m.price}</span>
+              <div>
+                <h4 className="font-bold text-sm" style={{ color: C.navy }}>{p.name}</h4>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="font-bold text-2xl" style={{ color: p.color }}>{p.price} zł</span>
+                  <span className="text-[10px]" style={{ color: C.gray }}>{p.period}</span>
+                </div>
+              </div>
+              <Crown className="w-6 h-6" style={{ color: p.color }} />
             </div>
             <div className="space-y-1.5">
-              {m.features.map((f, j) => (
-                <div key={j} className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" style={{ color: m.color }} /><span className="text-xs" style={{ color: C.cream }}>{f}</span></div>
+              {p.features.map((f, j) => (
+                <div key={j} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: C.green }} />
+                  <span className="text-[10px]" style={{ color: C.navy }}>{f}</span>
+                </div>
               ))}
             </div>
-            <motion.button whileHover={{ scale: 1.02 }} className="w-full mt-4 py-3 rounded-lg font-semibold text-sm"
-              style={m.popular ? { background: `linear-gradient(135deg, ${C.violet}, ${C.gold})`, color: C.cream } : { border: `1px solid ${m.color}`, color: m.color }}>Wybierz plan</motion.button>
-          </div>
+            <motion.button whileHover={{ scale: 1.02 }}
+              className="w-full mt-4 py-2.5 rounded-lg text-xs font-bold text-white" style={{ background: p.popular ? `linear-gradient(135deg, ${C.gold}, ${C.amber})` : p.color }}>Wybierz {p.name}</motion.button>
+          </motion.div>
         ))}
       </div>
     </DemoSection>
   );
 }
 
-function ProgressPage() {
-  const goals = [
-    { name: "Ukończyć 10 sesji", progress: 70, current: 7, target: 10 },
-    { name: "Wdrożyć plan rozwoju", progress: 40, current: 2, target: 5 },
-    { name: "Certyfikat Leadership", progress: 20, current: 1, target: 5 },
-  ];
+function SessionsPage() {
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.cream }}>Twoje postępy</h3>
-      <div className="grid grid-cols-3 gap-3 mb-3">
-        {[{ l: "Sesje", v: "7" },{ l: "Godziny", v: "5.2h" },{ l: "Cele", v: "1/3" }].map((s, i) => (
-          <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.graphite }}>
-            <span className="font-bold text-sm block" style={{ color: C.gold }}>{s.v}</span>
-            <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Nadchodzące sesje</h3>
+      <div className="space-y-3">
+        {upcomingSessions.map((s, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+            className="p-4 rounded-xl border hover:shadow-sm transition-all" style={{ borderColor: C.light, background: C.white }}>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-bold text-xs" style={{ color: C.navy }}>{s.topic}</h4>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: s.type === "1:1" ? C.gold + "15" : C.violet + "15", color: s.type === "1:1" ? C.gold : C.violet }}>{s.type === "1:1" ? "1:1" : "Warsztat"}</span>
+            </div>
+            <p className="text-[10px]" style={{ color: C.gray }}>Mentor: {s.mentor}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="flex items-center gap-1 text-[10px]" style={{ color: C.navy }}><Calendar className="w-3 h-3" />{s.date}</span>
+              <span className="flex items-center gap-1 text-[10px]" style={{ color: C.navy }}><Clock className="w-3 h-3" />{s.time}</span>
+              <span className="text-[10px]" style={{ color: C.gray }}>{s.duration}</span>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <motion.button whileHover={{ scale: 1.02 }} className="px-4 py-2 rounded-lg text-[10px] font-bold text-white flex items-center gap-1" style={{ background: C.green }}>
+                <Video className="w-3 h-3" /> Dołącz do sesji
+              </motion.button>
+              <button className="px-4 py-2 rounded-lg text-[10px] font-medium" style={{ background: C.light, color: C.navy }}>Przełóż</button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </DemoSection>
+  );
+}
+
+function DashboardPage() {
+  return (
+    <DemoSection>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Twój dashboard</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { label: "Odbyte sesje", val: "24", color: C.green },
+          { label: "Godziny nauki", val: "36h", color: C.blue },
+          { label: "Aktywny plan", val: "Premium", color: C.gold },
+          { label: "Następna sesja", val: "2 kwi", color: C.violet },
+        ].map((s, i) => (
+          <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }}
+            className="p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+            <span className="text-[9px] uppercase font-bold" style={{ color: C.gray }}>{s.label}</span>
+            <span className="font-bold text-lg block mt-1" style={{ color: s.color }}>{s.val}</span>
+          </motion.div>
+        ))}
+      </div>
+
+      <h4 className="font-bold text-sm mt-2" style={{ color: C.navy }}>Ścieżka rozwoju</h4>
+      <div className="space-y-0">
+        {[
+          { title: "Podstawy architektury", status: "done", progress: 100 },
+          { title: "Design Patterns w praktyce", status: "done", progress: 100 },
+          { title: "Mikrousługi i API Gateway", status: "current", progress: 60 },
+          { title: "DevOps i CI/CD", status: "locked", progress: 0 },
+          { title: "Projekt końcowy", status: "locked", progress: 0 },
+        ].map((step, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center border-2"
+                style={step.status === "done" ? { background: C.green, borderColor: C.green } : step.status === "current" ? { borderColor: C.gold, background: C.gold + "15" } : { borderColor: C.gray + "30" }}>
+                {step.status === "done" ? <CheckCircle2 className="w-4 h-4 text-white" /> : step.status === "locked" ? <Lock className="w-3 h-3" style={{ color: C.gray }} /> :
+                  <span className="text-xs font-bold" style={{ color: C.gold }}>{i + 1}</span>}
+              </div>
+              {i < 4 && <div className="w-0.5 h-6" style={{ background: step.status === "done" ? C.green : C.gray + "20" }} />}
+            </div>
+            <div className="pb-3 flex-1">
+              <span className="text-xs font-semibold" style={{ color: step.status === "locked" ? C.gray : C.navy }}>{step.title}</span>
+              {step.status === "current" && (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 h-1.5 rounded-full" style={{ background: C.light }}>
+                    <div className="h-full rounded-full" style={{ width: `${step.progress}%`, background: `linear-gradient(to right, ${C.gold}, ${C.amber})` }} />
+                  </div>
+                  <span className="text-[9px] font-bold" style={{ color: C.gold }}>{step.progress}%</span>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
-      {goals.map((g, i) => (
-        <div key={i} className="p-4 rounded-xl border" style={{ borderColor: C.graphite, background: C.black }}>
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium" style={{ color: C.cream }}>{g.name}</span>
-            <span className="text-[10px] font-bold" style={{ color: C.violet }}>{g.current}/{g.target}</span>
-          </div>
-          <div className="w-full h-2 rounded-full" style={{ background: C.graphite }}>
-            <div className="h-full rounded-full" style={{ width: `${g.progress}%`, background: `linear-gradient(to right, ${C.violet}, ${C.gold})` }} />
-          </div>
-        </div>
-      ))}
     </DemoSection>
   );
 }

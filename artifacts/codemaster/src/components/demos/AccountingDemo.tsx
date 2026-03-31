@@ -1,47 +1,51 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { FileText, CreditCard, Users, BarChart3, Download, CheckCircle2, Clock, AlertTriangle, Upload, Home, PieChart, Bell } from "lucide-react";
+import { PreviewShell, DemoNav, DemoSection, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { FileText, CreditCard, Users, BarChart3, Download, CheckCircle2, Clock, AlertTriangle, Upload, Home, PieChart, Bell, Calendar, ChevronRight, Shield, ArrowUpRight, ArrowDownRight, MessageCircle, Filter } from "lucide-react";
 
-const C = { navy: "#1B3A5C", steel: "#4682B4", white: "#FFFFFF", gray: "#94A3B8", light: "#F1F5F9", green: "#10B981", orange: "#F59E0B", red: "#EF4444" };
+const C = { navy: "#0F2A4A", steel: "#3B5998", white: "#F8FAFC", gray: "#6B7280", green: "#10B981", blue: "#2563EB", red: "#EF4444", amber: "#F59E0B", light: "#EFF3F8", dark: "#1A3A5C" };
 
 const documents = [
-  { name: "Faktura FV/2026/03/042", type: "Faktura", date: "22 mar 2026", status: "pending", amount: "12 450 zł" },
-  { name: "PIT-36 (2025)", type: "Deklaracja", date: "20 mar 2026", status: "ready", amount: "—" },
-  { name: "ZUS DRA – marzec", type: "ZUS", date: "15 mar 2026", status: "sent", amount: "1 431 zł" },
-  { name: "Faktura FV/2026/03/041", type: "Faktura", date: "12 mar 2026", status: "done", amount: "8 200 zł" },
-  { name: "VAT-7 – luty", type: "Deklaracja", date: "25 lut 2026", status: "done", amount: "3 280 zł" },
+  { name: "Faktura_032026_001.pdf", type: "Faktura", date: "28 mar 2026", status: "processed", size: "240 KB" },
+  { name: "Wyciag_bankowy_03.pdf", type: "Wyciąg", date: "26 mar 2026", status: "processed", size: "180 KB" },
+  { name: "Umowa_zlecenie_KN.pdf", type: "Umowa", date: "24 mar 2026", status: "pending", size: "420 KB" },
+  { name: "PIT-36_2025.pdf", type: "Deklaracja", date: "20 mar 2026", status: "review", size: "85 KB" },
+  { name: "Faktura_022026_018.pdf", type: "Faktura", date: "15 mar 2026", status: "processed", size: "210 KB" },
 ];
 
-const alerts = [
-  { text: "Termin PIT-36: 30 kwietnia 2026", type: "warning", days: 31 },
-  { text: "Brak 2 faktur kosztowych za marzec", type: "error", days: 0 },
-  { text: "ZUS DRA wysłany pomyślnie", type: "success", days: 0 },
-  { text: "Zaliczka PIT: do 20 kwietnia", type: "info", days: 21 },
+const statusMap: Record<string, { color: string; label: string }> = {
+  processed: { color: C.green, label: "Zaksięgowane" },
+  pending: { color: C.amber, label: "Oczekuje" },
+  review: { color: C.blue, label: "Do weryfikacji" },
+};
+
+const deadlines = [
+  { name: "VAT-7 za marzec", date: "25 kwi 2026", days: 25, type: "vat", urgent: false },
+  { name: "ZUS DRA za marzec", date: "15 kwi 2026", days: 15, type: "zus", urgent: false },
+  { name: "PIT-5L zaliczka", date: "20 kwi 2026", days: 20, type: "pit", urgent: false },
+  { name: "JPK_V7 za marzec", date: "25 kwi 2026", days: 25, type: "jpk", urgent: false },
 ];
 
 export function AccountingDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState("dashboard");
   const tabs = [
-    { id: "dashboard", label: "Pulpit", icon: <Home className="w-3 h-3" /> },
+    { id: "dashboard", label: "Dashboard", icon: <Home className="w-3 h-3" /> },
     { id: "documents", label: "Dokumenty", icon: <FileText className="w-3 h-3" /> },
-    { id: "upload", label: "Dodaj", icon: <Upload className="w-3 h-3" /> },
-    { id: "finance", label: "Finanse", icon: <PieChart className="w-3 h-3" /> },
-    { id: "alerts", label: "Alerty", icon: <Bell className="w-3 h-3" /> },
-    { id: "panel", label: "Panel biura", icon: <BarChart3 className="w-3 h-3" /> },
+    { id: "reports", label: "Raporty", icon: <BarChart3 className="w-3 h-3" /> },
+    { id: "calendar", label: "Kalendarz", icon: <Calendar className="w-3 h-3" /> },
+    { id: "messages", label: "Wiadomości", icon: <MessageCircle className="w-3 h-3" /> },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="FinBooks" />
+      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="FinPortal" />
       <AnimatePresence mode="wait">
         <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
           {page === "dashboard" && <DashboardPage onNav={setPage} />}
           {page === "documents" && <DocumentsPage />}
-          {page === "upload" && <UploadPage />}
-          {page === "finance" && <FinancePage />}
-          {page === "alerts" && <AlertsPage />}
-          {page === "panel" && <PanelPage />}
+          {page === "reports" && <ReportsPage />}
+          {page === "calendar" && <CalendarPage />}
+          {page === "messages" && <MessagesPage />}
         </motion.div>
       </AnimatePresence>
     </PreviewShell>
@@ -51,181 +55,129 @@ export function AccountingDemo({ name }: { name: string; features: string[] }) {
 function DashboardPage({ onNav }: { onNav: (p: string) => void }) {
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.steel})` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.white + "80" }}>Biuro Rachunkowe Online</p>
-        <h1 className="font-display font-bold text-4xl mt-2 text-white">FinBooks</h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed text-white/70">Pełna księgowość, faktury, ZUS, PIT — wszystko w jednym miejscu. Automatyzacja, która oszczędza Twój czas.</p>
-        <div className="flex gap-3 justify-center mt-6">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("upload")}
-            className="px-7 py-3.5 rounded-lg font-bold text-sm shadow-lg text-white" style={{ background: C.steel }}>Dodaj dokument</motion.button>
-          <button onClick={() => onNav("documents")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border border-white/30 text-white">Dokumenty</button>
+      <div className="p-8 pb-10" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.dark})` }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.steel }}>Panel Klienta</p>
+            <h1 className="font-display font-bold text-3xl mt-1 text-white">Fin<span style={{ color: "#60A5FA" }}>Portal</span></h1>
+          </div>
+          <div className="relative">
+            <Bell className="w-5 h-5 text-white/60" />
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full text-[7px] font-bold flex items-center justify-center text-white" style={{ background: C.red }}>2</div>
+          </div>
+        </div>
+        <p className="text-xs text-white/60 mb-5">Biuro rachunkowe Kowalski & Partnerzy</p>
+
+        <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <p className="text-[9px] font-bold uppercase text-white/40 mb-2">Co wymaga Twojej uwagi</p>
+          <div className="space-y-2">
+            {[
+              { text: "Wyślij fakturę za marzec — brak 3 dokumentów", icon: AlertTriangle, color: C.amber },
+              { text: "PIT-36 do weryfikacji — oczekuje na Twój podpis", icon: FileText, color: C.blue },
+            ].map((a, i) => (
+              <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <a.icon className="w-4 h-4 shrink-0" style={{ color: a.color }} />
+                <span className="text-[10px] text-white/80 flex-1">{a.text}</span>
+                <ChevronRight className="w-3 h-3 text-white/30" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
       <DemoSection>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: "📄", label: "Faktury", desc: "Auto-import" },
-            { icon: "🏦", label: "ZUS / PIT", desc: "Terminowo" },
-            { icon: "📊", label: "Raporty", desc: "Real-time" },
-            { icon: "🔒", label: "Bezpieczeństwo", desc: "Szyfrowanie" },
-          ].map((f, i) => (
-            <div key={i} className="p-2.5 rounded-xl text-center" style={{ background: C.light }}>
-              <span className="text-lg block">{f.icon}</span>
-              <span className="text-[8px] font-bold block mt-0.5" style={{ color: C.navy }}>{f.label}</span>
-              <span className="text-[7px]" style={{ color: C.gray }}>{f.desc}</span>
-            </div>
+            { label: "Przychód (marzec)", val: "84 200 zł", change: "+12%", up: true, color: C.green },
+            { label: "Koszty (marzec)", val: "42 800 zł", change: "+5%", up: true, color: C.red },
+            { label: "Saldo", val: "41 400 zł", change: "+22%", up: true, color: C.blue },
+            { label: "Dokumenty", val: "48", change: "5 nowych", up: true, color: C.steel },
+          ].map((k, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+              className="p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+              <span className="text-[9px] uppercase font-bold" style={{ color: C.gray }}>{k.label}</span>
+              <span className="font-bold text-base block mt-1" style={{ color: C.navy }}>{k.val}</span>
+              <span className="text-[10px] font-medium flex items-center gap-0.5" style={{ color: k.color }}>
+                {k.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}{k.change}
+              </span>
+            </motion.div>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          {[
-            { label: "Przychody", val: "48 200 zł", change: "+12%", color: C.green },
-            { label: "Koszty", val: "31 800 zł", change: "+5%", color: C.red },
-            { label: "Podatek VAT", val: "3 280 zł", change: "", color: C.steel },
-            { label: "Dochód", val: "16 400 zł", change: "+18%", color: C.navy },
-          ].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-              <span className="text-[10px]" style={{ color: C.gray }}>{s.label}</span>
-              <span className="font-bold text-base block" style={{ color: s.color }}>{s.val}</span>
-              {s.change && <span className="text-[10px]" style={{ color: s.change.startsWith("+") ? C.green : C.red }}>{s.change}</span>}
+
+        <div className="flex items-center justify-between mt-2">
+          <h3 className="font-bold text-sm" style={{ color: C.navy }}>Nadchodzące terminy</h3>
+          <button onClick={() => onNav("calendar")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.blue }}>Kalendarz <ChevronRight className="w-3 h-3" /></button>
+        </div>
+        {deadlines.slice(0, 3).map((d, i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: d.days <= 7 ? C.red + "10" : C.blue + "10" }}>
+              <Calendar className="w-5 h-5" style={{ color: d.days <= 7 ? C.red : C.blue }} />
             </div>
-          ))}
-        </div>
-        <div className="p-4 rounded-2xl mt-3" style={{ background: C.light, border: `1px solid ${C.steel}15` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.steel }}>Opinie klientów</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: C.navy + "90" }}>"FinBooks zrewolucjonizował moją księgowość. Auto-import faktur i automatyczne deklaracje ZUS to game changer."</p>
-          <p className="text-[10px] text-center mt-1" style={{ color: C.steel }}>— Tomasz N. ★★★★★</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[{ v: "1,200+", l: "Firm" },{ v: "99.9%", l: "Uptime" },{ v: "4.8", l: "Ocena" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: `${C.steel}08` }}>
-              <span className="font-bold text-sm block" style={{ color: C.steel }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
+            <div className="flex-1">
+              <span className="text-xs font-semibold" style={{ color: C.navy }}>{d.name}</span>
+              <p className="text-[10px]" style={{ color: C.gray }}>{d.date}</p>
             </div>
-          ))}
+            <span className="text-[10px] font-bold" style={{ color: d.days <= 7 ? C.red : C.green }}>za {d.days} dni</span>
+          </div>
+        ))}
+
+        <div className="flex items-center justify-between mt-2">
+          <h3 className="font-bold text-sm" style={{ color: C.navy }}>Ostatnie dokumenty</h3>
+          <button onClick={() => onNav("documents")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.blue }}>Wszystkie <ChevronRight className="w-3 h-3" /></button>
         </div>
+        {documents.slice(0, 3).map((d, i) => {
+          const st = statusMap[d.status];
+          return (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+              <FileText className="w-5 h-5 shrink-0" style={{ color: C.blue }} />
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium truncate block" style={{ color: C.navy }}>{d.name}</span>
+                <p className="text-[10px]" style={{ color: C.gray }}>{d.type} · {d.date}</p>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0" style={{ background: st.color + "15", color: st.color }}>{st.label}</span>
+            </div>
+          );
+        })}
       </DemoSection>
+
+      <DemoBenefits accentColor={C.blue} bgColor={C.light} textColor={C.navy} benefits={[
+        { icon: "📄", title: "Dokumenty online", desc: "Upload i śledzenie statusu" },
+        { icon: "📅", title: "Kalendarz podatkowy", desc: "Terminy i przypomnienia" },
+        { icon: "📊", title: "Raporty finansowe", desc: "Przychody, koszty, saldo" },
+        { icon: "🔒", title: "Bezpieczeństwo", desc: "Szyfrowanie i RODO" },
+      ]} />
+      <DemoFooterCTA accentColor={C.blue} bgColor={C.navy} />
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { bg: string; color: string; label: string }> = {
-    pending: { bg: C.orange + "15", color: C.orange, label: "Do weryfikacji" },
-    ready: { bg: C.steel + "15", color: C.steel, label: "Gotowy" },
-    sent: { bg: C.green + "15", color: C.green, label: "Wysłany" },
-    done: { bg: C.green + "15", color: C.green, label: "Zakończony" },
-  };
-  const s = map[status] || map.pending;
-  return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: s.bg, color: s.color }}>{s.label}</span>;
-}
-
 function DocumentsPage() {
-  const [filter, setFilter] = useState("all");
   return (
     <DemoSection>
-      <div className="flex gap-2 mb-3">
-        {[["all", "Wszystkie"], ["Faktura", "Faktury"], ["Deklaracja", "Deklaracje"], ["ZUS", "ZUS"]].map(([id, label]) => (
-          <button key={id} onClick={() => setFilter(id)} className="px-3 py-1.5 rounded-full text-xs font-medium"
-            style={filter === id ? { background: C.navy, color: C.white } : { background: C.light, color: C.gray }}>{label}</button>
-        ))}
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm" style={{ color: C.navy }}>Dokumenty</h3>
+        <motion.button whileHover={{ scale: 1.02 }} className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1" style={{ background: C.blue }}>
+          <Upload className="w-3 h-3" /> Wyślij dokument
+        </motion.button>
       </div>
-      {documents.filter(d => filter === "all" || d.type === filter).map((d, i) => (
-        <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-          className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-          <FileText className="w-4 h-4" style={{ color: C.steel }} />
-          <div className="flex-1">
-            <span className="text-xs font-medium" style={{ color: C.navy }}>{d.name}</span>
-            <p className="text-[10px]" style={{ color: C.gray }}>{d.type} • {d.date}</p>
-          </div>
-          <span className="text-xs font-bold" style={{ color: C.navy }}>{d.amount}</span>
-          <StatusBadge status={d.status} />
-          <Download className="w-3.5 h-3.5 cursor-pointer" style={{ color: C.steel }} />
-        </motion.div>
-      ))}
-    </DemoSection>
-  );
-}
-
-function UploadPage() {
-  const [uploaded, setUploaded] = useState(false);
-  return (
-    <DemoSection>
-      <h3 className="font-semibold text-sm" style={{ color: C.navy }}>Dodaj dokument</h3>
-      {!uploaded ? (
-        <>
-          <motion.div whileHover={{ borderColor: C.steel }} onClick={() => setUploaded(true)}
-            className="p-8 rounded-xl border-2 border-dashed text-center cursor-pointer" style={{ borderColor: C.gray + "40" }}>
-            <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: C.steel }} />
-            <p className="text-sm font-medium" style={{ color: C.navy }}>Przeciągnij plik lub kliknij</p>
-            <p className="text-[10px]" style={{ color: C.gray }}>PDF, JPG, PNG — max 10MB</p>
-          </motion.div>
-          <select className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }}>
-            <option>Typ dokumentu...</option><option>Faktura zakupowa</option><option>Faktura sprzedażowa</option><option>Wyciąg bankowy</option><option>Umowa</option>
-          </select>
-        </>
-      ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-6">
-          <CheckCircle2 className="w-10 h-10 mx-auto mb-2" style={{ color: C.green }} />
-          <p className="font-bold text-sm" style={{ color: C.navy }}>Dokument przesłany!</p>
-          <p className="text-xs" style={{ color: C.gray }}>Twój księgowy otrzymał powiadomienie</p>
-        </motion.div>
-      )}
-    </DemoSection>
-  );
-}
-
-function FinancePage() {
-  const months = [
-    { m: "Sty", income: 42, costs: 28 },{ m: "Lut", income: 38, costs: 25 },{ m: "Mar", income: 48, costs: 32 },
-  ];
-  return (
-    <DemoSection>
-      <h3 className="font-semibold text-sm" style={{ color: C.navy }}>Przegląd finansowy</h3>
-      <div className="p-4 rounded-xl" style={{ background: C.light }}>
-        <div className="flex gap-4 items-end justify-center h-32">
-          {months.map((m, i) => (
-            <div key={i} className="text-center">
-              <div className="flex gap-1 items-end">
-                <div className="w-6 rounded-t" style={{ height: `${m.income * 2}px`, background: C.green }} />
-                <div className="w-6 rounded-t" style={{ height: `${m.costs * 2}px`, background: C.red + "60" }} />
-              </div>
-              <span className="text-[10px] mt-1 block" style={{ color: C.gray }}>{m.m}</span>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-4 justify-center mt-2">
-          <span className="text-[10px] flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ background: C.green }} /> Przychody</span>
-          <span className="text-[10px] flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ background: C.red + "60" }} /> Koszty</span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3 mt-3">
-        {[{ l: "VAT do zapłaty", v: "3 280 zł", d: "do 25 kwi" },{ l: "ZUS łączny", v: "1 431 zł", d: "do 15 kwi" },{ l: "Zaliczka PIT", v: "2 890 zł", d: "do 20 kwi" },{ l: "Saldo konta", v: "67 420 zł", d: "na 22 mar" }].map((s, i) => (
-          <div key={i} className="p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-            <span className="text-[10px]" style={{ color: C.gray }}>{s.l}</span>
-            <span className="font-bold text-sm block" style={{ color: C.navy }}>{s.v}</span>
-            <span className="text-[9px]" style={{ color: C.gray }}>{s.d}</span>
-          </div>
-        ))}
-      </div>
-    </DemoSection>
-  );
-}
-
-function AlertsPage() {
-  const iconMap: Record<string, typeof AlertTriangle> = { warning: AlertTriangle, error: AlertTriangle, success: CheckCircle2, info: Bell };
-  const colorMap: Record<string, string> = { warning: C.orange, error: C.red, success: C.green, info: C.steel };
-  return (
-    <DemoSection>
-      <h3 className="font-semibold text-sm" style={{ color: C.navy }}>Powiadomienia</h3>
       <div className="space-y-2">
-        {alerts.map((a, i) => {
-          const Icon = iconMap[a.type];
+        {documents.map((d, i) => {
+          const st = statusMap[d.status];
           return (
-            <div key={i} className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: colorMap[a.type] + "30", background: colorMap[a.type] + "05" }}>
-              <Icon className="w-5 h-5 shrink-0" style={{ color: colorMap[a.type] }} />
-              <span className="text-xs flex-1" style={{ color: C.navy }}>{a.text}</span>
-              {a.days > 0 && <span className="text-xs font-bold" style={{ color: colorMap[a.type] }}>{a.days}d</span>}
-            </div>
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+              className="flex items-center gap-3 p-3 rounded-xl border hover:shadow-sm transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: C.blue + "10" }}>
+                <FileText className="w-5 h-5" style={{ color: C.blue }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-semibold truncate block" style={{ color: C.navy }}>{d.name}</span>
+                <p className="text-[10px]" style={{ color: C.gray }}>{d.type} · {d.date} · {d.size}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: st.color + "15", color: st.color }}>{st.label}</span>
+                <button className="p-1.5 rounded-lg" style={{ background: C.light }}><Download className="w-3.5 h-3.5" style={{ color: C.navy }} /></button>
+              </div>
+            </motion.div>
           );
         })}
       </div>
@@ -233,28 +185,114 @@ function AlertsPage() {
   );
 }
 
-function PanelPage() {
+function ReportsPage() {
   return (
     <DemoSection>
-      <h3 className="font-semibold text-sm" style={{ color: C.navy }}>Panel biura rachunkowego</h3>
-      <div className="grid grid-cols-4 gap-2">
-        {[{ l: "Klienci", v: "42" },{ l: "Dokumenty", v: "186" },{ l: "Oczekujące", v: "12" },{ l: "Termin", v: "8 dni" }].map((s, i) => (
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Raporty finansowe — Marzec 2026</h3>
+      <div className="grid grid-cols-3 gap-2">
+        {[{ l: "Przychód", v: "84 200 zł", c: C.green }, { l: "Koszty", v: "42 800 zł", c: C.red }, { l: "Zysk netto", v: "41 400 zł", c: C.blue }].map((s, i) => (
           <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
-            <span className="font-bold text-base block" style={{ color: C.steel }}>{s.v}</span>
+            <span className="font-bold text-sm block" style={{ color: s.c }}>{s.v}</span>
             <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
           </div>
         ))}
       </div>
-      <h4 className="text-xs font-bold mt-3" style={{ color: C.navy }}>Klienci do obsługi</h4>
-      {["ABC Transport Sp. z o.o.", "Jan Kowalski – JDG", "MedTech Solutions S.A."].map((c, i) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-          <Users className="w-4 h-4" style={{ color: C.steel }} />
-          <span className="text-xs flex-1" style={{ color: C.navy }}>{c}</span>
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium" style={{ background: i === 0 ? C.orange + "15" : C.green + "15", color: i === 0 ? C.orange : C.green }}>
-            {i === 0 ? "3 oczekujące" : "OK"}
-          </span>
+
+      <div className="p-4 rounded-xl" style={{ background: C.light }}>
+        <p className="text-[10px] font-bold uppercase mb-3" style={{ color: C.gray }}>Przychód vs Koszty (6 mies.)</p>
+        <div className="flex gap-1 items-end justify-center" style={{ height: 100 }}>
+          {[{ m: "Paź", p: 62, k: 38 }, { m: "Lis", p: 71, k: 42 }, { m: "Gru", p: 88, k: 48 }, { m: "Sty", p: 72, k: 40 }, { m: "Lut", p: 79, k: 44 }, { m: "Mar", p: 84, k: 43 }].map((d, i) => (
+            <div key={i} className="flex-1 text-center">
+              <div className="flex gap-0.5 items-end justify-center" style={{ height: 80 }}>
+                <motion.div initial={{ height: 0 }} animate={{ height: `${d.p * 0.85}px` }} transition={{ delay: i * 0.05 }}
+                  className="flex-1 rounded-t" style={{ background: C.green }} />
+                <motion.div initial={{ height: 0 }} animate={{ height: `${d.k * 0.85}px` }} transition={{ delay: i * 0.05 + 0.1 }}
+                  className="flex-1 rounded-t" style={{ background: C.red + "60" }} />
+              </div>
+              <span className="text-[8px] mt-1 block" style={{ color: C.gray }}>{d.m}</span>
+            </div>
+          ))}
         </div>
-      ))}
+        <div className="flex justify-center gap-4 mt-2">
+          <span className="flex items-center gap-1 text-[9px]" style={{ color: C.gray }}><div className="w-2 h-2 rounded" style={{ background: C.green }} /> Przychód</span>
+          <span className="flex items-center gap-1 text-[9px]" style={{ color: C.gray }}><div className="w-2 h-2 rounded" style={{ background: C.red + "60" }} /> Koszty</span>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl" style={{ background: C.light }}>
+        <p className="text-[10px] font-bold uppercase mb-2" style={{ color: C.gray }}>Struktura kosztów</p>
+        {[{ l: "Wynagrodzenia", v: 18400, p: 43 }, { l: "Czynsz i media", v: 8200, p: 19 }, { l: "Marketing", v: 6800, p: 16 }, { l: "IT i narzędzia", v: 4200, p: 10 }, { l: "Pozostałe", v: 5200, p: 12 }].map((c, i) => (
+          <div key={i} className="mb-2">
+            <div className="flex justify-between text-[10px]">
+              <span style={{ color: C.navy }}>{c.l}</span>
+              <span className="font-bold" style={{ color: C.navy }}>{c.v.toLocaleString()} zł ({c.p}%)</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full mt-0.5" style={{ background: C.navy + "10" }}>
+              <div className="h-full rounded-full" style={{ width: `${c.p}%`, background: C.blue }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </DemoSection>
+  );
+}
+
+function CalendarPage() {
+  return (
+    <DemoSection>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Kalendarz podatkowy</h3>
+      <p className="text-xs" style={{ color: C.gray }}>Kwiecień 2026 — nadchodzące terminy</p>
+      <div className="space-y-2">
+        {deadlines.map((d, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
+            className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+            <div className="w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0" style={{ background: d.days <= 7 ? C.red + "10" : C.blue + "10" }}>
+              <span className="text-xs font-bold" style={{ color: d.days <= 7 ? C.red : C.blue }}>{d.date.split(" ")[0]}</span>
+              <span className="text-[8px]" style={{ color: C.gray }}>{d.date.split(" ")[1]}</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-xs font-semibold" style={{ color: C.navy }}>{d.name}</h4>
+              <p className="text-[10px]" style={{ color: C.gray }}>{d.date}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-[10px] font-bold block" style={{ color: d.days <= 7 ? C.red : C.green }}>za {d.days} dni</span>
+              <span className="px-2 py-0.5 rounded text-[8px] font-bold" style={{ background: C.light, color: C.navy }}>{d.type.toUpperCase()}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </DemoSection>
+  );
+}
+
+function MessagesPage() {
+  const messages = [
+    { from: "Ewa Kowalska (księgowa)", text: "Proszę o dosłanie brakujących faktur za marzec. Potrzebuję: FV od Media Expert i FV za hosting.", time: "2h temu", unread: true },
+    { from: "System", text: "Przypomnienie: termin VAT-7 za luty upłynął. Deklaracja została złożona terminowo.", time: "3 dni temu", unread: false },
+    { from: "Ewa Kowalska (księgowa)", text: "PIT-36 za 2025 rok jest gotowy do weryfikacji. Proszę sprawdzić i zaakceptować.", time: "5 dni temu", unread: false },
+  ];
+  return (
+    <DemoSection>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Wiadomości</h3>
+      <div className="space-y-2">
+        {messages.map((m, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+            className="p-4 rounded-xl border cursor-pointer hover:shadow-sm transition-all" style={{ borderColor: m.unread ? C.blue + "30" : C.light, background: m.unread ? C.blue + "03" : C.white }}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold" style={{ color: C.navy }}>{m.from}</span>
+              <span className="text-[9px]" style={{ color: C.gray }}>{m.time}</span>
+            </div>
+            <p className="text-[10px] leading-relaxed" style={{ color: C.gray }}>{m.text}</p>
+            {m.unread && <div className="w-2 h-2 rounded-full mt-2" style={{ background: C.blue }} />}
+          </motion.div>
+        ))}
+      </div>
+      <div className="p-3 rounded-xl" style={{ background: C.light }}>
+        <div className="flex gap-2">
+          <input placeholder="Napisz wiadomość..." className="flex-1 px-3 py-2 rounded-lg border text-xs" style={{ borderColor: C.navy + "15", background: C.white, color: C.navy }} />
+          <motion.button whileHover={{ scale: 1.02 }} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: C.blue }}>Wyślij</motion.button>
+        </div>
+      </div>
     </DemoSection>
   );
 }

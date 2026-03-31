@@ -1,65 +1,47 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PreviewShell, DemoNav, DemoSection } from "./PreviewShell";
-import { Home, MapPin, Search, Filter, Heart, ChevronRight, Maximize, Bed, Bath, Car as CarIcon, Building2, BarChart3, Phone } from "lucide-react";
+import { PreviewShell, DemoNav, DemoSection, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
+import { Home, MapPin, Search, Filter, Heart, ChevronRight, Maximize, Bed, Bath, Car as CarIcon, Building2, BarChart3, Phone, Calendar, CheckCircle2, ArrowUpRight } from "lucide-react";
 
-const C = { navy: "#1B2838", white: "#FFFFFF", gray: "#6B7280", copper: "#B87333", green: "#2D5A27", light: "#F8FAFC", cream: "#FFF8F0" };
+const C = { navy: "#0B1D3A", dark: "#0F2647", champagne: "#D4AF37", white: "#F8FAFC", gray: "#6B7280", green: "#10B981", blue: "#2563EB", red: "#EF4444", amber: "#F59E0B", light: "#EFF3F8", silver: "#9CA3AF" };
 
-const units = [
-  { id: "A12", type: "2-pokojowe", size: 48, floor: 3, price: 485000, status: "available", rooms: 2, bath: 1, parking: true, balcony: true },
-  { id: "B05", type: "3-pokojowe", size: 72, floor: 5, price: 720000, status: "available", rooms: 3, bath: 2, parking: true, balcony: true },
-  { id: "C01", type: "4-pokojowe", size: 95, floor: 1, price: 950000, status: "reserved", rooms: 4, bath: 2, parking: true, balcony: false },
-  { id: "A08", type: "Kawalerka", size: 32, floor: 2, price: 320000, status: "available", rooms: 1, bath: 1, parking: false, balcony: true },
-  { id: "D10", type: "Penthouse", size: 140, floor: 8, price: 1800000, status: "available", rooms: 4, bath: 3, parking: true, balcony: true },
-  { id: "B03", type: "2-pokojowe", size: 52, floor: 3, price: 520000, status: "sold", rooms: 2, bath: 1, parking: true, balcony: false },
+const apartments = [
+  { id: "A-01", floor: 1, rooms: 2, area: 48.5, price: 485000, status: "available", exposure: "S-W", balcony: true, garden: true },
+  { id: "A-02", floor: 1, rooms: 3, area: 65.2, price: 652000, status: "available", exposure: "S", balcony: true, garden: true },
+  { id: "B-01", floor: 2, rooms: 2, area: 52.1, price: 536000, status: "reserved", exposure: "N-E", balcony: true, garden: false },
+  { id: "B-02", floor: 2, rooms: 3, area: 72.8, price: 750000, status: "available", exposure: "S-W", balcony: true, garden: false },
+  { id: "C-01", floor: 3, rooms: 4, area: 89.4, price: 982000, status: "available", exposure: "S", balcony: true, garden: false },
+  { id: "C-02", floor: 3, rooms: 2, area: 45.8, price: 480000, status: "sold", exposure: "W", balcony: true, garden: false },
+  { id: "D-01", floor: 4, rooms: 3, area: 78.2, price: 820000, status: "available", exposure: "S-W", balcony: true, garden: false },
+  { id: "D-02", floor: 4, rooms: 5, area: 105.0, price: 1155000, status: "reserved", exposure: "S", balcony: true, garden: false },
 ];
 
-function FloorPlan() {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const c = ref.current; if (!c) return;
-    const ctx = c.getContext("2d"); if (!ctx) return;
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.fillStyle = C.light; ctx.fillRect(0, 0, c.width, c.height);
-    const rooms = [
-      { x: 30, y: 20, w: 100, h: 80, label: "Salon", color: C.copper + "20" },
-      { x: 140, y: 20, w: 80, h: 80, label: "Sypialnia", color: C.navy + "10" },
-      { x: 30, y: 110, w: 70, h: 50, label: "Kuchnia", color: C.green + "15" },
-      { x: 110, y: 110, w: 50, h: 50, label: "Łazienka", color: "#2563EB15" },
-      { x: 170, y: 110, w: 50, h: 50, label: "Balkon", color: C.copper + "10" },
-    ];
-    rooms.forEach(r => {
-      ctx.fillStyle = r.color; ctx.fillRect(r.x, r.y, r.w, r.h);
-      ctx.strokeStyle = C.gray + "40"; ctx.lineWidth = 1; ctx.strokeRect(r.x, r.y, r.w, r.h);
-      ctx.fillStyle = C.navy; ctx.font = "bold 9px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(r.label, r.x + r.w / 2, r.y + r.h / 2 + 3);
-    });
-  }, []);
-  return <canvas ref={ref} width={260} height={180} className="w-full h-auto rounded-xl border" style={{ borderColor: C.gray + "20" }} />;
-}
+const statusColors: Record<string, { bg: string; fg: string; label: string }> = {
+  available: { bg: C.green + "15", fg: C.green, label: "Dostępne" },
+  reserved: { bg: C.amber + "15", fg: C.amber, label: "Zarezerwowane" },
+  sold: { bg: C.red + "15", fg: C.red, label: "Sprzedane" },
+};
 
 export function RealEstateDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState("home");
   const tabs = [
-    { id: "home", label: "Inwestycja", icon: <Building2 className="w-3 h-3" /> },
-    { id: "units", label: "Mieszkania", icon: <Home className="w-3 h-3" /> },
-    { id: "floorplan", label: "Rzut", icon: <Maximize className="w-3 h-3" /> },
-    { id: "gallery", label: "Galeria", icon: <Heart className="w-3 h-3" /> },
-    { id: "contact", label: "Kontakt", icon: <Phone className="w-3 h-3" /> },
-    { id: "panel", label: "Panel", icon: <BarChart3 className="w-3 h-3" /> },
+    { id: "home", label: "Inwestycja", icon: <Home className="w-3 h-3" /> },
+    { id: "catalog", label: "Katalog lokali", icon: <Building2 className="w-3 h-3" /> },
+    { id: "apartment", label: "Karta lokalu", icon: <Maximize className="w-3 h-3" /> },
+    { id: "contact", label: "Umów prezentację", icon: <Calendar className="w-3 h-3" /> },
+    { id: "advisor", label: "Panel doradcy", icon: <BarChart3 className="w-3 h-3" /> },
   ];
 
   return (
     <PreviewShell title={name}>
-      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="NovaResidence" />
+      <DemoNav tabs={tabs} activeTab={page} onTabChange={setPage} logo="Nova Residence" />
       <AnimatePresence mode="wait">
         <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
           {page === "home" && <HomePage onNav={setPage} />}
-          {page === "units" && <UnitsPage />}
-          {page === "floorplan" && <FloorPlanPage />}
-          {page === "gallery" && <GalleryPage />}
+          {page === "catalog" && <CatalogPage />}
+          {page === "apartment" && <ApartmentPage />}
           {page === "contact" && <ContactPage />}
-          {page === "panel" && <PanelPage />}
+          {page === "advisor" && <AdvisorPage />}
         </motion.div>
       </AnimatePresence>
     </PreviewShell>
@@ -67,189 +49,239 @@ export function RealEstateDemo({ name }: { name: string; features: string[] }) {
 }
 
 function HomePage({ onNav }: { onNav: (p: string) => void }) {
+  const available = apartments.filter(a => a.status === "available").length;
   return (
     <div>
-      <div className="p-10 text-center" style={{ background: `linear-gradient(160deg, ${C.navy}, #0D1B2A)` }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.copper }}>Nowa Inwestycja 2026</p>
-        <h1 className="font-display font-bold text-4xl mt-2 text-white">Nova Residence</h1>
-        <p className="text-xs mt-2 max-w-[260px] mx-auto leading-relaxed" style={{ color: C.white + "80" }}>Nowoczesne apartamenty na Mokotowie. Basen, siłownia, park, prywatny parking — prestiżowy adres w Warszawie.</p>
-        <div className="flex gap-3 justify-center mt-6">
-          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("units")}
-            className="px-7 py-3.5 rounded-lg font-semibold text-sm shadow-lg" style={{ background: C.copper, color: C.white }}>Sprawdź dostępność</motion.button>
-          <button onClick={() => onNav("contact")} className="px-7 py-3.5 rounded-lg font-semibold text-sm border" style={{ borderColor: C.copper + "40", color: C.copper }}>Kontakt</button>
+      <div className="p-8 pb-10" style={{ background: `linear-gradient(160deg, ${C.navy}, ${C.dark})` }}>
+        <p className="text-[10px] tracking-[0.4em] uppercase" style={{ color: C.champagne }}>Deweloper nieruchomości</p>
+        <h1 className="font-display font-bold text-3xl mt-1 text-white">Nova <span style={{ color: C.champagne }}>Residence</span></h1>
+        <p className="text-xs mt-2 text-white/70 max-w-[280px] leading-relaxed">Nowoczesne apartamenty w sercu Krakowa. Wysoki standard, zielone otoczenie, doskonała lokalizacja.</p>
+        <div className="flex gap-3 mt-5">
+          <motion.button whileHover={{ scale: 1.03 }} onClick={() => onNav("catalog")}
+            className="px-6 py-3 rounded-lg font-bold text-sm shadow-lg text-white" style={{ background: `linear-gradient(135deg, ${C.champagne}, ${C.amber})` }}>Przeglądaj lokale</motion.button>
+          <button onClick={() => onNav("contact")} className="px-6 py-3 rounded-lg font-semibold text-sm border border-white/20 text-white">Umów prezentację</button>
         </div>
-      </div>
-      <DemoSection>
-        <div className="grid grid-cols-3 gap-3">
-          {[{ l: "Mieszkań", v: "48" },{ l: "Pięter", v: "8" },{ l: "Od", v: "320K zł" }].map((s, i) => (
-            <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
-              <span className="font-bold text-lg block" style={{ color: C.copper }}>{s.v}</span>
-              <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
+        <div className="grid grid-cols-3 gap-2 mt-6">
+          {[{ v: `${apartments.length}`, l: "Lokali" }, { v: `${available}`, l: "Dostępnych" }, { v: "Q2 2027", l: "Oddanie" }].map((s, i) => (
+            <div key={i} className="p-2.5 rounded-lg text-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <span className="font-bold text-sm text-white block">{s.v}</span>
+              <span className="text-[8px] text-white/40">{s.l}</span>
             </div>
           ))}
         </div>
-        <h3 className="font-bold text-sm mt-4" style={{ color: C.navy }}>Udogodnienia</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {["🏊 Basen", "🏋️ Siłownia", "🌳 Park", "🚗 Parking", "🛗 Winda", "🔒 Ochrona"].map((a, i) => (
-            <div key={i} className="p-3 rounded-xl text-center text-xs font-medium" style={{ background: C.light, color: C.navy }}>{a}</div>
+      </div>
+
+      <DemoSection>
+        <h3 className="font-bold text-sm" style={{ color: C.navy }}>Przewagi inwestycji</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { icon: "📍", title: "Lokalizacja", desc: "5 min do centrum, tramwaj, park" },
+            { icon: "🏗️", title: "Wysoki standard", desc: "Cegła, trójszybowe okna, windy" },
+            { icon: "🌿", title: "Zieleń", desc: "Dziedziniec, park, ogródki" },
+            { icon: "🚗", title: "Parking", desc: "Podziemny garaż, ładowarki EV" },
+          ].map((f, i) => (
+            <div key={i} className="p-3 rounded-xl" style={{ background: C.light }}>
+              <span className="text-lg block">{f.icon}</span>
+              <span className="text-[9px] font-bold block mt-1" style={{ color: C.navy }}>{f.title}</span>
+              <span className="text-[8px]" style={{ color: C.gray }}>{f.desc}</span>
+            </div>
           ))}
         </div>
-        <div className="p-4 rounded-2xl mt-3" style={{ background: C.light, border: `1px solid ${C.copper}15` }}>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.copper }}>Opinie kupujących</p>
-          <p className="text-xs mt-2 text-center italic" style={{ color: C.navy + "90" }}>"Świetna lokalizacja i wykończenie. Metro w 5 minut, park za rogiem. Idealne mieszkanie."</p>
-          <p className="text-[10px] text-center mt-1" style={{ color: C.copper }}>— Marta D. ★★★★★</p>
-        </div>
-        <h3 className="font-bold text-sm mt-4" style={{ color: C.navy }}>Lokalizacja</h3>
-        <div className="p-4 rounded-xl" style={{ background: C.light }}>
-          <div className="space-y-1 text-xs" style={{ color: C.gray }}>
-            <p>🚇 Metro Wilanowska — 5 min</p><p>🏫 Szkoła podstawowa — 300m</p><p>🛒 Galeria Mokotów — 8 min</p><p>🌳 Park Morskie Oko — 10 min</p>
-          </div>
-        </div>
-      </DemoSection>
-      <DemoBenefits accentColor={C.copper} bgColor={C.cream} textColor={C.navy} benefits={[
-        { icon: "🏗️", title: "Premium katalog", desc: "Elegancka prezentacja inwestycji" },
-        { icon: "🔍", title: "Szybkie filtrowanie", desc: "Metraż, piętro, status, cena" },
-        { icon: "📋", title: "Kwalifikacja leadów", desc: "Formularz z pełnym kontekstem" },
-        { icon: "📊", title: "Panel doradcy", desc: "Zarządzanie zapytaniami klientów" },
-      ]} />
-      <DemoFooterCTA accentColor={C.copper} bgColor={C.navy} />
-    </div>
-  );
-}
 
-function UnitsPage() {
-  const [filter, setFilter] = useState("all");
-  const filtered = filter === "all" ? units : units.filter(u => u.status === filter);
-  const statusC: Record<string, { bg: string; color: string; label: string }> = {
-    available: { bg: "#10B98115", color: "#10B981", label: "Dostępne" },
-    reserved: { bg: "#F59E0B15", color: "#F59E0B", label: "Zarezerwowane" },
-    sold: { bg: "#EF444415", color: "#EF4444", label: "Sprzedane" },
-  };
-
-  return (
-    <DemoSection>
-      <div className="flex gap-2 mb-3">
-        {[["all", "Wszystkie"], ["available", "Dostępne"], ["reserved", "Zarezerwowane"]].map(([id, label]) => (
-          <button key={id} onClick={() => setFilter(id)} className="px-3 py-1.5 rounded-full text-xs font-medium"
-            style={filter === id ? { background: C.navy, color: C.white } : { background: C.light, color: C.gray }}>{label}</button>
-        ))}
-      </div>
-      <div className="space-y-2">
-        {filtered.map((u, i) => {
-          const st = statusC[u.status];
+        <div className="flex items-center justify-between mt-2">
+          <h3 className="font-bold text-sm" style={{ color: C.navy }}>Dostępne lokale</h3>
+          <button onClick={() => onNav("catalog")} className="text-[10px] font-medium flex items-center gap-1" style={{ color: C.champagne }}>Pełny katalog <ChevronRight className="w-3 h-3" /></button>
+        </div>
+        {apartments.filter(a => a.status === "available").slice(0, 3).map((a, i) => {
+          const st = statusColors[a.status];
           return (
-            <motion.div key={u.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-              className="p-4 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-sm" style={{ color: C.navy }}>{u.id}</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-                </div>
-                <span className="text-xs" style={{ color: C.gray }}>Piętro {u.floor}</span>
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+              onClick={() => onNav("apartment")}
+              className="flex items-center gap-3 p-3 rounded-xl border hover:shadow-sm transition-all cursor-pointer" style={{ borderColor: C.light, background: C.white }}>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ background: C.navy + "08" }}>
+                <span className="font-mono text-xs font-bold" style={{ color: C.navy }}>{a.id}</span>
               </div>
-              <h4 className="font-bold text-sm" style={{ color: C.navy }}>{u.type} — {u.size} m²</h4>
-              <div className="flex gap-3 mt-1.5">
-                <span className="text-[10px] flex items-center gap-0.5" style={{ color: C.gray }}><Bed className="w-3 h-3" />{u.rooms}</span>
-                <span className="text-[10px] flex items-center gap-0.5" style={{ color: C.gray }}><Bath className="w-3 h-3" />{u.bath}</span>
-                {u.parking && <span className="text-[10px] flex items-center gap-0.5" style={{ color: C.gray }}><CarIcon className="w-3 h-3" />Parking</span>}
-                {u.balcony && <span className="text-[10px]" style={{ color: C.gray }}>🌿 Balkon</span>}
+              <div className="flex-1">
+                <h4 className="text-xs font-bold" style={{ color: C.navy }}>{a.rooms} pokoje · {a.area} m²</h4>
+                <p className="text-[10px]" style={{ color: C.gray }}>Piętro {a.floor} · Ekspozycja {a.exposure}</p>
               </div>
-              <div className="flex items-center justify-between mt-3">
-                <span className="font-bold text-lg" style={{ color: C.copper }}>{(u.price / 1000).toFixed(0)}K zł</span>
-                <span className="text-[10px]" style={{ color: C.gray }}>{Math.round(u.price / u.size).toLocaleString()} zł/m²</span>
+              <div className="text-right shrink-0">
+                <span className="font-bold text-xs block" style={{ color: C.champagne }}>{(a.price / 1000).toFixed(0)}K zł</span>
+                <span className="text-[9px]" style={{ color: C.gray }}>{(a.price / a.area).toFixed(0)} zł/m²</span>
               </div>
             </motion.div>
           );
         })}
-      </div>
-    </DemoSection>
+
+        <div className="p-4 rounded-xl" style={{ background: C.light, border: `1px solid ${C.champagne}15` }}>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-center" style={{ color: C.champagne }}>Opinie kupujących</p>
+          <p className="text-xs mt-2 text-center italic" style={{ color: C.navy + "90" }}>"Profesjonalna obsługa, czytelna dokumentacja, wysokie standard wykończenia. Polecam Nova Residence."</p>
+          <p className="text-[10px] text-center mt-1" style={{ color: C.champagne }}>— Tomasz i Anna K. ★★★★★</p>
+        </div>
+      </DemoSection>
+
+      <DemoBenefits accentColor={C.champagne} bgColor={C.light} textColor={C.navy} benefits={[
+        { icon: "🏠", title: "Katalog lokali", desc: "Filtry, rzuty, ceny na żywo" },
+        { icon: "📐", title: "Rzuty mieszkań", desc: "Interaktywne plany kondygnacji" },
+        { icon: "📅", title: "Rezerwacja online", desc: "Umów prezentację jednym klikiem" },
+        { icon: "👨‍💼", title: "Panel doradcy", desc: "Zarządzanie leadami i ofertami" },
+      ]} />
+      <DemoFooterCTA accentColor={C.champagne} bgColor={C.navy} />
+    </div>
   );
 }
 
-function FloorPlanPage() {
+function CatalogPage() {
+  const [roomFilter, setRoomFilter] = useState(0);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const filtered = apartments.filter(a => (roomFilter === 0 || a.rooms === roomFilter) && (statusFilter === "all" || a.status === statusFilter));
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Rzut mieszkania A12</h3>
-      <p className="text-[10px]" style={{ color: C.gray }}>2-pokojowe • 48 m² • Piętro 3</p>
-      <FloorPlan />
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        {[{ room: "Salon z aneksem", size: "24.5 m²" },{ room: "Sypialnia", size: "14.2 m²" },{ room: "Łazienka", size: "5.8 m²" },{ room: "Balkon", size: "3.5 m²" }].map((r, i) => (
-          <div key={i} className="p-2 rounded-lg flex justify-between" style={{ background: C.light }}>
-            <span className="text-xs" style={{ color: C.navy }}>{r.room}</span>
-            <span className="text-xs font-bold" style={{ color: C.copper }}>{r.size}</span>
-          </div>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Katalog lokali — Nova Residence</h3>
+      <div className="flex gap-1.5">
+        {[{ v: 0, l: "Wszystkie" }, { v: 2, l: "2-pok." }, { v: 3, l: "3-pok." }, { v: 4, l: "4-pok." }, { v: 5, l: "5-pok." }].map(f => (
+          <button key={f.v} onClick={() => setRoomFilter(f.v)} className="px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all"
+            style={roomFilter === f.v ? { background: C.navy, color: "white" } : { background: C.light, color: C.gray }}>{f.l}</button>
         ))}
       </div>
+
+      <div className="rounded-xl overflow-hidden border" style={{ borderColor: C.light }}>
+        <div className="grid grid-cols-7 gap-0 p-2.5 text-[8px] font-bold uppercase" style={{ background: C.navy, color: "white" }}>
+          <span>Nr</span><span>Piętro</span><span>Pokoje</span><span>Pow.</span><span>Cena</span><span>Eksp.</span><span>Status</span>
+        </div>
+        {filtered.map((a, i) => {
+          const st = statusColors[a.status];
+          return (
+            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+              className="grid grid-cols-7 gap-0 p-2.5 text-[10px] border-t cursor-pointer hover:bg-blue-50/30 transition-colors" style={{ borderColor: C.light }}>
+              <span className="font-mono font-bold" style={{ color: C.navy }}>{a.id}</span>
+              <span style={{ color: C.gray }}>{a.floor}</span>
+              <span style={{ color: C.navy }}>{a.rooms}</span>
+              <span style={{ color: C.navy }}>{a.area} m²</span>
+              <span className="font-bold" style={{ color: C.champagne }}>{(a.price / 1000).toFixed(0)}K</span>
+              <span style={{ color: C.gray }}>{a.exposure}</span>
+              <span className="px-1 py-0.5 rounded text-[8px] font-bold text-center" style={{ background: st.bg, color: st.fg }}>{st.label}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+      <div className="flex justify-between text-[10px] p-2" style={{ color: C.gray }}>
+        <span>{filtered.length} lokali znalezionych</span>
+        <span>Ceny od {Math.min(...filtered.map(a => a.price)).toLocaleString()} zł</span>
+      </div>
     </DemoSection>
   );
 }
 
-function GalleryPage() {
+function ApartmentPage() {
+  const apt = apartments[4];
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Wizualizacje</h3>
+      <div className="p-4 rounded-xl" style={{ background: C.navy }}>
+        <div className="aspect-video rounded-lg flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${C.navy}80, ${C.dark})`, border: `1px solid ${C.champagne}20` }}>
+          <div className="text-center">
+            <Building2 className="w-10 h-10 mx-auto mb-2 text-white/30" />
+            <p className="text-[10px] text-white/40">Rzut mieszkania {apt.id}</p>
+            <p className="text-xs text-white/60 font-medium mt-0.5">{apt.rooms} pokoje · {apt.area} m²</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-lg" style={{ color: C.navy }}>Lokal {apt.id}</h3>
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ background: statusColors[apt.status].bg, color: statusColors[apt.status].fg }}>{statusColors[apt.status].label}</span>
+        </div>
+        <span className="font-bold text-xl" style={{ color: C.champagne }}>{apt.price.toLocaleString()} zł</span>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
-        {["🏢 Fasada", "🛋️ Salon", "🍳 Kuchnia", "🛏️ Sypialnia", "🛁 Łazienka", "🌳 Ogród"].map((g, i) => (
-          <div key={i} className="h-24 rounded-xl flex items-center justify-center text-2xl" style={{ background: `linear-gradient(135deg, ${C.navy}10, ${C.copper}10)` }}>
-            {g}
+        {[
+          { icon: Bed, label: "Pokoje", value: apt.rooms.toString() },
+          { icon: Maximize, label: "Powierzchnia", value: `${apt.area} m²` },
+          { icon: Building2, label: "Piętro", value: apt.floor.toString() },
+          { icon: ArrowUpRight, label: "Ekspozycja", value: apt.exposure },
+        ].map((d, i) => (
+          <div key={i} className="p-3 rounded-xl flex items-center gap-2" style={{ background: C.light }}>
+            <d.icon className="w-4 h-4 shrink-0" style={{ color: C.navy }} />
+            <div>
+              <span className="text-[9px]" style={{ color: C.gray }}>{d.label}</span>
+              <span className="text-xs font-bold block" style={{ color: C.navy }}>{d.value}</span>
+            </div>
           </div>
         ))}
       </div>
+
+      <div className="p-3 rounded-xl" style={{ background: C.light }}>
+        <span className="text-[10px] font-bold" style={{ color: C.navy }}>Cena za m²: {(apt.price / apt.area).toFixed(0)} zł</span>
+        <p className="text-[10px] mt-1" style={{ color: C.gray }}>Balkon: {apt.balcony ? "Tak" : "Nie"} · Ogródek: {apt.garden ? "Tak" : "Nie"}</p>
+      </div>
+
+      <motion.button whileHover={{ scale: 1.02 }}
+        className="w-full py-3 rounded-xl text-xs font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.champagne}, ${C.amber})` }}>Zapytaj o ten lokal</motion.button>
     </DemoSection>
   );
 }
 
 function ContactPage() {
-  const [sent, setSent] = useState(false);
-  if (sent) return (
+  const [submitted, setSubmitted] = useState(false);
+  if (submitted) return (
     <DemoSection>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
-        <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: C.copper + "15" }}>
-          <ChevronRight className="w-6 h-6" style={{ color: C.copper }} />
-        </div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
+        <CheckCircle2 className="w-12 h-12 mx-auto mb-3" style={{ color: C.green }} />
         <h3 className="font-bold text-lg" style={{ color: C.navy }}>Dziękujemy!</h3>
-        <p className="text-sm" style={{ color: C.gray }}>Skontaktujemy się w ciągu 24h</p>
+        <p className="text-xs mt-1" style={{ color: C.gray }}>Doradca skontaktuje się w ciągu 24h.</p>
       </motion.div>
     </DemoSection>
   );
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Zapytaj o mieszkanie</h3>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Umów prezentację inwestycji</h3>
       <input placeholder="Imię i nazwisko" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
-      <input placeholder="E-mail" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
       <input placeholder="Telefon" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
+      <input placeholder="E-mail" className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
       <select className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }}>
-        <option>Interesuje mnie...</option><option>Kawalerka</option><option>2-pokojowe</option><option>3-pokojowe</option><option>4-pokojowe</option><option>Penthouse</option>
+        <option>Interesujący lokal...</option>{apartments.filter(a => a.status === "available").map(a => <option key={a.id}>{a.id} — {a.rooms} pok., {a.area} m²</option>)}
       </select>
-      <textarea placeholder="Wiadomość..." rows={3} className="w-full px-4 py-3 rounded-xl border text-sm resize-none" style={{ borderColor: C.light, background: C.white, color: C.navy }} />
-      <motion.button whileHover={{ scale: 1.02 }} onClick={() => setSent(true)}
-        className="w-full py-3.5 rounded-xl text-white font-semibold text-sm" style={{ background: C.copper }}>Wyślij zapytanie</motion.button>
+      <select className="w-full px-4 py-3 rounded-xl border text-sm" style={{ borderColor: C.light, background: C.white, color: C.navy }}>
+        <option>Preferowany termin prezentacji...</option><option>Poniedziałek-Piątek, 10:00-14:00</option><option>Poniedziałek-Piątek, 14:00-18:00</option><option>Sobota, 10:00-14:00</option>
+      </select>
+      <motion.button whileHover={{ scale: 1.02 }} onClick={() => setSubmitted(true)}
+        className="w-full py-3 rounded-xl text-xs font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.champagne}, ${C.amber})` }}>Umów prezentację</motion.button>
     </DemoSection>
   );
 }
 
-function PanelPage() {
-  const stats = { total: 48, available: 28, reserved: 8, sold: 12 };
+function AdvisorPage() {
   return (
     <DemoSection>
-      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Panel sprzedaży</h3>
+      <h3 className="font-bold text-sm" style={{ color: C.navy }}>Panel doradcy</h3>
       <div className="grid grid-cols-4 gap-2">
-        {[{ l: "Łącznie", v: stats.total, c: C.navy },{ l: "Dostępne", v: stats.available, c: "#10B981" },{ l: "Zarezerwow.", v: stats.reserved, c: "#F59E0B" },{ l: "Sprzedane", v: stats.sold, c: "#EF4444" }].map((s, i) => (
-          <div key={i} className="p-3 rounded-xl text-center" style={{ background: C.light }}>
-            <span className="font-bold text-lg block" style={{ color: s.c }}>{s.v}</span>
-            <span className="text-[9px]" style={{ color: C.gray }}>{s.l}</span>
+        {[{ l: "Zapytania", v: "24", c: C.blue }, { l: "Prezentacje", v: "8", c: C.green }, { l: "Rezerwacje", v: "3", c: C.amber }, { l: "Sprzedaże", v: "1", c: C.champagne }].map((s, i) => (
+          <div key={i} className="p-2.5 rounded-xl text-center" style={{ background: C.light }}>
+            <span className="font-bold text-sm block" style={{ color: s.c }}>{s.v}</span>
+            <span className="text-[8px]" style={{ color: C.gray }}>{s.l}</span>
           </div>
         ))}
       </div>
-      <div className="mt-3 p-4 rounded-xl" style={{ background: C.light }}>
-        <h4 className="text-xs font-bold mb-2" style={{ color: C.navy }}>Postęp sprzedaży</h4>
-        <div className="w-full h-4 rounded-full flex overflow-hidden" style={{ background: C.gray + "20" }}>
-          <div className="h-full" style={{ width: `${(stats.sold/stats.total)*100}%`, background: "#EF4444" }} />
-          <div className="h-full" style={{ width: `${(stats.reserved/stats.total)*100}%`, background: "#F59E0B" }} />
-          <div className="h-full" style={{ width: `${(stats.available/stats.total)*100}%`, background: "#10B981" }} />
+      <h4 className="font-bold text-sm mt-2" style={{ color: C.navy }}>Ostatnie zapytania</h4>
+      {[
+        { name: "Jan Kowalski", apt: "C-01 (4 pok.)", date: "31 mar", status: "new" },
+        { name: "Marta Nowak", apt: "B-02 (3 pok.)", date: "30 mar", status: "contacted" },
+        { name: "Piotr W.", apt: "A-02 (3 pok.)", date: "28 mar", status: "presentation" },
+      ].map((l, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: C.light, background: C.white }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: C.navy }}>{l.name.split(" ").map(n => n[0]).join("")}</div>
+          <div className="flex-1">
+            <span className="text-xs font-semibold" style={{ color: C.navy }}>{l.name}</span>
+            <p className="text-[10px]" style={{ color: C.gray }}>Zainteresowany: {l.apt} · {l.date}</p>
+          </div>
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{
+            background: l.status === "new" ? C.blue + "15" : l.status === "contacted" ? C.amber + "15" : C.green + "15",
+            color: l.status === "new" ? C.blue : l.status === "contacted" ? C.amber : C.green
+          }}>{l.status === "new" ? "Nowe" : l.status === "contacted" ? "Skontaktowano" : "Prezentacja"}</span>
         </div>
-        <p className="text-[10px] mt-1" style={{ color: C.gray }}>{Math.round(((stats.sold + stats.reserved) / stats.total) * 100)}% sprzedane lub zarezerwowane</p>
-      </div>
+      ))}
     </DemoSection>
   );
 }
