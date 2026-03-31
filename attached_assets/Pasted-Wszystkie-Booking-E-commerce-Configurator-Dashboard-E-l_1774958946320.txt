@@ -1,0 +1,147 @@
+Wszystkie
+Booking
+E-commerce
+Configurator
+Dashboard
+E-learning
+AI
+Szukaj projektu...
+DEMO
+Booking • Beauty
+Salon Kosmetyczny — Rezerwacje Online
+Kompleksowy system rezerwacji online dla salonu kosmetycznego. Klient może samodzielnie rezerwować wizyty, wybierać usługi i stylizacje, a właściciel zarządza kalendarzem i personelem.
+
+Podgląd Demo
+Demo
+DEMO
+Booking • Beauty
+Barber/Fryzjer — Kalendarz Wizyt
+Aplikacja do zarządzania wizytami w barberze. Stylowy interfejs z możliwością wyboru barbera, rodzaju usługi oraz preferowanego terminu.
+
+Podgląd Demo
+Demo
+DEMO
+E-commerce • Food
+Restauracja — Menu i Zamówienia Online
+Cyfrowe menu restauracji z możliwością składania zamówień online. System obsługuje zamówienia na miejscu, na wynos i z dostawą.
+
+Podgląd Demo
+Demo
+DEMO
+Booking • Hospitality
+Hotel/Apartamenty — System Rezerwacji
+Profesjonalny system rezerwacji dla hoteli i apartamentów. Pełne zarządzanie dostępnością pokoi, cenami sezonowymi i obsługą gości.
+
+Podgląd Demo
+Demo
+DEMO
+Healthcare • Medical
+Klinika Medyczna — Panel Pacjenta
+Nowoczesny panel pacjenta dla kliniki medycznej. Rejestracja wizyt online, dostęp do wyników badań i historia leczenia w jednym miejscu.
+
+Podgląd Demo
+Demo
+DEMO
+Booking • Fitness
+Siłownia/Fitness — Membership i Grafik
+Platforma dla siłowni i klubów fitness. Zarządzanie karnetami, rezerwacja zajęć grupowych i śledzenie postępów treningowych.
+
+Podgląd Demo
+Demo
+DEMO
+Configurator • Furniture
+Sklep Meblowy — Konfigurator Szafy
+Interaktywny konfigurator szafy dla sklepu meblowego. Klient projektuje szafę w 3D, wybierając wymiary, front, kolorystykę i wyposażenie wnętrza.
+
+Podgląd Demo
+Demo
+DEMO
+Configurator • Kitchen
+Kuchnie na Wymiar — Konfigurator Projektu
+Konfigurator mebli kuchennych na wymiar. Projektuj kuchnię marzeń dobierając layout, fronty, blaty, sprzęt AGD i kolorystykę.
+
+Podgląd Demo
+Demo
+DEMO
+Real Estate • Construction
+Deweloper Nieruchomości — Katalog Inwestycji
+Interaktywny katalog inwestycji deweloperskich. Przeglądaj dostępne lokale, filtruj po parametrach i umów się na prezentację.
+
+Podgląd Demo
+Demo
+DEMO
+Client Portal • Finance
+Biuro Rachunkowe — Panel Klienta
+Bezpieczny panel klienta dla biura rachunkowego. Bezproblemowa wymiana dokumentów, komunikacja i dostęp do raportów finansowych.
+
+Podgląd Demo
+Demo
+DEMO
+Lead Management • Legal
+Kancelaria Prawna — Leady i Konsultacje
+System zarządzania leadami i konsultacjami dla kancelarii prawnej. Przyjmuj zgłoszenia, kwalifikuj klientów i zarządzaj sprawami.
+
+Podgląd Demo
+Demo
+DEMO
+Dashboard • Marketing
+Agencja Marketingowa — Panel Raportów
+Dashboard raportów marketingowych dla agencji. Wizualizuj wyniki kampanii, śledź KPIs i przygotowuj raporty dla klientów automatycznie.
+
+Podgląd Demo
+Demo
+DEMO
+E-learning • Education
+Szkoła Online — Kursy i Konto
+Platforma e-learningowa dla szkół i kursów online. Sprzedawaj kursy, prowadź lekcje wideo i śledź postępy uczniów.
+
+Podgląd Demo
+Demo
+DEMO
+E-learning • Education
+E-learning/Mentoring — Strefa Premium
+Platforma mentoringowa ze strefą premium. Rezerwuj sesje 1:1 z mentorem, korzystaj z ekskluzywnych materiałów i społeczności.
+
+Podgląd Demo
+Demo
+DEMO
+Events • Entertainment
+Portal Eventowy — Bilety i Harmonogram
+Platforma sprzedaży biletów i zarządzania harmonogramem wydarzeń. Organizuj konferencje, koncerty i warsztaty z pełną obsługą uczestników.
+
+Podgląd Demo
+Demo
+DEMO
+Booking • Automotive
+Wypożyczalnia Aut — Rezerwacje i Flota
+System zarządzania flotą i rezerwacjami dla wypożyczalni samochodów. Pełna obsługa klienta od rezerwacji po zwrot pojazdu.
+
+Podgląd Demo
+Demo
+DEMO
+Service Management • IT
+Serwis Komputerowy — Zgłoszenia Napraw
+System obsługi zgłoszeń serwisowych dla serwisu komputerowego. Klient śledzi status naprawy online, a technik zarządza zleceniami.
+
+Podgląd Demo
+Demo
+DEMO
+Calculator • Construction
+Firma Budowlana — Kalkulator Wyceny
+Interaktywny kalkulator wyceny prac budowlanych. Klient sam konfiguruje zakres prac i otrzymuje szacunkową wycenę natychmiast.
+
+Podgląd Demo
+Demo
+DEMO
+E-commerce • Retail
+E-commerce Premium — Landing i Checkout
+Premium sklep e-commerce z dopracowanym landing page i procesem zakupowym. Maksymalna konwersja dzięki UX opartemu na danych.
+
+Podgląd Demo
+Demo
+DEMO
+AI • Business
+AI Business Assistant — Chatbot + Lead Scoring
+Inteligentny asystent biznesowy z AI. Chatbot kwalifikuje leady, odpowiada na pytania klientów 24/7 i automatyzuje procesy sprzedażowe.
+
+Podgląd Demo
