@@ -42,7 +42,6 @@ const statusInfo: Record<PropertyStatus, { bg: string; fg: string; label: string
 const topTabs: { id: RealEstatePage; label: string }[] = [
   { id: "home", label: "Oferty" },
   { id: "search", label: "Inwestycje" },
-  { id: "detail", label: "O nas" },
   { id: "contact", label: "Kontakt" },
   { id: "admin", label: "Panel CRM" },
 ];
