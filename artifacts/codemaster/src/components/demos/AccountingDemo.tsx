@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { FileText, CreditCard, Users, BarChart3, Download, CheckCircle2, Clock, AlertTriangle, Home, PieChart, Bell, ChevronRight, ArrowUpRight, ArrowDownRight, Plus, Eye, Send, Printer, Search, Settings, HelpCircle } from "lucide-react";
+import { FileText, CreditCard, Users, BarChart3, Download, CheckCircle2, Clock, AlertTriangle, Home, Bell, ChevronRight, Plus, Eye, Send, Printer, Search } from "lucide-react";
 
 const C = { sidebar: "#2F3136", sidebarHover: "#393C41", dark: "#1A1D21", white: "#FFFFFF", bg: "#F4F5F7", gray: "#6B7280", green: "#22C55E", red: "#EF4444", amber: "#F59E0B", blue: "#3B82F6", violet: "#8B5CF6", light: "#E5E7EB", accent: "#3B82F6" };
 

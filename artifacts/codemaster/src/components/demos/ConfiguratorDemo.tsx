@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { Layers, Palette, Ruler, Plus, Minus, CheckCircle2, Download, ChevronRight, Save, Eye } from "lucide-react";
+import { Plus, Minus, CheckCircle2, Download, ChevronRight, Save } from "lucide-react";
 
 const C = { oak: "#DEB887", walnut: "#5C4033", anthracite: "#333333", white: "#FFFFFF", dark: "#1A1A1A", warm: "#F5F0EB", stone: "#E8E2D8", cream: "#FAF7F2", greige: "#A8A08C", forest: "#3D5A3C" };
 

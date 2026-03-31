@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { Search, Heart, ChevronRight, Maximize, Bed, Building2, BarChart3, Phone, Calendar, CheckCircle2, ArrowUpRight, MapPin, ChevronDown, Star, Eye, Users, TrendingUp } from "lucide-react";
+import { Search, Heart, ChevronRight, Maximize, Bed, Building2, Phone, Calendar, CheckCircle2, MapPin, Star } from "lucide-react";
 
 const C = { emerald: "#1B4332", emeraldLight: "#2D6A4F", gold: "#C9A84C", white: "#FFFFFF", bg: "#F5F7F5", gray: "#6B7280", dark: "#111827", green: "#22C55E", red: "#EF4444", amber: "#F59E0B", blue: "#3B82F6", light: "#E8EDE9" };
 

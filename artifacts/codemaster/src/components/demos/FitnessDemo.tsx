@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { Calendar, Users, Flame, TrendingUp, CheckCircle2, Dumbbell, Bell, BarChart3, UserPlus, CreditCard, Activity } from "lucide-react";
+import { Calendar, Users, TrendingUp, CheckCircle2, Dumbbell, Bell, BarChart3, UserPlus, CreditCard, Activity } from "lucide-react";
 
 const C = { navy: "#1B2A4A", dark: "#0F1B30", neon: "#39FF14", white: "#FFFFFF", gray: "#94A3B8", light: "#F1F5F9", green: "#22C55E", red: "#EF4444", amber: "#F59E0B", blue: "#3B82F6", violet: "#8B5CF6", card: "#F8FAFC" };
 
