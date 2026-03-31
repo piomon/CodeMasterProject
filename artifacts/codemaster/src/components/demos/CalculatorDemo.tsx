@@ -91,12 +91,6 @@ function CalculatorPage() {
   const garageAdd = garage ? 45000 : 0;
   const total = Math.round(basePrice * floorMultiplier + garageAdd);
 
-  const pieSegments = costBreakdown.reduce<{ startAngle: number; endAngle: number; color: string; name: string; pct: number }[]>((acc, item) => {
-    const lastEnd = acc.length > 0 ? acc[acc.length - 1].endAngle : 0;
-    acc.push({ startAngle: lastEnd, endAngle: lastEnd + (item.pct / 100) * 360, color: item.color, name: item.name, pct: item.pct });
-    return acc;
-  }, []);
-
   return (
     <div className="p-4 space-y-3">
       <div className="p-4 rounded-xl" style={{ background: `linear-gradient(135deg, ${C.navy}, ${C.dark})` }}>
@@ -173,35 +167,77 @@ function CalculatorPage() {
         <p className="text-[9px] text-white/40 mt-1">{Math.round(total / area).toLocaleString("pl-PL")} zł/m² · {buildTypes[buildType].name} · {qualityLabels[quality].label}</p>
       </div>
 
-      <div className="p-4 rounded-xl" style={{ background: C.white, border: `1px solid ${C.light}` }}>
-        <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Rozkład kosztów</span>
-        <div className="flex items-center gap-4 mt-3">
-          <svg viewBox="0 0 120 120" className="w-24 h-24 shrink-0">
-            {pieSegments.map((seg, i) => {
-              const r = 50;
-              const startRad = (seg.startAngle - 90) * (Math.PI / 180);
-              const endRad = (seg.endAngle - 90) * (Math.PI / 180);
-              const largeArc = seg.endAngle - seg.startAngle > 180 ? 1 : 0;
-              const x1 = 60 + r * Math.cos(startRad);
-              const y1 = 60 + r * Math.sin(startRad);
-              const x2 = 60 + r * Math.cos(endRad);
-              const y2 = 60 + r * Math.sin(endRad);
-              return <path key={i} d={`M60,60 L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`} fill={seg.color} opacity={0.85} />;
-            })}
-            <circle cx="60" cy="60" r="25" fill={C.white} />
-            <text x="60" y="58" textAnchor="middle" fontSize="8" fontWeight="bold" fill={C.navy}>RAZEM</text>
-            <text x="60" y="68" textAnchor="middle" fontSize="6" fill={C.gray}>100%</text>
-          </svg>
-          <div className="flex-1 space-y-1">
-            {costBreakdown.map((c, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: c.color }} />
-                <span className="text-[9px] flex-1" style={{ color: C.navy }}>{c.name}</span>
-                <span className="text-[9px] font-bold" style={{ color: C.navy }}>{c.pct}%</span>
-                <span className="text-[8px]" style={{ color: C.gray }}>{Math.round(total * c.pct / 100).toLocaleString("pl-PL")} zł</span>
+      <CostBreakdownSliders total={total} />
+    </div>
+  );
+}
+
+function CostBreakdownSliders({ total }: { total: number }) {
+  const defaultPcts = costBreakdown.map(c => c.pct);
+  const [pcts, setPcts] = useState(defaultPcts);
+
+  const updatePct = (idx: number, newVal: number) => {
+    setPcts(prev => {
+      const updated = [...prev];
+      const diff = newVal - updated[idx];
+      updated[idx] = newVal;
+      const othersSum = updated.reduce((a, v, i) => i !== idx ? a + v : a, 0);
+      if (othersSum === 0) return prev;
+      for (let i = 0; i < updated.length; i++) {
+        if (i !== idx) {
+          updated[i] = Math.max(1, Math.round(updated[i] - (diff * updated[i]) / othersSum));
+        }
+      }
+      const currentSum = updated.reduce((a, v) => a + v, 0);
+      if (currentSum !== 100) {
+        const adjustIdx = updated.findIndex((_, i) => i !== idx);
+        if (adjustIdx >= 0) updated[adjustIdx] += 100 - currentSum;
+      }
+      return updated;
+    });
+  };
+
+  const pieSegments = pcts.reduce<{ startAngle: number; endAngle: number; color: string }[]>((acc, pct, i) => {
+    const lastEnd = acc.length > 0 ? acc[acc.length - 1].endAngle : 0;
+    acc.push({ startAngle: lastEnd, endAngle: lastEnd + (pct / 100) * 360, color: costBreakdown[i].color });
+    return acc;
+  }, []);
+
+  return (
+    <div className="p-4 rounded-xl" style={{ background: C.white, border: `1px solid ${C.light}` }}>
+      <span className="text-[10px] font-bold uppercase" style={{ color: C.gray }}>Rozkład kosztów (dostosuj suwaki)</span>
+      <div className="flex items-start gap-4 mt-3">
+        <svg viewBox="0 0 120 120" className="w-24 h-24 shrink-0">
+          {pieSegments.map((seg, i) => {
+            const r = 50;
+            const startRad = (seg.startAngle - 90) * (Math.PI / 180);
+            const endRad = (seg.endAngle - 90) * (Math.PI / 180);
+            const largeArc = seg.endAngle - seg.startAngle > 180 ? 1 : 0;
+            const x1 = 60 + r * Math.cos(startRad);
+            const y1 = 60 + r * Math.sin(startRad);
+            const x2 = 60 + r * Math.cos(endRad);
+            const y2 = 60 + r * Math.sin(endRad);
+            return <path key={i} d={`M60,60 L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`} fill={seg.color} opacity={0.85} />;
+          })}
+          <circle cx="60" cy="60" r="25" fill={C.white} />
+          <text x="60" y="58" textAnchor="middle" fontSize="8" fontWeight="bold" fill={C.navy}>RAZEM</text>
+          <text x="60" y="68" textAnchor="middle" fontSize="6" fill={C.gray}>100%</text>
+        </svg>
+        <div className="flex-1 space-y-2">
+          {costBreakdown.map((c, i) => (
+            <div key={i}>
+              <div className="flex items-center justify-between mb-0.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-sm shrink-0" style={{ background: c.color }} />
+                  <span className="text-[8px]" style={{ color: C.navy }}>{c.name}</span>
+                </div>
+                <span className="text-[8px] font-bold" style={{ color: C.navy }}>{pcts[i]}% · {Math.round(total * pcts[i] / 100).toLocaleString("pl-PL")} zł</span>
               </div>
-            ))}
-          </div>
+              <input type="range" min={1} max={60} value={pcts[i]} onChange={e => updatePct(i, Number(e.target.value))}
+                className="w-full h-1 rounded-full appearance-none cursor-pointer"
+                style={{ background: `linear-gradient(to right, ${c.color} ${pcts[i] * 1.67}%, ${C.light} 0)` }} />
+            </div>
+          ))}
         </div>
       </div>
     </div>

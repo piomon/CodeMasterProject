@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
-import { ShoppingBag, Star, Heart, CreditCard, Truck, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Search, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Star, Heart, CreditCard, Truck, ChevronRight, Plus, Minus, X, CheckCircle2, Shield, Search, ArrowLeft, Menu } from "lucide-react";
 
 const C = { black: "#0A0A0A", cream: "#FAF5EE", gold: "#B8860B", taupe: "#8B7D6B", white: "#FFFFFF", warm: "#F5EDE3", rose: "#9E6B6B", dark: "#1C1917" };
 
@@ -27,7 +27,8 @@ const products = [
 
 type Product = typeof products[0];
 type CartItem = { product: Product; qty: number; size: string };
-type EcommPage = "home" | "shop" | "product" | "cart" | "checkout" | "wishlist";
+type EcommPage = "home" | "shop" | "product" | "checkout";
+type ProductTab = "opis" | "opinie" | "dostawa";
 
 interface ShopPageProps {
   addToCart: (p: Product, s: string) => void;
@@ -37,18 +38,12 @@ interface ShopPageProps {
   wishlist: Set<number>;
 }
 
-interface WishlistPageProps {
-  wishlist: Set<number>;
-  toggleWish: (i: number) => void;
-  setProduct: (i: number) => void;
-  onNav: (p: EcommPage) => void;
-}
-
 export function EcommerceDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState<EcommPage>("home");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selProduct, setSelProduct] = useState(-1);
   const [wishlist, setWishlist] = useState<Set<number>>(new Set());
+  const [cartOpen, setCartOpen] = useState(false);
   const cartCount = cart.reduce((a, c) => a + c.qty, 0);
   const cartTotal = cart.reduce((a, c) => a + c.product.price * c.qty, 0);
 
@@ -58,6 +53,7 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
       if (ex) return prev.map(c => c.product.name === product.name && c.size === size ? { ...c, qty: c.qty + 1 } : c);
       return [...prev, { product, qty: 1, size }];
     });
+    setCartOpen(true);
   };
 
   const toggleWish = (i: number) => {
@@ -66,23 +62,18 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
 
   return (
     <PreviewShell title={name}>
-      <div style={{ background: C.cream, minHeight: 500 }}>
-        <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-20" style={{ background: C.black }}>
-          <div>
-            <h1 className="font-display font-bold text-sm tracking-[0.2em]" style={{ color: C.cream }}>MAISON</h1>
+      <div className="relative" style={{ background: C.cream, minHeight: 500 }}>
+        <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-20" style={{ background: C.white, borderBottom: `1px solid ${C.warm}` }}>
+          <button className="p-1"><Menu className="w-4 h-4" style={{ color: C.dark }} /></button>
+          <div className="text-center">
+            <h1 className="font-display font-bold text-sm tracking-[0.2em]" style={{ color: C.dark }}>MAISON</h1>
             <p className="text-[7px] tracking-[0.3em]" style={{ color: C.gold }}>BOUTIQUE</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setPage("home")} className="text-xs" style={{ color: C.cream + "80" }}>
-              <Search className="w-4 h-4" />
-            </button>
-            <button onClick={() => setPage("wishlist")} className="text-xs relative" style={{ color: C.cream + "80" }}>
-              <Heart className="w-4 h-4" />
-              {wishlist.size > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.black }}>{wishlist.size}</span>}
-            </button>
-            <button onClick={() => setPage("cart")} className="relative">
-              <ShoppingBag className="w-4 h-4" style={{ color: C.cream + "80" }} />
-              {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.black }}>{cartCount}</span>}
+            <button onClick={() => setPage("home")}><Search className="w-4 h-4" style={{ color: C.dark + "80" }} /></button>
+            <button onClick={() => setCartOpen(true)} className="relative">
+              <ShoppingBag className="w-4 h-4" style={{ color: C.dark + "80" }} />
+              {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: C.gold, color: C.white }}>{cartCount}</span>}
             </button>
           </div>
         </div>
@@ -92,10 +83,65 @@ export function EcommerceDemo({ name }: { name: string; features: string[] }) {
             {page === "home" && <HomePage onNav={setPage} setProduct={setSelProduct} toggleWish={toggleWish} wishlist={wishlist} />}
             {page === "shop" && <ShopPage addToCart={addToCart} setProduct={setSelProduct} onNav={setPage} toggleWish={toggleWish} wishlist={wishlist} />}
             {page === "product" && selProduct >= 0 && <ProductPage product={products[selProduct]} addToCart={addToCart} onNav={setPage} toggleWish={() => toggleWish(selProduct)} isWished={wishlist.has(selProduct)} />}
-            {page === "cart" && <CartPage cart={cart} setCart={setCart} total={cartTotal} onNav={setPage} />}
             {page === "checkout" && <CheckoutPage total={cartTotal} onNav={setPage} />}
-            {page === "wishlist" && <WishlistPage wishlist={wishlist} toggleWish={toggleWish} setProduct={setSelProduct} onNav={setPage} />}
           </motion.div>
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {cartOpen && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black z-30" onClick={() => setCartOpen(false)} />
+              <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "tween", duration: 0.3 }}
+                className="fixed top-0 right-0 h-full w-72 z-40 flex flex-col" style={{ background: C.white }}>
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.warm}` }}>
+                  <h3 className="font-bold text-sm tracking-wider uppercase" style={{ color: C.dark }}>Koszyk ({cartCount})</h3>
+                  <button onClick={() => setCartOpen(false)}><X className="w-5 h-5" style={{ color: C.dark }} /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                  {cart.length === 0 ? (
+                    <div className="text-center py-10">
+                      <ShoppingBag className="w-10 h-10 mx-auto mb-2" style={{ color: C.taupe + "40" }} />
+                      <p className="text-xs" style={{ color: C.taupe }}>Koszyk jest pusty</p>
+                    </div>
+                  ) : cart.map((c, i) => (
+                    <div key={i} className="flex gap-2 p-2 rounded-lg" style={{ background: C.cream }}>
+                      <div className="w-12 h-12 flex items-center justify-center text-lg rounded" style={{ background: C.warm }}>
+                        {categories.find(ct => ct.id === c.product.cat)?.icon || "🛍️"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[10px] font-semibold truncate" style={{ color: C.dark }}>{c.product.name}</h4>
+                        <p className="text-[8px]" style={{ color: C.taupe }}>{c.size !== "ONE" ? `Rozm. ${c.size}` : ""}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: Math.max(1, cc.qty - 1) } : cc))}
+                            className="w-4 h-4 flex items-center justify-center rounded" style={{ border: `1px solid ${C.warm}` }}><Minus className="w-2 h-2" /></button>
+                          <span className="text-[10px] font-bold w-3 text-center">{c.qty}</span>
+                          <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: cc.qty + 1 } : cc))}
+                            className="w-4 h-4 flex items-center justify-center rounded" style={{ background: C.dark, color: C.white }}><Plus className="w-2 h-2" /></button>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end justify-between">
+                        <button onClick={() => setCart(cart.filter((_, j) => j !== i))}><X className="w-3 h-3" style={{ color: C.taupe }} /></button>
+                        <span className="font-bold text-[10px]" style={{ color: C.dark }}>{c.product.price * c.qty} zł</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {cart.length > 0 && (
+                  <div className="p-4" style={{ borderTop: `1px solid ${C.warm}` }}>
+                    <div className="flex justify-between text-xs mb-1"><span style={{ color: C.taupe }}>Produkty</span><span style={{ color: C.dark }}>{cartTotal} zł</span></div>
+                    <div className="flex justify-between text-xs mb-2"><span style={{ color: C.taupe }}>Dostawa</span><span style={{ color: cartTotal >= 500 ? "#22C55E" : C.dark }}>{cartTotal >= 500 ? "GRATIS" : "24,99 zł"}</span></div>
+                    <div className="flex justify-between font-bold text-sm pt-2" style={{ borderTop: `1px solid ${C.warm}` }}>
+                      <span style={{ color: C.dark }}>Razem</span>
+                      <span style={{ color: C.dark }}>{cartTotal + (cartTotal >= 500 ? 0 : 24.99)} zł</span>
+                    </div>
+                    <motion.button whileHover={{ scale: 1.02 }} onClick={() => { setCartOpen(false); setPage("checkout"); }}
+                      className="w-full mt-3 py-3 font-bold text-xs tracking-[0.1em] uppercase" style={{ background: C.dark, color: C.cream }}>Przejdź do kasy</motion.button>
+                  </div>
+                )}
+              </motion.div>
+            </>
+          )}
         </AnimatePresence>
       </div>
       <DemoBenefits accentColor={C.gold} bgColor={C.cream} textColor={C.black} benefits={[
@@ -121,7 +167,6 @@ function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: Ecom
           Odkryj kolekcję <ChevronRight className="w-3 h-3" />
         </motion.button>
       </div>
-
       <div className="px-4 py-4 space-y-4">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {categories.slice(1).map(c => (
@@ -132,7 +177,6 @@ function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: Ecom
             </motion.button>
           ))}
         </div>
-
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Bestsellery</h3>
@@ -163,7 +207,6 @@ function HomePage({ onNav, setProduct, toggleWish, wishlist }: { onNav: (p: Ecom
             })}
           </div>
         </div>
-
         <div className="p-5 text-center" style={{ background: C.black }}>
           <p className="text-[9px] tracking-[0.3em] uppercase" style={{ color: C.gold }}>Darmowa dostawa</p>
           <p className="text-xs font-bold mt-1" style={{ color: C.cream }}>Przy zamówieniach powyżej 500 zł</p>
@@ -233,6 +276,55 @@ function ShopPage({ addToCart, setProduct, onNav, toggleWish, wishlist }: ShopPa
 
 function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { product: Product; addToCart: (p: Product, s: string) => void; onNav: (p: EcommPage) => void; toggleWish: () => void; isWished: boolean }) {
   const [selSize, setSelSize] = useState("");
+  const [activeTab, setActiveTab] = useState<ProductTab>("opis");
+
+  const tabContent: Record<ProductTab, React.ReactNode> = {
+    opis: (
+      <div className="space-y-2 text-[10px]" style={{ color: C.taupe }}>
+        <p>Wyjątkowy produkt z kolekcji MAISON BOUTIQUE. Wykonany z najwyższej jakości materiałów, zaprojektowany z dbałością o każdy detal.</p>
+        <div className="space-y-1">
+          <div className="flex justify-between"><span>Materiał</span><span style={{ color: C.dark }}>100% naturalne tkaniny</span></div>
+          <div className="flex justify-between"><span>Kolekcja</span><span style={{ color: C.dark }}>Jesień/Zima 2026</span></div>
+          <div className="flex justify-between"><span>Kolor</span><span style={{ color: C.dark }}>{product.color}</span></div>
+          <div className="flex justify-between"><span>Pielęgnacja</span><span style={{ color: C.dark }}>Pranie chemiczne</span></div>
+        </div>
+      </div>
+    ),
+    opinie: (
+      <div className="space-y-2">
+        {[
+          { name: "Marta K.", stars: 5, text: "Przepiękna jakość, idealnie leży. Polecam!" },
+          { name: "Anna W.", stars: 5, text: "Dokładnie jak na zdjęciach. Szybka dostawa." },
+          { name: "Joanna P.", stars: 4, text: "Bardzo dobra jakość, jedynie rozmiar trochę mniejszy." },
+        ].map((r, i) => (
+          <div key={i} className="p-2 rounded-lg" style={{ background: C.warm }}>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold" style={{ color: C.dark }}>{r.name}</span>
+              <div className="flex">{[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-2.5 h-2.5" style={{ fill: s <= r.stars ? C.gold : C.warm, color: s <= r.stars ? C.gold : C.warm }} />)}</div>
+            </div>
+            <p className="text-[9px] mt-1" style={{ color: C.taupe }}>{r.text}</p>
+          </div>
+        ))}
+      </div>
+    ),
+    dostawa: (
+      <div className="space-y-2 text-[10px]" style={{ color: C.taupe }}>
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: C.warm }}>
+          <Truck className="w-4 h-4 shrink-0" style={{ color: C.gold }} />
+          <div><span className="font-semibold block" style={{ color: C.dark }}>Kurier DPD — 24,99 zł</span><span>Dostawa w 1-2 dni robocze</span></div>
+        </div>
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: C.warm }}>
+          <CreditCard className="w-4 h-4 shrink-0" style={{ color: C.gold }} />
+          <div><span className="font-semibold block" style={{ color: C.dark }}>Darmowa dostawa od 500 zł</span><span>Automatycznie naliczana przy zakupie</span></div>
+        </div>
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: C.warm }}>
+          <Shield className="w-4 h-4 shrink-0" style={{ color: C.gold }} />
+          <div><span className="font-semibold block" style={{ color: C.dark }}>14 dni na zwrot</span><span>Bezpłatny zwrot kurierem</span></div>
+        </div>
+      </div>
+    ),
+  };
+
   return (
     <div>
       <div className="h-48 flex items-center justify-center relative" style={{ background: C.warm }}>
@@ -270,60 +362,22 @@ function ProductPage({ product, addToCart, onNav, toggleWish, isWished }: { prod
             </div>
           </div>
         )}
-        <motion.button whileHover={{ scale: 1.02 }} onClick={() => { addToCart(product, selSize || "ONE"); onNav("cart"); }}
+        <motion.button whileHover={{ scale: 1.02 }} onClick={() => addToCart(product, selSize || "ONE")}
           className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase flex items-center justify-center gap-2" style={{ background: C.black, color: C.cream }}>
           <ShoppingBag className="w-4 h-4" /> Dodaj do koszyka
         </motion.button>
-      </div>
-    </div>
-  );
-}
 
-function CartPage({ cart, setCart, total, onNav }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; total: number; onNav: (p: EcommPage) => void }) {
-  if (cart.length === 0) {
-    return (
-      <div className="text-center py-16 px-4">
-        <ShoppingBag className="w-12 h-12 mx-auto mb-3" style={{ color: C.taupe + "40" }} />
-        <p className="font-semibold" style={{ color: C.taupe }}>Koszyk jest pusty</p>
-        <button onClick={() => onNav("shop")} className="mt-4 px-6 py-2.5 text-sm font-bold tracking-wider uppercase" style={{ background: C.black, color: C.cream }}>Przeglądaj kolekcję</button>
-      </div>
-    );
-  }
-  return (
-    <div className="px-4 py-3 space-y-3">
-      <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Koszyk ({cart.length})</h2>
-      {cart.map((c, i) => (
-        <div key={i} className="flex gap-3 p-3" style={{ background: C.white }}>
-          <div className="w-16 h-16 flex items-center justify-center text-2xl" style={{ background: C.warm }}>
-            {categories.find(ct => ct.id === c.product.cat)?.icon || "🛍️"}
-          </div>
-          <div className="flex-1">
-            <h4 className="text-xs font-semibold" style={{ color: C.dark }}>{c.product.name}</h4>
-            <p className="text-[10px]" style={{ color: C.taupe }}>{c.size !== "ONE" ? `Rozmiar: ${c.size}` : ""}</p>
-            <div className="flex items-center gap-2 mt-1.5">
-              <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: Math.max(1, cc.qty - 1) } : cc))}
-                className="w-5 h-5 flex items-center justify-center" style={{ border: `1px solid ${C.warm}` }}><Minus className="w-2.5 h-2.5" /></button>
-              <span className="text-xs font-bold w-4 text-center">{c.qty}</span>
-              <button onClick={() => setCart(cart.map((cc, j) => j === i ? { ...cc, qty: cc.qty + 1 } : cc))}
-                className="w-5 h-5 flex items-center justify-center" style={{ background: C.black, color: C.cream }}><Plus className="w-2.5 h-2.5" /></button>
-            </div>
-          </div>
-          <div className="flex flex-col items-end justify-between">
-            <button onClick={() => setCart(cart.filter((_, j) => j !== i))}><X className="w-4 h-4" style={{ color: C.taupe }} /></button>
-            <span className="font-bold text-sm" style={{ color: C.dark }}>{c.product.price * c.qty} zł</span>
-          </div>
+        <div className="flex" style={{ borderBottom: `1px solid ${C.warm}` }}>
+          {(["opis", "opinie", "dostawa"] as ProductTab[]).map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className="flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider text-center"
+              style={activeTab === tab ? { color: C.dark, borderBottom: `2px solid ${C.gold}` } : { color: C.taupe }}>
+              {tab === "opis" ? "Opis" : tab === "opinie" ? `Opinie (${product.reviews})` : "Dostawa"}
+            </button>
+          ))}
         </div>
-      ))}
-      <div className="p-4" style={{ background: C.white }}>
-        <div className="flex justify-between text-sm"><span style={{ color: C.taupe }}>Produkty</span><span style={{ color: C.dark }}>{total} zł</span></div>
-        <div className="flex justify-between text-sm mt-1"><span style={{ color: C.taupe }}>Dostawa</span><span style={{ color: total >= 500 ? "#22C55E" : C.dark }}>{total >= 500 ? "GRATIS" : "24,99 zł"}</span></div>
-        <div className="border-t mt-2 pt-2 flex justify-between" style={{ borderColor: C.warm }}>
-          <span className="font-bold" style={{ color: C.dark }}>Razem</span>
-          <span className="font-bold text-xl" style={{ color: C.dark }}>{total + (total >= 500 ? 0 : 24.99)} zł</span>
-        </div>
+        <div className="py-1">{tabContent[activeTab]}</div>
       </div>
-      <motion.button whileHover={{ scale: 1.02 }} onClick={() => onNav("checkout")}
-        className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase" style={{ background: C.black, color: C.cream }}>Przejdź do kasy</motion.button>
     </div>
   );
 }
@@ -363,38 +417,6 @@ function CheckoutPage({ total, onNav }: { total: number; onNav: (p: EcommPage) =
       </div>
       <motion.button whileHover={{ scale: 1.02 }} onClick={() => setConfirmed(true)}
         className="w-full py-3.5 font-bold text-sm tracking-[0.1em] uppercase" style={{ background: C.black, color: C.cream }}>Zamawiam i płacę</motion.button>
-    </div>
-  );
-}
-
-function WishlistPage({ wishlist, toggleWish, setProduct, onNav }: WishlistPageProps) {
-  const wished = products.filter((_, i) => wishlist.has(i));
-  if (wished.length === 0) {
-    return (
-      <div className="text-center py-16 px-4">
-        <Heart className="w-12 h-12 mx-auto mb-3" style={{ color: C.taupe + "40" }} />
-        <p className="font-semibold" style={{ color: C.taupe }}>Lista życzeń jest pusta</p>
-        <button onClick={() => onNav("shop")} className="mt-4 px-6 py-2.5 text-sm font-bold tracking-wider uppercase" style={{ background: C.black, color: C.cream }}>Przeglądaj kolekcję</button>
-      </div>
-    );
-  }
-  return (
-    <div className="px-4 py-3 space-y-3">
-      <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Lista życzeń ({wished.length})</h2>
-      {wished.map((p) => {
-        const idx = products.indexOf(p);
-        return (
-          <div key={idx} className="flex gap-3 p-3" style={{ background: C.white }}>
-            <div className="w-14 h-14 flex items-center justify-center text-2xl cursor-pointer" onClick={() => { setProduct(idx); onNav("product"); }}
-              style={{ background: C.warm }}>{categories.find(c => c.id === p.cat)?.icon || "🛍️"}</div>
-            <div className="flex-1">
-              <h4 className="text-xs font-semibold" style={{ color: C.dark }}>{p.name}</h4>
-              <span className="font-bold text-sm" style={{ color: C.dark }}>{p.price} zł</span>
-            </div>
-            <button onClick={() => toggleWish(idx)}><X className="w-4 h-4" style={{ color: C.taupe }} /></button>
-          </div>
-        );
-      })}
     </div>
   );
 }

@@ -53,7 +53,7 @@ const sidebarItems: { id: BookingPage; label: string; icon: ReactNode; badge?: n
 
 export function BookingDemo({ name }: { name: string; features: string[] }) {
   const [page, setPage] = useState<BookingPage>("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <PreviewShell title={name}>
@@ -343,6 +343,15 @@ function NewTicketView() {
 function TimelineView() {
   const ticket = tickets[0];
   const st = statusConfig[ticket.status];
+  const usedParts = [
+    { name: "Bateria MacBook Pro 16\" M3", qty: 1, price: 450 },
+    { name: "Pasta termoprzewodząca Thermal Grizzly", qty: 1, price: 45 },
+    { name: "Śruby montażowe (zestaw)", qty: 1, price: 15 },
+  ];
+  const partsTotal = usedParts.reduce((a, p) => a + p.price * p.qty, 0);
+  const laborCost = 380;
+  const repairTotal = partsTotal + laborCost;
+
   return (
     <div className="space-y-3">
       <h2 className="font-bold text-base" style={{ color: C.text }}>Postęp naprawy</h2>
@@ -382,6 +391,32 @@ function TimelineView() {
             </div>
           );
         })}
+      </div>
+
+      <div className="p-3 rounded-xl" style={{ background: C.dark }}>
+        <span className="text-[10px] font-bold uppercase" style={{ color: C.muted }}>Użyte części</span>
+        <div className="mt-2 space-y-1.5">
+          {usedParts.map((p, i) => (
+            <div key={i} className="flex items-center justify-between text-[10px]">
+              <span style={{ color: C.text }}>{p.name} <span style={{ color: C.muted }}>×{p.qty}</span></span>
+              <span className="font-medium" style={{ color: C.text }}>{p.price * p.qty} zł</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${C.surface}` }}>
+          <div className="flex justify-between text-[10px]">
+            <span style={{ color: C.muted }}>Części łącznie</span>
+            <span className="font-medium" style={{ color: C.text }}>{partsTotal} zł</span>
+          </div>
+          <div className="flex justify-between text-[10px] mt-0.5">
+            <span style={{ color: C.muted }}>Robocizna (3h × 127 zł/h)</span>
+            <span className="font-medium" style={{ color: C.text }}>{laborCost} zł</span>
+          </div>
+        </div>
+        <div className="mt-2 pt-2 flex justify-between" style={{ borderTop: `1px solid ${C.surface}` }}>
+          <span className="text-xs font-bold" style={{ color: C.text }}>Koszt naprawy</span>
+          <span className="text-xs font-bold" style={{ color: C.green }}>{repairTotal} zł</span>
+        </div>
       </div>
     </div>
   );

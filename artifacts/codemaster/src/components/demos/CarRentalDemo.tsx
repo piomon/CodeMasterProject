@@ -34,8 +34,8 @@ const reservations = [
 const navItems: { id: RentalPage; label: string; icon: ReactNode }[] = [
   { id: "home", label: "Start", icon: <Car className="w-3.5 h-3.5" /> },
   { id: "fleet", label: "Flota", icon: <Search className="w-3.5 h-3.5" /> },
-  { id: "booking", label: "Rezerwacja", icon: <Calendar className="w-3.5 h-3.5" /> },
-  { id: "reservations", label: "Moje rezerwacje", icon: <Clock className="w-3.5 h-3.5" /> },
+  { id: "booking", label: "Cennik", icon: <Calendar className="w-3.5 h-3.5" /> },
+  { id: "reservations", label: "Rezerwacje", icon: <Clock className="w-3.5 h-3.5" /> },
 ];
 
 export function CarRentalDemo({ name }: { name: string; features: string[] }) {
