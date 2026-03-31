@@ -21,12 +21,14 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── codemaster/         # React + Vite frontend (CodeMaster portfolio/showroom)
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
+│   ├── db/                 # Drizzle ORM schema + DB connection
+│   └── replit-auth-web/    # Replit Auth React hooks
 ├── scripts/                # Utility scripts (single workspace package)
 │   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
 ├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
@@ -59,8 +61,27 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 - Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
 - Depends on: `@workspace/db`, `@workspace/api-zod`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
+- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.mjs`)
 - Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+
+### `artifacts/codemaster` (`@workspace/codemaster`)
+
+React + Vite frontend for the CodeMaster portfolio/showroom. Features:
+- **Theme system** (dark/light/grey) via `ThemeContext.tsx` — persisted in localStorage, applied via `data-theme` on `<html>`
+- **i18n** (Polish/English) via `LanguageContext.tsx` — all UI strings go through `useLanguage().t()`, persisted in localStorage
+- **DemoPreview** component renders 20 premium interactive mockups per project category. Each demo has unique color palette, 5-8 navigable tabs, interactive flows, and wow elements (canvas animations, booking wizards, live pricing, AI chat, QR tickets, timeline trackers, etc.). Demos: SalonDemo, BarberDemo, RestaurantDemo, HotelDemo, HealthcareDemo, FitnessDemo, EcommerceDemo, ConfiguratorDemo (furniture+kitchen), RealEstateDemo, AccountingDemo, LawFirmDemo, MarketingDemo, ElearningDemo, MentoringDemo, EventsDemo, CarRentalDemo, ServiceDemo, CalculatorDemo, AiDemo, DashboardDemo.
+- **ProjectCard** tiles show category-based emoji thumbnails with colored gradients when no thumbnailUrl is set
+- **AiChatWidget** floating chat + AiDemo both powered by real OpenAI API via `/api/ai/chat` endpoint (bilingual PL/EN, auto-detect language)
+- **Pages**: Home, Portfolio, ProjectDetail, Dashboard, Admin, Privacy, Terms, 404
+- **Contact form** sends email to montewkapiotr@gmail.com via API
+- Phone: +48 793 020 820
+- **Cookie consent** GDPR-compliant banner with accept/decline, persisted in localStorage
+- **SEO**: Open Graph, Twitter cards, structured data (JSON-LD), meta description/keywords in index.html
+- **Dashboard**: Profile editing (first/last name), account deletion with confirmation dialog, inquiry history, favorite projects
+- **Admin panel**: Full CRUD for projects (create + edit + delete), lead management with expandable details/notes/priority, user role management; all translated PL/EN
+- **DB tables**: `site_settings` (key/value store), `audit_logs` (actor, action, target, metadata)
+- **API endpoints**: `PUT /user/profile`, `DELETE /user/account` (transactional), plus existing CRUD for projects, leads, users, favorites, AI chat
+- **AI**: Uses Replit AI Integrations (OpenAI) — env vars `AI_INTEGRATIONS_OPENAI_BASE_URL` and `AI_INTEGRATIONS_OPENAI_API_KEY`
 
 ### `lib/db` (`@workspace/db`)
 
@@ -68,9 +89,10 @@ Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client insta
 
 - `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
 - `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
+- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas
 - `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
 - Exports: `.` (pool, db, schema), `./schema` (schema only)
+- Schema tables: `sessions`, `users`, `projects`, `leads`, `favorites`, `ai_chats`, `site_settings`, `audit_logs`
 
 Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
 
@@ -91,6 +113,11 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+### `lib/replit-auth-web` (`@workspace/replit-auth-web`)
+
+React hooks for Replit Auth integration. Exports `useAuth` hook.
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+- `seed-projects` — seeds 20 Polish demo projects into the database

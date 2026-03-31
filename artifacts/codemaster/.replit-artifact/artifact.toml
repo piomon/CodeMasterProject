@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "CodeMaster - AI & Software Solutions"
+version = "1.0.0"
+id = "artifacts/codemaster"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24042
+
+[services.development]
+run = "pnpm --filter @workspace/codemaster run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/codemaster", "run", "build" ]
+publicDir = "artifacts/codemaster/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24042"
+BASE_PATH = "/"
