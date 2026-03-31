@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
-import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, Target, Award, Lock, Search, ArrowLeft, BookOpen, MessageCircle } from "lucide-react";
+import { Users, Calendar, Star, Clock, Video, CheckCircle2, Crown, Target, Award, Lock, Search, ArrowLeft, MessageCircle } from "lucide-react";
 
 const C = { coral: "#FF6B6B", cream: "#FFF9F0", peach: "#FFE8D6", dark: "#2D2B3D", navy: "#1A1A2E", white: "#FFFFFF", gray: "#8B8B9E", green: "#10B981", violet: "#8B5CF6", blue: "#3B82F6", amber: "#F59E0B", text: "#3D3B50", warm: "#FFF5EE" };
 

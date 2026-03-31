@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
-import { BookOpen, Play, Award, BarChart3, Star, CheckCircle2, Lock, ChevronRight, Target, FileText, Search, Users, Clock, Trophy } from "lucide-react";
+import { BookOpen, Play, Award, BarChart3, Star, CheckCircle2, Lock, ChevronRight, Target, FileText, Search } from "lucide-react";
 
 const C = { indigo: "#4338CA", violet: "#6D28D9", white: "#FFFFFF", cream: "#FAFAFA", navy: "#1E1B4B", gray: "#6B7280", amber: "#F59E0B", green: "#10B981", light: "#F3F0FF", text: "#312E81", bg: "#F8F7FF", blue: "#3B82F6" };
 
