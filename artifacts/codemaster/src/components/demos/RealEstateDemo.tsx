@@ -40,9 +40,9 @@ const statusInfo: Record<PropertyStatus, { bg: string; fg: string; label: string
 };
 
 const topTabs: { id: RealEstatePage; label: string }[] = [
-  { id: "home", label: "Start" },
-  { id: "search", label: "Szukaj" },
-  { id: "detail", label: "Oferta" },
+  { id: "home", label: "Oferty" },
+  { id: "search", label: "Inwestycje" },
+  { id: "detail", label: "O nas" },
   { id: "contact", label: "Kontakt" },
   { id: "admin", label: "Panel CRM" },
 ];
@@ -71,7 +71,7 @@ export function RealEstateDemo({ name }: { name: string; features: string[] }) {
               <Heart className="w-4 h-4" style={{ color: fav.length > 0 ? C.red : C.gray }} />
               {fav.length > 0 && <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full text-[7px] font-bold flex items-center justify-center text-white" style={{ background: C.red }}>{fav.length}</span>}
             </button>
-            <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.emerald }}>Zaloguj</button>
+            <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.gold }}>Dodaj ogłoszenie</button>
           </div>
         </div>
 
@@ -113,11 +113,19 @@ function HomePage({ onNav }: { onNav: (p: RealEstatePage) => void }) {
           <p className="text-[9px] tracking-[0.4em] uppercase" style={{ color: C.gold }}>Kraków & okolice</p>
           <h2 className="font-bold text-2xl text-white mt-1">Znajdź swoje<br />wymarzone <span style={{ color: C.gold }}>miejsce</span></h2>
           <p className="text-[11px] text-white/60 mt-2 max-w-[260px]">Apartamenty, domy, lofty — premium nieruchomości w najlepszych lokalizacjach.</p>
-          <div className="flex gap-2 mt-4">
-            <button onClick={() => onNav("search")} className="px-5 py-2.5 rounded-lg text-[11px] font-bold text-white" style={{ background: C.gold }}>
-              <Search className="w-3.5 h-3.5 inline mr-1" /> Szukaj ofert
+          <div className="flex gap-1.5 mt-4 p-1.5 rounded-xl" style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)" }}>
+            <div className="flex-1 px-2 py-1.5 rounded-lg text-[9px]" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+              <MapPin className="w-3 h-3 inline mr-0.5" /> Lokalizacja
+            </div>
+            <div className="flex-1 px-2 py-1.5 rounded-lg text-[9px]" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+              Typ
+            </div>
+            <div className="flex-1 px-2 py-1.5 rounded-lg text-[9px]" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+              Cena
+            </div>
+            <button onClick={() => onNav("search")} className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.gold }}>
+              <Search className="w-3 h-3 inline" />
             </button>
-            <button onClick={() => onNav("contact")} className="px-5 py-2.5 rounded-lg text-[11px] font-bold border text-white/80" style={{ borderColor: C.gold + "60" }}>Kontakt</button>
           </div>
           <div className="grid grid-cols-3 gap-2 mt-5">
             {[{ v: `${properties.length}`, l: "Ofert" }, { v: `${saleCount}`, l: "Na sprzedaż" }, { v: "12+", l: "Lat doświadczenia" }].map((s, i) => (
