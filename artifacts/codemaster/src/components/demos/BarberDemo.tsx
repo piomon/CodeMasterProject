@@ -45,7 +45,7 @@ export function BarberDemo({ name }: { name: string; features: string[] }) {
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: C.orange, color: C.bg }}>GB</div>
             <div>
               <h1 className="font-bold text-sm" style={{ color: C.orange }}>GoBarber</h1>
-              <p className="text-[9px]" style={{ color: C.gray }}>Barbershop Premium</p>
+              <p className="text-[9px]" style={{ color: C.gray }}>Pon, 22 mar 2026</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -53,7 +53,13 @@ export function BarberDemo({ name }: { name: string; features: string[] }) {
               <Bell className="w-4 h-4" style={{ color: C.gray }} />
               <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ background: C.orange }} />
             </div>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2" style={{ borderColor: C.orange, color: C.orange }}>TW</div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2" style={{ borderColor: C.orange, color: C.orange }}>TW</div>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-semibold" style={{ color: C.white }}>Tomasz W.</span>
+                <button className="text-[8px] text-left" style={{ color: C.orange }}>Wyloguj</button>
+              </div>
+            </div>
           </div>
         </div>
 

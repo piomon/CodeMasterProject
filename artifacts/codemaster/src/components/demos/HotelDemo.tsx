@@ -7,6 +7,7 @@ const C = { blue: "#003580", dark: "#00224F", white: "#FFFFFF", sky: "#E8F4FD", 
 
 const sideNav = [
   { id: "dashboard", icon: <Home className="w-4 h-4" />, label: "Panel" },
+  { id: "booking-engine", icon: <Search className="w-4 h-4" />, label: "Booking" },
   { id: "rooms", icon: <Bed className="w-4 h-4" />, label: "Pokoje" },
   { id: "bookings", icon: <Calendar className="w-4 h-4" />, label: "Rezerwacje" },
   { id: "guests", icon: <Users className="w-4 h-4" />, label: "Goście" },
@@ -73,6 +74,7 @@ export function HotelDemo({ name }: { name: string; features: string[] }) {
             <AnimatePresence mode="wait">
               <motion.div key={page} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
                 {page === "dashboard" && <DashboardView />}
+                {page === "booking-engine" && <BookingEngineView />}
                 {page === "rooms" && <RoomsView />}
                 {page === "bookings" && <BookingsView />}
                 {page === "guests" && <GuestsView />}
@@ -364,6 +366,149 @@ function RatesView() {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function BookingEngineView() {
+  const [step, setStep] = useState<"search" | "results" | "confirm">("search");
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
+  const availableRooms = [
+    { type: "Standard", desc: "25 m² • łóżko podwójne • widok na miasto", price: 380, amenities: ["WiFi", "TV", "Klimatyzacja", "Sejf"], rating: 4.3, left: 2, img: "🏨" },
+    { type: "Deluxe", desc: "35 m² • łóżko king • balkon • widok na morze", price: 580, amenities: ["WiFi", "TV", "Minibar", "Balkon", "Szlafrok"], rating: 4.7, left: 1, img: "🌊" },
+    { type: "Suite", desc: "55 m² • salon + sypialnia • jacuzzi • panorama", price: 950, amenities: ["WiFi", "TV", "Minibar", "Jacuzzi", "Taras", "Espresso"], rating: 4.9, left: 1, img: "✨" },
+    { type: "Penthouse", desc: "85 m² • 2 sypialnie • prywatny taras • SPA", price: 1400, amenities: ["WiFi", "TV", "Butler", "SPA", "Taras", "Kuchnia"], rating: 5.0, left: 1, img: "👑" },
+  ];
+
+  if (step === "confirm") {
+    const room = availableRooms.find(r => r.type === selectedRoom);
+    return (
+      <div className="p-4 text-center space-y-3">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center" style={{ background: "#22C55E20" }}>
+            <CheckCircle2 className="w-8 h-8" style={{ color: "#22C55E" }} />
+          </div>
+        </motion.div>
+        <h3 className="font-bold text-sm" style={{ color: C.navy }}>Rezerwacja potwierdzona!</h3>
+        <p className="text-[10px]" style={{ color: C.gray }}>{room?.type} • 23-27 mar 2026 • 4 noce</p>
+        <p className="font-bold text-xl" style={{ color: C.blue }}>{room ? room.price * 4 : 0} zł</p>
+        <p className="text-[9px] font-mono" style={{ color: C.gray }}>BK-{Math.floor(Math.random() * 9000 + 1000)}</p>
+        <button onClick={() => { setStep("search"); setSelectedRoom(null); }} className="text-[10px] font-semibold" style={{ color: C.blue }}>← Wróć do wyszukiwania</button>
+      </div>
+    );
+  }
+
+  if (step === "results") {
+    return (
+      <div className="p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold" style={{ color: C.navy }}>Dostępne pokoje</span>
+            <p className="text-[9px]" style={{ color: C.gray }}>23-27 mar 2026 • 2 os. • 4 noce</p>
+          </div>
+          <button onClick={() => setStep("search")} className="text-[10px] font-semibold" style={{ color: C.blue }}>← Zmień</button>
+        </div>
+        <div className="space-y-2">
+          {availableRooms.map((r, i) => (
+            <motion.div key={r.type} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+              className="p-3 rounded-xl" style={{ background: C.white, border: selectedRoom === r.type ? `2px solid ${C.blue}` : `1px solid ${C.sky}` }}>
+              <div className="flex items-start gap-3">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0" style={{ background: C.sky }}>
+                  {r.img}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-[12px]" style={{ color: C.navy }}>{r.type}</h4>
+                    <div className="flex items-center gap-0.5">
+                      <Star className="w-3 h-3" style={{ color: C.gold }} />
+                      <span className="text-[10px] font-bold" style={{ color: C.navy }}>{r.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-[9px] mt-0.5" style={{ color: C.gray }}>{r.desc}</p>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {r.amenities.map(a => (
+                      <span key={a} className="px-1.5 py-0.5 rounded text-[8px] font-semibold" style={{ background: C.sky, color: C.blue }}>{a}</span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div>
+                      <span className="font-bold text-base" style={{ color: C.blue }}>{r.price} zł</span>
+                      <span className="text-[9px] ml-1" style={{ color: C.gray }}>/noc</span>
+                      <span className="text-[9px] block" style={{ color: C.gold }}>Ostatnie {r.left} {r.left === 1 ? "pokój" : "pokoje"}!</span>
+                    </div>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setSelectedRoom(r.type); setStep("confirm"); }}
+                      className="px-3 py-2 rounded-lg text-[10px] font-bold text-white" style={{ background: C.blue }}>Rezerwuj</motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-3 space-y-3">
+      <div className="p-4 rounded-xl text-center" style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.dark})` }}>
+        <Building2 className="w-8 h-8 mx-auto mb-2 text-white opacity-80" />
+        <h3 className="font-bold text-sm text-white">Wyszukaj pokój</h3>
+        <p className="text-[10px] mt-0.5 text-white opacity-70">Sprawdź dostępność i zarezerwuj online</p>
+      </div>
+
+      <div className="p-3 rounded-xl space-y-2" style={{ background: C.white, border: `1px solid ${C.sky}` }}>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[9px] font-bold block mb-1" style={{ color: C.gray }}>Zameldowanie</label>
+            <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg" style={{ background: C.sky }}>
+              <Calendar className="w-3.5 h-3.5" style={{ color: C.blue }} />
+              <span className="text-[11px] font-semibold" style={{ color: C.navy }}>23 mar 2026</span>
+            </div>
+          </div>
+          <div>
+            <label className="text-[9px] font-bold block mb-1" style={{ color: C.gray }}>Wymeldowanie</label>
+            <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg" style={{ background: C.sky }}>
+              <Calendar className="w-3.5 h-3.5" style={{ color: C.blue }} />
+              <span className="text-[11px] font-semibold" style={{ color: C.navy }}>27 mar 2026</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[9px] font-bold block mb-1" style={{ color: C.gray }}>Goście</label>
+            <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg" style={{ background: C.sky }}>
+              <Users className="w-3.5 h-3.5" style={{ color: C.blue }} />
+              <span className="text-[11px] font-semibold" style={{ color: C.navy }}>2 osoby</span>
+            </div>
+          </div>
+          <div>
+            <label className="text-[9px] font-bold block mb-1" style={{ color: C.gray }}>Typ pokoju</label>
+            <div className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg" style={{ background: C.sky }}>
+              <Bed className="w-3.5 h-3.5" style={{ color: C.blue }} />
+              <span className="text-[11px] font-semibold" style={{ color: C.navy }}>Dowolny</span>
+            </div>
+          </div>
+        </div>
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setStep("results")}
+          className="w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2" style={{ background: C.blue }}>
+          <Search className="w-4 h-4" /> Szukaj pokoju
+        </motion.button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { icon: <Waves className="w-4 h-4" />, label: "SPA & Wellness", sub: "Basen, sauna, masaże" },
+          { icon: <Star className="w-4 h-4" />, label: "Restauracja", sub: "Kuchnia śródziemnomorska" },
+          { icon: <Key className="w-4 h-4" />, label: "Concierge 24/7", sub: "Wycieczki, transfery" },
+        ].map((f, i) => (
+          <div key={i} className="p-2.5 rounded-xl text-center" style={{ background: C.white, border: `1px solid ${C.sky}` }}>
+            <div className="mx-auto w-8 h-8 rounded-lg flex items-center justify-center mb-1" style={{ background: C.sky, color: C.blue }}>{f.icon}</div>
+            <span className="text-[10px] font-bold block" style={{ color: C.navy }}>{f.label}</span>
+            <span className="text-[8px]" style={{ color: C.gray }}>{f.sub}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

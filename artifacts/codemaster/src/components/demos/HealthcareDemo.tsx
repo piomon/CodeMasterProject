@@ -43,7 +43,9 @@ const navTabs = [
   { id: "home", label: "Strona główna" },
   { id: "specialties", label: "Specjalizacje" },
   { id: "doctors", label: "Lekarze" },
+  { id: "visits", label: "Moje Wizyty" },
   { id: "myhealth", label: "Moje zdrowie" },
+  { id: "contact", label: "Kontakt" },
 ];
 
 export function HealthcareDemo({ name }: { name: string; features: string[] }) {
@@ -87,7 +89,9 @@ export function HealthcareDemo({ name }: { name: string; features: string[] }) {
             {page === "home" && <HomePage onNav={setPage} />}
             {page === "specialties" && <SpecialtiesPage onNav={setPage} />}
             {page === "doctors" && <DoctorsPage />}
+            {page === "visits" && <VisitsPage />}
             {page === "myhealth" && <MyHealthPage />}
+            {page === "contact" && <ContactPage />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -466,6 +470,96 @@ function MyHealthPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function VisitsPage() {
+  const visits = [
+    { date: "25 mar 2026, 10:00", doctor: "dr Nowak", spec: "Internista", type: "Stacjonarna", status: "upcoming", notes: "Kontrola ogólna + wyniki" },
+    { date: "12 mar 2026, 14:30", doctor: "dr Wiśniewski", spec: "Kardiolog", type: "Stacjonarna", status: "completed", notes: "EKG, konsultacja lipidogramu" },
+    { date: "5 mar 2026, 9:00", doctor: "dr Nowak", spec: "Internista", type: "Teleporada", status: "completed", notes: "Zlecenie badań krwi" },
+    { date: "18 lut 2026, 11:00", doctor: "dr Lewandowska", spec: "Dermatolog", type: "Stacjonarna", status: "completed", notes: "Badanie znamion" },
+    { date: "2 lut 2026, 16:00", doctor: "dr Zieliński", spec: "Ortopeda", type: "Stacjonarna", status: "completed", notes: "RTG kolana, konsultacja" },
+  ];
+
+  return (
+    <div className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-sm" style={{ color: C.navy }}>Moje Wizyty</h2>
+        <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.teal }}>
+          <Calendar className="w-3 h-3" /> Umów wizytę
+        </button>
+      </div>
+      <div className="space-y-2">
+        {visits.map((v, i) => {
+          const isUpcoming = v.status === "upcoming";
+          return (
+            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="p-3 rounded-xl" style={{ background: C.white, borderLeft: `3px solid ${isUpcoming ? C.teal : C.gray + "40"}` }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-semibold" style={{ color: isUpcoming ? C.teal : C.gray }}>{v.date}</span>
+                <span className="px-2 py-0.5 rounded-full text-[8px] font-bold"
+                  style={isUpcoming ? { background: C.teal + "15", color: C.teal } : { background: C.gray + "15", color: C.gray }}>
+                  {isUpcoming ? "Nadchodząca" : "Odbyta"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold" style={{ color: C.navy }}>{v.doctor}</span>
+                <span className="text-[9px]" style={{ color: C.gray }}>• {v.spec}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold" style={{ background: v.type === "Teleporada" ? C.blue + "15" : C.teal + "10", color: v.type === "Teleporada" ? C.blue : C.teal }}>
+                  {v.type === "Teleporada" ? "📹 Teleporada" : "🏥 Stacjonarna"}
+                </span>
+                <span className="text-[9px]" style={{ color: C.gray }}>{v.notes}</span>
+              </div>
+              {isUpcoming && (
+                <div className="flex gap-2 mt-2">
+                  <button className="flex-1 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: C.teal }}>Potwierdź</button>
+                  <button className="py-1.5 px-3 rounded-lg text-[10px] font-bold" style={{ background: C.red + "10", color: C.red }}>Odwołaj</button>
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ContactPage() {
+  return (
+    <div className="p-4 space-y-3">
+      <h2 className="font-bold text-sm" style={{ color: C.navy }}>Kontakt</h2>
+      <div className="p-4 rounded-xl" style={{ background: C.white }}>
+        <h3 className="font-bold text-sm mb-2" style={{ color: C.navy }}>MediCare — Centrum Medyczne</h3>
+        <div className="space-y-2">
+          {[
+            { icon: <MapPin className="w-3.5 h-3.5" />, label: "ul. Medyczna 10, 00-001 Warszawa" },
+            { icon: <Phone className="w-3.5 h-3.5" />, label: "+48 22 100 20 30" },
+            { icon: <Clock className="w-3.5 h-3.5" />, label: "Pn-Pt 7:00-20:00, Sob 8:00-14:00" },
+          ].map((c, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div style={{ color: C.teal }}>{c.icon}</div>
+              <span className="text-[11px]" style={{ color: C.navy }}>{c.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="p-3 rounded-xl" style={{ background: C.teal + "10" }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Phone className="w-4 h-4" style={{ color: C.teal }} />
+          <span className="text-[11px] font-bold" style={{ color: C.navy }}>Linia alarmowa 24/7</span>
+        </div>
+        <span className="text-lg font-bold" style={{ color: C.teal }}>+48 22 100 00 00</span>
+      </div>
+      <div className="p-3 rounded-xl space-y-2" style={{ background: C.white }}>
+        <span className="text-[10px] font-bold" style={{ color: C.navy }}>Wyślij wiadomość</span>
+        <input placeholder="Temat..." className="w-full px-3 py-2 rounded-lg text-[11px] outline-none" style={{ background: C.light, color: C.navy }} />
+        <textarea placeholder="Treść wiadomości..." rows={3} className="w-full px-3 py-2 rounded-lg text-[11px] outline-none resize-none" style={{ background: C.light, color: C.navy }} />
+        <button className="w-full py-2 rounded-lg text-[10px] font-bold text-white" style={{ background: C.teal }}>Wyślij</button>
+      </div>
     </div>
   );
 }
