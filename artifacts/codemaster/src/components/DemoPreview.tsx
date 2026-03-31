@@ -73,6 +73,9 @@ export function DemoPreview({ project }: DemoPreviewProps) {
   if (cat.includes("healthcare") || ind.includes("medical") || nm.includes("klinika") || nm.includes("medycz"))
     return <HealthcareDemo name={project.name} features={project.features} />;
 
+  if (cat.includes("e-commerce") || ind.includes("retail") || nm.includes("sklep") || nm.includes("e-commerce"))
+    return <EcommerceDemo name={project.name} features={project.features} />;
+
   if (nm.includes("mentor") || nm.includes("premium"))
     return <MentoringDemo name={project.name} features={project.features} />;
 
@@ -93,9 +96,6 @@ export function DemoPreview({ project }: DemoPreviewProps) {
 
   if (cat.includes("calculator") || nm.includes("kalkulator") || nm.includes("wycen") || nm.includes("budowlan"))
     return <CalculatorDemo name={project.name} features={project.features} />;
-
-  if (cat.includes("e-commerce") || ind.includes("retail") || nm.includes("sklep") || nm.includes("e-commerce"))
-    return <EcommerceDemo name={project.name} features={project.features} />;
 
   return <DashboardDemo name={project.name} features={project.features} industry={project.industry} />;
 }

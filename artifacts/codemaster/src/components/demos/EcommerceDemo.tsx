@@ -404,6 +404,9 @@ function CheckoutPage({ total, onNav }: { total: number; onNav: (p: EcommPage) =
   }
   return (
     <div className="px-4 py-3 space-y-3">
+      <button onClick={() => onNav("shop")} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: C.gold }}>
+        <ArrowLeft className="w-3.5 h-3.5" /> Powrót do sklepu
+      </button>
       <h2 className="text-xs font-bold tracking-[0.1em] uppercase" style={{ color: C.dark }}>Dane dostawy</h2>
       <div className="grid grid-cols-2 gap-2">
         <input placeholder="Imię" className="px-3 py-2.5 text-sm" style={{ background: C.white, border: `1px solid ${C.warm}`, color: C.dark }} />

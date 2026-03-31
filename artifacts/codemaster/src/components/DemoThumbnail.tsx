@@ -728,6 +728,9 @@ export function DemoThumbnail({ category, industry, name }: { category: string; 
   if (nm.includes("agencja") || nm.includes("marketingow") || ind.includes("marketing"))
     return <MarketingThumb />;
 
+  if (cat.includes("e-commerce") || ind.includes("retail") || nm.includes("sklep") || nm.includes("e-commerce") || nm.includes("shop"))
+    return <EcommerceThumb />;
+
   if (nm.includes("mentor") || nm.includes("premium"))
     return <MentoringThumb />;
   if (cat.includes("e-learning") || ind.includes("education") || nm.includes("szkoła") || nm.includes("kurs"))
@@ -739,14 +742,14 @@ export function DemoThumbnail({ category, industry, name }: { category: string; 
   if (cat.includes("events") || ind.includes("entertainment") || nm.includes("event") || nm.includes("bilet"))
     return <EventsThumb />;
 
+  if ((cat.includes("service") || nm.includes("serwis") || nm.includes("napraw")) && ind.includes("it"))
+    return <ServiceThumb />;
+
   if (cat.includes("service") || nm.includes("serwis") || nm.includes("napraw"))
     return <ServiceThumb />;
 
   if (cat.includes("calculator") || nm.includes("kalkulator") || nm.includes("wycen") || nm.includes("budowlan"))
     return <CalculatorThumb />;
-
-  if (cat.includes("e-commerce") || ind.includes("retail") || nm.includes("sklep") || nm.includes("e-commerce") || nm.includes("shop"))
-    return <EcommerceThumb />;
 
   return <DashboardThumb />;
 }
