@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
 import { FileText, CreditCard, Users, BarChart3, Download, CheckCircle2, Clock, AlertTriangle, Home, Bell, ChevronRight, Plus, Eye, Send, Printer, Search } from "lucide-react";
@@ -41,7 +41,7 @@ const clients = [
   { name: "InnoSoft", nip: "777-888-99-00", invoices: 4, total: 89600, balance: 0 },
 ];
 
-const sidebarItems: { id: AccountingPage; label: string; icon: JSX.Element; badge?: string }[] = [
+const sidebarItems: { id: AccountingPage; label: string; icon: ReactNode; badge?: string }[] = [
   { id: "dashboard", label: "Panel", icon: <Home className="w-3.5 h-3.5" /> },
   { id: "invoices", label: "Faktury", icon: <FileText className="w-3.5 h-3.5" />, badge: "3" },
   { id: "preview", label: "Podgląd FV", icon: <Eye className="w-3.5 h-3.5" /> },
@@ -132,7 +132,7 @@ export function AccountingDemo({ name }: { name: string; features: string[] }) {
   );
 }
 
-function DashboardPage({ onNav }: { onNav: (p: string) => void }) {
+function DashboardPage({ onNav }: { onNav: (p: AccountingPage) => void }) {
   const totalPending = invoices.filter(i => i.status === "pending").reduce((a, i) => a + i.amount, 0);
   const totalOverdue = invoices.filter(i => i.status === "overdue").reduce((a, i) => a + i.amount, 0);
   const totalPaid = invoices.filter(i => i.status === "paid").reduce((a, i) => a + i.amount, 0);
@@ -226,13 +226,13 @@ function InvoicesPage() {
         <h2 className="font-bold text-sm" style={{ color: C.dark }}>Faktury ({invoices.length})</h2>
       </div>
       <div className="flex gap-1">
-        {[
-          { v: "all", l: "Wszystkie" },
-          { v: "pending", l: "Oczekujące" },
-          { v: "overdue", l: "Zaległe" },
-          { v: "paid", l: "Opłacone" },
-          { v: "draft", l: "Szkice" },
-        ].map(f => (
+        {([
+          { v: "all" as InvoiceFilter, l: "Wszystkie" },
+          { v: "pending" as InvoiceFilter, l: "Oczekujące" },
+          { v: "overdue" as InvoiceFilter, l: "Zaległe" },
+          { v: "paid" as InvoiceFilter, l: "Opłacone" },
+          { v: "draft" as InvoiceFilter, l: "Szkice" },
+        ]).map(f => (
           <button key={f.v} onClick={() => setFilter(f.v)} className="px-2 py-1 rounded text-[9px] font-semibold"
             style={filter === f.v ? { background: C.accent, color: C.white } : { background: C.white, color: C.gray }}>{f.l}</button>
         ))}

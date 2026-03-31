@@ -103,7 +103,7 @@ export function RealEstateDemo({ name }: { name: string; features: string[] }) {
   );
 }
 
-function HomePage({ onNav }: { onNav: (p: string) => void }) {
+function HomePage({ onNav }: { onNav: (p: RealEstatePage) => void }) {
   const saleCount = properties.filter(p => p.status === "sale").length;
   return (
     <div>
@@ -282,6 +282,15 @@ function DetailPage() {
             {p.features.map((f, i) => (
               <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-medium" style={{ background: C.emerald + "10", color: C.emerald }}>{f}</span>
             ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.light}` }}>
+          <div className="h-24 flex items-center justify-center" style={{ background: C.light }}>
+            <div className="text-center">
+              <MapPin className="w-5 h-5 mx-auto" style={{ color: C.emerald }} />
+              <span className="text-[9px] block mt-1" style={{ color: C.gray }}>Mapa — {p.location}</span>
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoFooterCTA, DemoBenefits } from "./PreviewShell";
 import { Calendar, Users, TrendingUp, CheckCircle2, Dumbbell, Bell, BarChart3, UserPlus, CreditCard, Activity } from "lucide-react";
@@ -74,7 +74,7 @@ const checkins = [
   { name: "Piotr M.", time: "10:08", type: "Basic", action: "Wejście" },
 ];
 
-const topTabs: { id: FitnessPage; label: string; icon: JSX.Element }[] = [
+const topTabs: { id: FitnessPage; label: string; icon: ReactNode }[] = [
   { id: "dashboard", label: "Panel", icon: <BarChart3 className="w-3.5 h-3.5" /> },
   { id: "members", label: "Członkowie", icon: <Users className="w-3.5 h-3.5" /> },
   { id: "schedule", label: "Grafik", icon: <Calendar className="w-3.5 h-3.5" /> },
