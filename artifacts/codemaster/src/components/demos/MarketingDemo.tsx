@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewShell, DemoBenefits, DemoFooterCTA } from "./PreviewShell";
-import { BarChart3, TrendingUp, Users, Target, Megaphone, Eye, MousePointer, DollarSign, Zap, Globe, Lightbulb, ArrowUpRight, ArrowDownRight, Send, ChevronRight, PanelLeftClose, PanelLeft, Settings, ChevronDown } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Target, Megaphone, Eye, MousePointer, DollarSign, Zap, Globe, Lightbulb, ArrowUpRight, ArrowDownRight, Send, ChevronRight, PanelLeftClose, PanelLeft, Settings, ChevronDown, CheckCircle2 } from "lucide-react";
 
 const C = { bg: "#0F0F23", sidebar: "#161630", card: "#1C1C3A", blue: "#4F7CFF", violet: "#8B5CF6", white: "#F0F0FF", gray: "#7C7C9A", neon: "#22D3EE", green: "#10B981", red: "#EF4444", amber: "#F59E0B", light: "#E8E8F8", text: "#C8C8E0" };
 
@@ -59,6 +59,7 @@ export function MarketingDemo({ name }: { name: string; features: string[] }) {
   const [collapsed, setCollapsed] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [activeClient, setActiveClient] = useState(0);
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const expanded = !collapsed || hovering;
 
   return (
@@ -74,12 +75,25 @@ export function MarketingDemo({ name }: { name: string; features: string[] }) {
           </div>
 
           {expanded && (
-            <div className="mx-2 mb-3">
-              <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px]" style={{ background: C.card, color: C.text }}>
+            <div className="mx-2 mb-3 relative">
+              <button onClick={() => setClientDropdownOpen(!clientDropdownOpen)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px]" style={{ background: C.card, color: C.text }}>
                 <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold text-white" style={{ background: C.blue }}>{clients[activeClient].avatar}</div>
                 <span className="flex-1 text-left truncate">{clients[activeClient].name}</span>
-                <ChevronDown className="w-3 h-3" style={{ color: C.gray }} />
+                <ChevronDown className="w-3 h-3 transition-transform" style={{ color: C.gray, transform: clientDropdownOpen ? "rotate(180deg)" : "none" }} />
               </button>
+              {clientDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 rounded-lg overflow-hidden shadow-lg z-10" style={{ background: C.card, border: `1px solid ${C.blue}20` }}>
+                  {clients.map((cl, i) => (
+                    <button key={i} onClick={() => { setActiveClient(i); setClientDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] transition-all hover:bg-white/5"
+                      style={{ color: activeClient === i ? C.blue : C.text, background: activeClient === i ? C.blue + "15" : "transparent" }}>
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold text-white" style={{ background: [C.blue, C.violet, C.green][i] }}>{cl.avatar}</div>
+                      <span className="flex-1 text-left truncate">{cl.name}</span>
+                      {activeClient === i && <CheckCircle2 className="w-3 h-3" style={{ color: C.blue }} />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

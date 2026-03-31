@@ -56,7 +56,10 @@ export function MentoringDemo({ name }: { name: string; features: string[] }) {
             <Crown className="w-5 h-5" style={{ color: C.coral }} />
             <h1 className="font-bold text-sm" style={{ color: C.dark }}>Mentor<span style={{ color: C.coral }}>Hub</span></h1>
           </div>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.coral}, ${C.violet})` }}>TW</div>
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1 rounded-full text-[9px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.coral}, ${C.violet})` }}>Zostań Mentorem</button>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: `linear-gradient(135deg, ${C.coral}, ${C.violet})` }}>TW</div>
+          </div>
         </div>
 
         <div className="flex gap-0 overflow-x-auto px-2 py-1.5" style={{ background: C.white }}>

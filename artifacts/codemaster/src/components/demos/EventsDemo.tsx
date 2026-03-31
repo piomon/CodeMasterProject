@@ -44,9 +44,9 @@ export function EventsDemo({ name }: { name: string; features: string[] }) {
   return (
     <PreviewShell title={name}>
       <div style={{ minHeight: 540 }}>
-        <div style={{ background: C.navy, position: "relative" }}>
+        <div style={{ background: page === "home" ? "transparent" : C.navy, position: "relative" }}>
           {page === "home" && (
-            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 0%, ${C.navy} 100%)`, zIndex: 1 }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(10,10,26,0.6) 0%, transparent 100%)`, zIndex: 0 }} />
           )}
           <div className="relative px-5 py-3" style={{ zIndex: 2 }}>
             <div className="flex items-center justify-between">
@@ -56,7 +56,10 @@ export function EventsDemo({ name }: { name: string; features: string[] }) {
                 </div>
                 <h1 className="font-bold text-sm text-white">Event<span style={{ color: C.violet }}>Hub</span></h1>
               </div>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.purple }}>JK</div>
+              <div className="flex items-center gap-2">
+                <button className="px-2.5 py-1 rounded-lg text-[9px] font-bold text-white" style={{ background: C.purple }}>+ Stwórz wydarzenie</button>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: C.purple }}>JK</div>
+              </div>
             </div>
             <div className="flex gap-1 mt-2 overflow-x-auto pb-1">
               {navItems.map(n => (
